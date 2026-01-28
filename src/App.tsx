@@ -1,0 +1,59 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthProvider';
+import { PrivateRoute } from './guards/PrivateRoute';
+import { PublicRoute } from './guards/PublicRoute';
+
+// Public Pages
+import { HomePage } from './pages/public/HomePage';
+import { AboutPage } from './pages/public/AboutPage';
+import { LoginPage } from './pages/public/LoginPage';
+import { NotFoundPage } from './pages/public/NotFoundPage';
+
+// Private Pages
+import { DashboardPage } from './pages/private/DashboardPage';
+import { SettingsPage } from './pages/private/SettingsPage';
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            }
+          />
+
+          {/* Private Routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <DashboardPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <PrivateRoute>
+                <SettingsPage />
+              </PrivateRoute>
+            }
+          />
+
+          {/* 404 Not Found */}
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
+  );
+}
+
+export default App;
