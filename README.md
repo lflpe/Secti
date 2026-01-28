@@ -172,6 +172,17 @@ const response = await fetch(url, {
 - **React Router DOM** - Client-side routing
 - **ESLint** - Code linting
 
+## Security Considerations
+
+This demo application uses localStorage for JWT token storage for simplicity. In a production environment, consider the following security improvements:
+
+1. **Token Storage**: Use httpOnly cookies instead of localStorage to prevent XSS attacks
+2. **Token Validation**: Implement proper JWT signature verification and expiration checking
+3. **HTTPS**: Always use HTTPS in production to prevent man-in-the-middle attacks
+4. **CSRF Protection**: Implement CSRF tokens for state-changing operations
+5. **Input Validation**: Add proper input sanitization and validation
+6. **Content Security Policy**: Implement CSP headers to prevent XSS attacks
+
 ## Contributing
 
 This is a project for SECTI. Please follow the existing code structure and conventions when contributing.

@@ -10,6 +10,8 @@ export const authService = {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Mock validation - Replace with actual API call
+    // NOTE: In demo mode, any email/password combination will work
+    // In production, replace this entire function with actual API authentication
     if (credentials.email && credentials.password) {
       // Simulated response - In production, this comes from your backend
       const mockUser: User = {
@@ -19,9 +21,11 @@ export const authService = {
       };
 
       // Mock JWT token - In production, this comes from your backend
-      const mockToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${btoa(
+      // Using encodeURIComponent to safely handle special characters
+      const payload = encodeURIComponent(
         JSON.stringify({ userId: mockUser.id, email: mockUser.email })
-      )}.mock_signature`;
+      );
+      const mockToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${payload}.mock_signature`;
 
       return {
         user: mockUser,
@@ -38,6 +42,9 @@ export const authService = {
   },
 
   saveToken(token: string): void {
+    // NOTE: localStorage is used for demo purposes
+    // SECURITY: For production, consider using httpOnly cookies to prevent XSS attacks
+    // or implement additional security measures like token encryption
     localStorage.setItem(TOKEN_KEY, token);
   },
 
@@ -46,6 +53,8 @@ export const authService = {
   },
 
   saveUser(user: User): void {
+    // NOTE: localStorage is used for demo purposes
+    // SECURITY: For production, consider using httpOnly cookies
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   },
 
@@ -61,15 +70,21 @@ export const authService = {
   },
 
   isTokenValid(token: string): boolean {
-    // Simple validation - In production, verify token signature and expiration
+    // Simple validation for demo purposes
+    // SECURITY: In production, verify token signature and check expiration
+    // using a library like jsonwebtoken or jose
     if (!token) return false;
 
     try {
-      // Basic JWT structure check
+      // Basic JWT structure check (header.payload.signature)
       const parts = token.split('.');
       if (parts.length !== 3) return false;
 
-      // In production, verify signature and check expiration
+      // TODO: In production, add:
+      // 1. Signature verification
+      // 2. Expiration time check (exp claim)
+      // 3. Issuer validation (iss claim)
+      // 4. Audience validation (aud claim)
       return true;
     } catch {
       return false;
