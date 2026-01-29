@@ -1,1 +1,213 @@
 @import "tailwindcss";
+
+/* DINPro - Light */
+@font-face {
+  font-family: 'DINPro';
+  src: url('./assets/fonts/DINPro-Light.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-Light.woff') format('woff'),
+       url('./assets/fonts/DINPro-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DINPro';
+  src: url('./assets/fonts/DINPro-LightItalic.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-LightItalic.woff') format('woff'),
+       url('./assets/fonts/DINPro-LightItalic.ttf') format('truetype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* DINPro - Regular */
+@font-face {
+  font-family: 'DINPro';
+  src: url('./assets/fonts/DINPro.woff2') format('woff2'),
+       url('./assets/fonts/DINPro.woff') format('woff'),
+       url('./assets/fonts/DINPro.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DINPro';
+  src: url('./assets/fonts/DINPro-Italic.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-Italic.woff') format('woff'),
+       url('./assets/fonts/DINPro-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* DINPro - Medium */
+@font-face {
+  font-family: 'DINPro';
+  src: url('./assets/fonts/DINPro-Medium.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-Medium.woff') format('woff'),
+       url('./assets/fonts/DINPro-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DINPro';
+  src: url('./assets/fonts/DINPro-MediumItalic.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-MediumItalic.woff') format('woff'),
+       url('./assets/fonts/DINPro-MediumItalic.ttf') format('truetype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* DINPro - Bold */
+@font-face {
+  font-family: 'DINPro';
+  src: url('./assets/fonts/DINPro-Bold.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-Bold.woff') format('woff'),
+       url('./assets/fonts/DINPro-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DINPro';
+  src: url('./assets/fonts/DINPro-BoldItalic.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-BoldItalic.woff') format('woff'),
+       url('./assets/fonts/DINPro-BoldItalic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* DINPro - Black (900) */
+@font-face {
+  font-family: 'DINPro';
+  src: url('./assets/fonts/DINPro-Black.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-Black.woff') format('woff'),
+       url('./assets/fonts/DINPro-Black.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DINPro';
+  src: url('./assets/fonts/DINPro-BlackItalic.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-BlackItalic.woff') format('woff'),
+       url('./assets/fonts/DINPro-BlackItalic.ttf') format('truetype');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* DINPro Condensed family (registrada como família separada) */
+@font-face {
+  font-family: 'DINPro Condensed';
+  src: url('./assets/fonts/DINPro-CondensedLight.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-CondensedLight.woff') format('woff'),
+       url('./assets/fonts/DINPro-CondensedLight.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DINPro Condensed';
+  src: url('./assets/fonts/DINPro-CondensedLightItalic.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-CondensedLightItalic.woff') format('woff'),
+       url('./assets/fonts/DINPro-CondensedLightItalic.ttf') format('truetype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DINPro Condensed';
+  src: url('./assets/fonts/DINPro-CondensedRegular.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-CondensedRegular.woff') format('woff'),
+       url('./assets/fonts/DINPro-CondensedRegular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DINPro Condensed';
+  src: url('./assets/fonts/DINPro-CondensedItalic.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-CondensedItalic.woff') format('woff'),
+       url('./assets/fonts/DINPro-CondensedItalic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DINPro Condensed';
+  src: url('./assets/fonts/DINPro-CondensedMedium.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-CondensedMedium.woff') format('woff'),
+       url('./assets/fonts/DINPro-CondensedMedium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DINPro Condensed';
+  src: url('./assets/fonts/DINPro-CondensedMediumItalic.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-CondensedMediumItalic.woff') format('woff'),
+       url('./assets/fonts/DINPro-CondensedMediumItalic.ttf') format('truetype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DINPro Condensed';
+  src: url('./assets/fonts/DINPro-CondensedBold.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-CondensedBold.woff') format('woff'),
+       url('./assets/fonts/DINPro-CondensedBold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DINPro Condensed';
+  src: url('./assets/fonts/DINPro-CondensedBoldItalic.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-CondensedBoldItalic.woff') format('woff'),
+       url('./assets/fonts/DINPro-CondensedBoldItalic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DINPro Condensed';
+  src: url('./assets/fonts/DINPro-CondensedBlack.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-CondensedBlack.woff') format('woff'),
+       url('./assets/fonts/DINPro-CondensedBlack.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DINPro Condensed';
+  src: url('./assets/fonts/DINPro-CondensedBlackItalic.woff2') format('woff2'),
+       url('./assets/fonts/DINPro-CondensedBlackItalic.woff') format('woff'),
+       url('./assets/fonts/DINPro-CondensedBlackItalic.ttf') format('truetype');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Aplicar DINPro como fonte principal */
+body {
+  font-family: 'DINPro', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Alto contraste */
+.alto-contraste {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+.alto-contraste a { color: #fff !important; }
+.alto-contraste .bg-white { background-color: #000 !important; }
+.alto-contraste .bg-gray-50 { background-color: #000 !important; }
+.alto-contraste .bg-blue-600 { background-color: #fff !important; color: #000 !important; }
+.alto-contraste .text-gray-700 { color: #fff !important; }
+.alto-contraste .container { }
+
+/* Fim alto contraste */
