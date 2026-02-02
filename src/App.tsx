@@ -4,7 +4,7 @@ import { PrivateRoute } from './guards/PrivateRoute';
 import { PublicRoute } from './guards/PublicRoute';
 
 // Public Pages
-import { HomePage } from './pages/public/HomePage';
+import { Home } from './pages/public/Home.tsx';
 import { AboutPage } from './pages/public/AboutPage';
 import { LoginPage } from './pages/public/LoginPage';
 import { NotFoundPage } from './pages/public/NotFoundPage';
@@ -19,7 +19,7 @@ function App() {
       <Router>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<Home />} />
           <Route path="/about" element={<AboutPage />} />
           <Route
             path="/login"
