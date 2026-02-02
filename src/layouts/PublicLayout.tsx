@@ -18,6 +18,10 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
   const [fontPercent, setFontPercent] = useState<number>(100);
   const [altoContraste, setAltoContraste] = useState<boolean>(false);
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
+  const [sectiDropdownOpen, setSectiDropdownOpen] = useState<boolean>(false);
+  const [transparenciaDropdownOpen, setTransparenciaDropdownOpen] = useState<boolean>(false);
+  const [sectiMobileOpen, setSectiMobileOpen] = useState<boolean>(false);
+  const [transparenciaMobileOpen, setTransparenciaMobileOpen] = useState<boolean>(false);
 
   useEffect(() => {
     // Apply font size to the root (html) so Tailwind rem-based sizes scale
@@ -91,18 +95,93 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
 
               {/* coluna 2: menus centralizados (visível apenas em lg+) */}
               <div className="hidden lg:flex justify-center">
-                <div className="flex items-center space-x-6">
-                  <Link
-                    to="/"
-                    className="hidden lg:inline-block text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+                <div className="flex items-center space-x-1 xl:space-x-2">
+                  {/* Dropdown SECTI */}
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setSectiDropdownOpen(true)}
+                    onMouseLeave={() => setSectiDropdownOpen(false)}
                   >
-                    Home
+                    <button className="text-gray-700 hover:text-blue-600 px-2 py-2 rounded-md text-xs xl:text-sm font-medium flex items-center whitespace-nowrap">
+                      SECTI
+                      <svg className="ml-1 h-3 w-3 xl:h-4 xl:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {sectiDropdownOpen && (
+                      <div className="absolute left-0 mt-0 w-56 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+                        <div className="py-1">
+                          <Link to="/secti/a-secretaria" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">A Secretaria</Link>
+                          <Link to="/secti/a-secretaria-cargo" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">A Secretária</Link>
+                          <Link to="/secti/historia" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">História</Link>
+                          <Link to="/secti/documentos" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Documentos</Link>
+                          <Link to="/secti/organograma" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Organograma</Link>
+                          <Link to="/secti/certificacoes" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Certificações</Link>
+                          <Link to="/secti/servidor" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Servidor</Link>
+                          <Link to="/parcerias" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Parcerias</Link>
+                          <Link to="/legislacao" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Legislação</Link>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Dropdown Transparência */}
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setTransparenciaDropdownOpen(true)}
+                    onMouseLeave={() => setTransparenciaDropdownOpen(false)}
+                  >
+                    <button className="text-gray-700 hover:text-blue-600 px-2 py-2 rounded-md text-xs xl:text-sm font-medium flex items-center whitespace-nowrap">
+                      Transparência
+                      <svg className="ml-1 h-3 w-3 xl:h-4 xl:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {transparenciaDropdownOpen && (
+                      <div className="absolute left-0 mt-0 w-72 bg-white rounded-md shadow-lg z-50 border border-gray-200 max-h-96 overflow-y-auto">
+                        <div className="py-1">
+                          <Link to="/transparencia/informacoes-institucionais" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Informações Institucionais</Link>
+                          <Link to="/transparencia/perguntas-frequentes" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Perguntas Frequentes</Link>
+                          <Link to="/transparencia/responsabilidade-fiscal" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Responsabilidade Fiscal</Link>
+                          <Link to="/transparencia/fiscalizacao-controle" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Fiscalização e Controle</Link>
+                          <Link to="/transparencia/transferencias-acordos" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Transferências Estaduais e Acordos</Link>
+                          <Link to="/transparencia/receitas-transparencias" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Receitas Transparências da União Dívida Ativa e Renúncia de Receita</Link>
+                          <Link to="/transparencia/despesa" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Despesa</Link>
+                          <Link to="/transparencia/licitacoes-contratos" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Licitações Contratos e Fornecedores</Link>
+                          <Link to="/transparencia/obras-publicas" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Obras Públicas</Link>
+                          <Link to="/transparencia/patrimonio-publico" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Patrimônio Público</Link>
+                          <Link to="/transparencia/recursos-humanos" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Recursos Humanos</Link>
+                          <Link to="/transparencia/sic" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">SIC</Link>
+                          <Link to="/transparencia/servidores" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Servidores</Link>
+                          <Link to="/transparencia/mapa-terceirizados" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mapa Terceirizados</Link>
+                          <Link to="/transparencia/mapa-diarias-passagens" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mapa de Diárias e Passagens</Link>
+                          <Link to="/transparencia/mapa-convenios" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mapa de Convênios</Link>
+                          <Link to="/transparencia/mapa-contratos" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mapa de Contratos</Link>
+                          <Link to="/transparencia/mapa-cargos-comissionados" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mapa de Cargos Comissionados e Funções Gratificadas</Link>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <Link
+                    to="/noticias"
+                    className="text-gray-700 hover:text-blue-600 px-2 py-2 rounded-md text-xs xl:text-sm font-medium whitespace-nowrap"
+                  >
+                    Notícias
                   </Link>
+
                   <Link
-                    to="/about"
-                    className="hidden lg:inline-block text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+                    to="/editais"
+                    className="text-gray-700 hover:text-blue-600 px-2 py-2 rounded-md text-xs xl:text-sm font-medium whitespace-nowrap"
                   >
-                    About
+                    Editais
+                  </Link>
+
+                  <Link
+                    to="/ouvidoria"
+                    className="text-gray-700 hover:text-blue-600 px-2 py-2 rounded-md text-xs xl:text-sm font-medium whitespace-nowrap"
+                  >
+                    Ouvidoria
                   </Link>
                 </div>
               </div>
@@ -123,25 +202,25 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
                 </button>
 
                 {/* desktop controls (lg+) */}
-                <div className="hidden lg:flex justify-end items-center space-x-3">
+                <div className="hidden lg:flex justify-end items-center space-x-2">
                   <button
                     aria-label="Diminuir fonte"
                     onClick={decreaseFont}
-                    className="text-[#0C2856] font-bold cursor-pointer text-xl"
+                    className="text-[#0C2856] font-bold cursor-pointer text-lg xl:text-xl"
                   >
                     A-
                   </button>
                   <button
                     aria-label="Aumentar fonte"
                     onClick={increaseFont}
-                    className="text-[#0C2856] font-bold cursor-pointer text-xl"
+                    className="text-[#0C2856] font-bold cursor-pointer text-lg xl:text-xl"
                   >
                     A+
                   </button>
                   <button
                     aria-pressed={altoContraste}
                     onClick={toggleAltoContraste}
-                    className={`px-3 py-2 cursor-pointer rounded-3xl  text-base border ${altoContraste ? 'bg-black text-white' : 'text-white bg-[#0C2856] transition duration-200 hover:scale-110'}`}
+                    className={`px-2 xl:px-3 py-1.5 xl:py-2 cursor-pointer rounded-3xl text-xs xl:text-sm border whitespace-nowrap ${altoContraste ? 'bg-black text-white' : 'text-white bg-[#0C2856] transition duration-200 hover:scale-105'}`}
                   >
                     Alto Contraste
                   </button>
@@ -191,9 +270,70 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
               </div>
 
               <div className="space-y-2">
-                <Link to="/" onClick={() => setMobileOpen(false)} className="block text-gray-700 px-3 py-2 rounded-md text-base font-medium">Home</Link>
-                <Link to="/about" onClick={() => setMobileOpen(false)} className="block text-gray-700 px-3 py-2 rounded-md text-base font-medium">About</Link>
-                <Link to="/login" onClick={() => setMobileOpen(false)} className="block text-gray-700 px-3 py-2 rounded-md text-base font-medium">Login</Link>
+                {/* SECTI Accordion */}
+                <div>
+                  <button
+                    onClick={() => setSectiMobileOpen(!sectiMobileOpen)}
+                    className="w-full text-left text-gray-700 px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 flex items-center justify-between"
+                  >
+                    SECTI
+                    <svg className={`h-4 w-4 transition-transform ${sectiMobileOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {sectiMobileOpen && (
+                    <div className="ml-4 space-y-1 mt-1">
+                      <Link to="/secti/a-secretaria" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">A Secretaria</Link>
+                      <Link to="/secti/a-secretaria-cargo" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">A Secretária</Link>
+                      <Link to="/secti/historia" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">História</Link>
+                      <Link to="/secti/documentos" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Documentos</Link>
+                      <Link to="/secti/organograma" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Organograma</Link>
+                      <Link to="/secti/certificacoes" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Certificações</Link>
+                      <Link to="/secti/servidor" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Servidor</Link>
+                      <Link to="/parcerias" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Parcerias</Link>
+                      <Link to="/legislacao" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Legislação</Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* Transparência Accordion */}
+                <div>
+                  <button
+                    onClick={() => setTransparenciaMobileOpen(!transparenciaMobileOpen)}
+                    className="w-full text-left text-gray-700 px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 flex items-center justify-between"
+                  >
+                    Transparência
+                    <svg className={`h-4 w-4 transition-transform ${transparenciaMobileOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {transparenciaMobileOpen && (
+                    <div className="ml-4 space-y-1 mt-1">
+                      <Link to="/transparencia/informacoes-institucionais" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Informações Institucionais</Link>
+                      <Link to="/transparencia/perguntas-frequentes" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Perguntas Frequentes</Link>
+                      <Link to="/transparencia/responsabilidade-fiscal" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Responsabilidade Fiscal</Link>
+                      <Link to="/transparencia/fiscalizacao-controle" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Fiscalização e Controle</Link>
+                      <Link to="/transparencia/transferencias-acordos" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Transferências Estaduais e Acordos</Link>
+                      <Link to="/transparencia/receitas-transparencias" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Receitas Transparências da União Dívida Ativa e Renúncia de Receita</Link>
+                      <Link to="/transparencia/despesa" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Despesa</Link>
+                      <Link to="/transparencia/licitacoes-contratos" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Licitações Contratos e Fornecedores</Link>
+                      <Link to="/transparencia/obras-publicas" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Obras Públicas</Link>
+                      <Link to="/transparencia/patrimonio-publico" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Patrimônio Público</Link>
+                      <Link to="/transparencia/recursos-humanos" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Recursos Humanos</Link>
+                      <Link to="/transparencia/sic" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">SIC</Link>
+                      <Link to="/transparencia/servidores" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Servidores</Link>
+                      <Link to="/transparencia/mapa-terceirizados" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Mapa Terceirizados</Link>
+                      <Link to="/transparencia/mapa-diarias-passagens" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Mapa de Diárias e Passagens</Link>
+                      <Link to="/transparencia/mapa-convenios" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Mapa de Convênios</Link>
+                      <Link to="/transparencia/mapa-contratos" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Mapa de Contratos</Link>
+                      <Link to="/transparencia/mapa-cargos-comissionados" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Mapa de Cargos Comissionados e Funções Gratificadas</Link>
+                    </div>
+                  )}
+                </div>
+
+                <Link to="/noticias" onClick={() => setMobileOpen(false)} className="block text-gray-700 px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100">Notícias</Link>
+                <Link to="/editais" onClick={() => setMobileOpen(false)} className="block text-gray-700 px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100">Editais</Link>
+                <Link to="/ouvidoria" onClick={() => setMobileOpen(false)} className="block text-gray-700 px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100">Ouvidoria</Link>
               </div>
 
               <div className="mt-4 flex items-center space-x-3">

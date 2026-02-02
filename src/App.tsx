@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthProvider';
+import {AuthProvider} from "./contexts";
 import { PrivateRoute } from './guards/PrivateRoute';
 import { PublicRoute } from './guards/PublicRoute';
 
@@ -8,6 +8,8 @@ import { Home } from './pages/public/Home.tsx';
 import { AboutPage } from './pages/public/AboutPage';
 import { LoginPage } from './pages/public/LoginPage';
 import { NotFoundPage } from './pages/public/NotFoundPage';
+import { ASecretaria } from './pages/public/ASecretaria';
+import { ASecretariaCargo } from './pages/public/ASecretariaCargo';
 
 // Private Pages
 import { DashboardPage } from './pages/private/DashboardPage';
@@ -21,6 +23,8 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/secti/a-secretaria" element={<ASecretaria />} />
+          <Route path="/secti/a-secretaria-cargo" element={<ASecretariaCargo />} />
           <Route
             path="/login"
             element={
