@@ -1,4 +1,3 @@
-// src/components/SecaoDocumentos.tsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export type DocumentoItem = {
@@ -16,10 +15,20 @@ export const SecaoDocumentos: React.FC<SecaoDocumentosProps> = ({ documentos }) 
   const [index, setIndex] = useState(0);
   const timerRef = useRef<number | null>(null);
 
+  // Detectar tamanho da tela
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const validDocumentos = useMemo(() => Array.isArray(documentos) ? documentos : [], [documentos]);
   const count = validDocumentos.length;
-  const itemsPerView = 4;
-  const gap = 16; // px, corresponde ao gap-4
+  const itemsPerView = isMobile ? 1 : 4;
+  const gap = 16;
   const slideCount = Math.ceil(count / itemsPerView);
 
   const loadedRef = useRef<Set<number>>(new Set());
@@ -60,7 +69,6 @@ export const SecaoDocumentos: React.FC<SecaoDocumentosProps> = ({ documentos }) 
     return () => window.removeEventListener('keydown', onKey);
   }, [goTo, index]);
 
-  // --- Medir viewport do carrossel e calcular largura do card ---
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const [viewportWidth, setViewportWidth] = useState(0);
 
@@ -74,12 +82,13 @@ export const SecaoDocumentos: React.FC<SecaoDocumentosProps> = ({ documentos }) 
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  const cardWidth = viewportWidth
-      ? Math.max(0, (viewportWidth - gap * (itemsPerView - 1)) / itemsPerView)
-      : 0;
+  const cardWidth = isMobile
+      ? viewportWidth
+      : (viewportWidth ? Math.max(0, (viewportWidth - gap * (itemsPerView - 1)) / itemsPerView) : 0);
 
-  // largura de um "slide" (itemsPerView slots + gaps)
-  const slideWidth = cardWidth ? (itemsPerView * cardWidth + gap * (itemsPerView - 1)) : viewportWidth;
+  const slideWidth = isMobile
+      ? viewportWidth
+      : (cardWidth ? (itemsPerView * cardWidth + gap * (itemsPerView - 1)) : viewportWidth);
 
   if (!count) {
     return (
@@ -101,11 +110,10 @@ export const SecaoDocumentos: React.FC<SecaoDocumentosProps> = ({ documentos }) 
             </p>
           </div>
 
-          <div className="relative w-full max-w-4xl mx-auto">
-            {/* viewport com ref para medir largura */}
+          <div className="relative w-full max-w-4xl mx-auto px-8 md:px-0">
             <div className="overflow-hidden w-full py-12" ref={viewportRef}>
               <div
-                  className="flex z-20 gap-4 transition-transform duration-1000 ease-in-out"
+                  className={`flex z-20 transition-transform duration-1000 ease-in-out ${isMobile ? 'gap-0' : 'gap-4'}`}
                   style={{ transform: `translateX(-${index * slideWidth}px)` }}
               >
                 {validDocumentos.map((doc, idx) => (
@@ -138,7 +146,7 @@ export const SecaoDocumentos: React.FC<SecaoDocumentosProps> = ({ documentos }) 
                   <button
                       onClick={prev}
                       aria-label="Anterior"
-                      className="absolute cursor-pointer -left-12 top-1/2 -translate-y-1/2 z-40 p-2 transition duration-200 hover:scale-110 text-white rounded-full bg-black/30 hover:bg-black/50"
+                      className="absolute cursor-pointer left-0 md:-left-12 top-1/2 -translate-y-1/2 z-40 p-2 transition duration-200 hover:scale-110 text-white rounded-full bg-black/30 hover:bg-black/50"
                   >
                     <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -148,7 +156,7 @@ export const SecaoDocumentos: React.FC<SecaoDocumentosProps> = ({ documentos }) 
                   <button
                       onClick={next}
                       aria-label="Próximo"
-                      className="absolute cursor-pointer -right-12 top-1/2 -translate-y-1/2 z-40 p-2 transition duration-200 hover:scale-110 text-white rounded-full bg-black/30 hover:bg-black/50"
+                      className="absolute cursor-pointer right-0 md:-right-12 top-1/2 -translate-y-1/2 z-40 p-2 transition duration-200 hover:scale-110 text-white rounded-full bg-black/30 hover:bg-black/50"
                   >
                     <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -165,10 +173,8 @@ export const SecaoDocumentos: React.FC<SecaoDocumentosProps> = ({ documentos }) 
                         />
                     ))}
                   </div>
-                </>
-            )}
+                </>)}
           </div>
         </div>
-      </section>
-  );
+      </section>);
 };
