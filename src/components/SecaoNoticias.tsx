@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export type NoticiaItem = {
   id?: string | number;
@@ -26,9 +27,9 @@ export const SecaoNoticias: React.FC<SecaoNoticiasProps> = ({ noticiaDestaque, n
               <h2 className="text-3xl font-bold text-[#0C2856] mb-2">Notícias</h2>
               <div className="h-1 w-20 bg-[#195CE3]"></div>
             </div>
-            <a href="/noticias" className="text-[#195CE3] hover:text-[#0C2856] font-medium transition duration-200">
+            <Link to="/noticias" className="text-[#195CE3] hover:text-[#0C2856] font-medium transition duration-200">
               Ver todas as notícias →
-            </a>
+            </Link>
           </div>
 
           {/* Notícia Destaque */}
