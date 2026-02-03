@@ -1,7 +1,7 @@
-import { PublicLayout } from '../../layouts/PublicLayout';
-import { HeroSection } from '../../components/HeroSection';
-import { DocumentList} from '../../components/DocumentList';
-import type {DocumentItem} from "../../components/DocumentList";
+import { PublicLayout } from '../../../layouts/PublicLayout.tsx';
+import { HeroSection } from '../../../components/HeroSection.tsx';
+import { DocumentList} from '../../../components/DocumentList.tsx';
+import type {DocumentItem} from "../../../components/DocumentList.tsx";
 
 // Dados de exemplo - substituir por dados reais da API
 const documentosParceriasMock: DocumentItem[] = [

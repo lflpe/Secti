@@ -5,22 +5,22 @@ import { PublicRoute } from './guards/PublicRoute';
 
 // Public Pages
 import { Home } from './pages/public/Home.tsx';
-import { AboutPage } from './pages/public/AboutPage';
-import { LoginPage } from './pages/public/LoginPage';
-import { NotFoundPage } from './pages/public/NotFoundPage';
-import { ASecretaria } from './pages/public/ASecretaria';
-import { ASecretariaCargo } from './pages/public/ASecretariaCargo';
-import { Historia } from './pages/public/Historia';
-import { Documentos } from './pages/public/Documentos';
-import { Organograma } from './pages/public/Organograma';
-import { Certificacoes } from './pages/public/Certificacoes';
-import { Servidor } from './pages/public/Servidor';
-import { Parcerias } from './pages/public/Parcerias';
+import { Login } from './pages/public/Login.tsx';
+import { Erro404 } from './pages/public/Erro404.tsx';
+import { TodasNoticias } from './pages/public/TodasNoticias.tsx';
+import { ASecretaria } from './pages/public/secti/ASecretaria.tsx';
+import { ASecretariaCargo } from './pages/public/secti/ASecretariaCargo.tsx';
+import { Historia } from './pages/public/secti/Historia.tsx';
+import { Documentos } from './pages/public/secti/Documentos.tsx';
+import { Organograma } from './pages/public/secti/Organograma.tsx';
+import { Certificacoes } from './pages/public/secti/Certificacoes.tsx';
+import { Servidor } from './pages/public/secti/Servidor.tsx';
+import { Parcerias } from './pages/public/secti/Parcerias.tsx';
 
 // Private Pages
 import { DashboardPage } from './pages/private/DashboardPage';
 import { SettingsPage } from './pages/private/SettingsPage';
-import {Legislacao} from "./pages/public/Legislacao.tsx";
+import {Legislacao} from "./pages/public/secti/Legislacao.tsx";
 
 function App() {
   return (
@@ -29,7 +29,7 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
-          <Route path="/about" element={<AboutPage />} />
+          <Route path="/noticias" element={<TodasNoticias />} />
           <Route path="/secti/a-secretaria" element={<ASecretaria />} />
           <Route path="/secti/a-secretaria-cargo" element={<ASecretariaCargo />} />
           <Route path="/secti/historia" element={<Historia />} />
@@ -43,7 +43,7 @@ function App() {
             path="/login"
             element={
               <PublicRoute>
-                <LoginPage />
+                <Login />
               </PublicRoute>
             }
           />
@@ -67,7 +67,7 @@ function App() {
           />
 
           {/* 404 Not Found */}
-          <Route path="*" element={<NotFoundPage />} />
+          <Route path="*" element={<Erro404 />} />
         </Routes>
       </Router>
     </AuthProvider>

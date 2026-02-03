@@ -1,7 +1,7 @@
-import { PublicLayout } from '../../layouts/PublicLayout';
-import { HeroSection } from '../../components/HeroSection';
+import { PublicLayout } from '../../../layouts/PublicLayout.tsx';
+import { HeroSection } from '../../../components/HeroSection.tsx';
 import { useState } from 'react';
-import OrganogramaSecti2023 from "../../assets/OrganogramaSECTI2023.jpg";
+import OrganogramaSecti2023 from "../../../assets/OrganogramaSECTI2023.jpg";
 
 export const Organograma = () => {
   const [imagemCarregada, setImagemCarregada] = useState(false);

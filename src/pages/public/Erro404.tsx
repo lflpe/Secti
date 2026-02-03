@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { PublicLayout } from '../../layouts/PublicLayout';
 
-export const NotFoundPage = () => {
+export const Erro404 = () => {
   return (
       <PublicLayout>
         <div className="flex items-center justify-center min-h-[calc(100vh-200px)] px-4 sm:px-6 lg:px-8">
