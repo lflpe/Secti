@@ -1,17 +1,34 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthProvider';
+import {AuthProvider} from "./contexts";
 import { PrivateRoute } from './guards/PrivateRoute';
 import { PublicRoute } from './guards/PublicRoute';
 
 // Public Pages
-import { HomePage } from './pages/public/HomePage';
-import { AboutPage } from './pages/public/AboutPage';
-import { LoginPage } from './pages/public/LoginPage';
-import { NotFoundPage } from './pages/public/NotFoundPage';
+import { Home } from './pages/public/Home.tsx';
+import { Login } from './pages/public/Login.tsx';
+import { Erro404 } from './pages/public/Erro404.tsx';
+import { TodasNoticias } from './pages/public/TodasNoticias.tsx';
+import { VisualizarNoticia } from './pages/public/VisualizarNoticia.tsx';
+import { Editais } from './pages/public/Editais.tsx';
+import { ASecretaria } from './pages/public/secti/ASecretaria.tsx';
+import { ASecretariaCargo } from './pages/public/secti/ASecretariaCargo.tsx';
+import { Historia } from './pages/public/secti/Historia.tsx';
+import { Documentos } from './pages/public/secti/Documentos.tsx';
+import { Organograma } from './pages/public/secti/Organograma.tsx';
+import { Certificacoes } from './pages/public/secti/Certificacoes.tsx';
+import { Servidor } from './pages/public/secti/Servidor.tsx';
+import { Parcerias } from './pages/public/secti/Parcerias.tsx';
 
 // Private Pages
 import { DashboardPage } from './pages/private/DashboardPage';
 import { SettingsPage } from './pages/private/SettingsPage';
+import {Legislacao} from "./pages/public/secti/Legislacao.tsx";
+import {ApresentacaoOuvidoria} from "./pages/public/ouvidoria/ApresentacaoOuvidoria.tsx";
+import {FaleComOuvidoria} from "./pages/public/ouvidoria/FaleComOuvidoria.tsx";
+import {ProcessosERelatorios} from "./pages/public/ouvidoria/ProcessosERelatorios.tsx";
+import {RedeOuvidorias} from "./pages/public/ouvidoria/RedeOuvidorias.tsx";
+import {PerguntasFrequentes} from "./pages/public/transparencia/PerguntasFrequentes.tsx";
+import {InformacoesInstitucionais} from "./pages/public/transparencia/InformacoesInstitucionais.tsx";
 
 function App() {
   return (
@@ -19,13 +36,30 @@ function App() {
       <Router>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/noticias" element={<TodasNoticias />} />
+          <Route path="/noticias/:slug" element={<VisualizarNoticia />} />
+          <Route path="/editais" element={<Editais />} />
+          <Route path="/secti/a-secretaria" element={<ASecretaria />} />
+          <Route path="/secti/a-secretaria-cargo" element={<ASecretariaCargo />} />
+          <Route path="/secti/historia" element={<Historia />} />
+          <Route path="/secti/documentos" element={<Documentos />} />
+          <Route path="/secti/organograma" element={<Organograma />} />
+          <Route path="/secti/certificacoes" element={<Certificacoes />} />
+          <Route path="/secti/servidor" element={<Servidor />} />
+          <Route path="/secti/legislacao" element={<Legislacao/>}/>
+          <Route path="/secti/parcerias" element={<Parcerias />} />
+          <Route path="/ouvidoria/apresentacao" element={<ApresentacaoOuvidoria/>}/>
+          <Route path="/ouvidoria/fale-com-ouvidoria" element={<FaleComOuvidoria/>}/>
+          <Route path="/ouvidoria/processos-e-relatorios" element={<ProcessosERelatorios/>}/>
+          <Route path="/ouvidoria/rede-ouvidorias" element={<RedeOuvidorias/>}/>
+          <Route path="/transparencia/perguntas-frequentes" element={<PerguntasFrequentes/>}/>
+          <Route path="/transparencia/informacoes-institucionais" element={<InformacoesInstitucionais/>}/>
           <Route
             path="/login"
             element={
               <PublicRoute>
-                <LoginPage />
+                <Login />
               </PublicRoute>
             }
           />
@@ -49,7 +83,7 @@ function App() {
           />
 
           {/* 404 Not Found */}
-          <Route path="*" element={<NotFoundPage />} />
+          <Route path="*" element={<Erro404 />} />
         </Routes>
       </Router>
     </AuthProvider>

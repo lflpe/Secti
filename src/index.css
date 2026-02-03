@@ -211,3 +211,31 @@ body {
 .alto-contraste .container { }
 
 /* Fim alto contraste */
+
+/* VLibras - Estilos personalizados */
+[vw] {
+  z-index: 9999 !important;
+}
+
+[vw-access-button] {
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  z-index: 9999 !important;
+}
+
+/* Garantir que o VLibras fique acima de todos os elementos */
+[vw-plugin-wrapper] {
+  z-index: 9998 !important;
+}
+
+/* Ajuste para telas pequenas */
+@media (max-width: 640px) {
+  [vw-access-button] {
+    bottom: 10px !important;
+    right: 10px !important;
+  }
+}
+
+/* Fim VLibras */
+
