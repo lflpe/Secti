@@ -8,6 +8,7 @@ import { Home } from './pages/public/Home.tsx';
 import { Login } from './pages/public/Login.tsx';
 import { Erro404 } from './pages/public/Erro404.tsx';
 import { TodasNoticias } from './pages/public/TodasNoticias.tsx';
+import { Editais } from './pages/public/Editais.tsx';
 import { ASecretaria } from './pages/public/secti/ASecretaria.tsx';
 import { ASecretariaCargo } from './pages/public/secti/ASecretariaCargo.tsx';
 import { Historia } from './pages/public/secti/Historia.tsx';
@@ -30,6 +31,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/noticias" element={<TodasNoticias />} />
+          <Route path="/editais" element={<Editais />} />
           <Route path="/secti/a-secretaria" element={<ASecretaria />} />
           <Route path="/secti/a-secretaria-cargo" element={<ASecretariaCargo />} />
           <Route path="/secti/historia" element={<Historia />} />
