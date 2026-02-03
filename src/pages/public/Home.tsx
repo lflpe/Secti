@@ -36,39 +36,43 @@ const slides: SlideItem[] = [
 // Dados de exemplo para notícias
 const noticiaDestaque: NoticiaItem = {
   id: 1,
+  slug: 'programa-inovacao-tecnologica',
   titulo: 'Pernambuco lança novo programa de inovação tecnológica',
   categoria: 'Inovação',
   autor: 'Redação SECTI',
   data: '15 de outubro de 2023',
   resumo: 'O governo de Pernambuco anuncia investimento de R$ 50 milhões em startups e projetos de tecnologia para impulsionar o ecossistema de inovação do estado.',
   imagem: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&h=600&fit=crop',
-  link: '#',
+  link: '/noticias/programa-inovacao-tecnologica',
 };
 
 const noticias: NoticiaItem[] = [
   {
     id: 2,
+    slug: 'exposicao-sustentabilidade',
     titulo: 'Espaço Ciência recebe nova exposição interativa',
     categoria: 'Educação',
     data: '12 de outubro de 2023',
     imagem: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&h=400&fit=crop',
-    link: '#',
+    link: '/noticias/exposicao-sustentabilidade',
   },
   {
     id: 3,
+    slug: 'incubadora-startups-2025',
     titulo: 'Parqtel abre inscrições para novos empreendimentos',
     categoria: 'Negócios',
     data: '10 de outubro de 2023',
     imagem: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=600&h=400&fit=crop',
-    link: '#',
+    link: '/noticias/incubadora-startups-2025',
   },
   {
     id: 4,
+    slug: 'hackathon-ciencia-dados',
     titulo: 'Hackathon de Ciência de Dados acontece em Recife',
     categoria: 'Eventos',
     data: '08 de outubro de 2023',
     imagem: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&h=400&fit=crop',
-    link: '#',
+    link: '/noticias/hackathon-ciencia-dados',
   },
 ];
 

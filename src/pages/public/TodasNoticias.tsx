@@ -7,6 +7,7 @@ import type { NoticiaItem } from '../../components/NoticiasList';
 const noticiasCompletas: NoticiaItem[] = [
   {
     id: 1,
+    slug: 'programa-inovacao-tecnologica',
     titulo: 'Pernambuco lança novo programa de inovação tecnológica',
     categoria: 'Inovação',
     autor: 'Redação SECTI',
@@ -17,6 +18,7 @@ const noticiasCompletas: NoticiaItem[] = [
   },
   {
     id: 2,
+    slug: 'exposicao-sustentabilidade',
     titulo: 'Espaço Ciência recebe nova exposição interativa sobre sustentabilidade',
     categoria: 'Educação',
     autor: 'Marina Santos',
@@ -27,6 +29,7 @@ const noticiasCompletas: NoticiaItem[] = [
   },
   {
     id: 3,
+    slug: 'incubadora-startups-2025',
     titulo: 'Parqtel abre inscrições para incubadora de startups 2025',
     categoria: 'Negócios',
     autor: 'Carlos Oliveira',
@@ -37,6 +40,7 @@ const noticiasCompletas: NoticiaItem[] = [
   },
   {
     id: 4,
+    slug: 'hackathon-ciencia-dados',
     titulo: 'Hackathon de Ciência de Dados acontece em Recife',
     categoria: 'Eventos',
     autor: 'Ana Paula Ferreira',
@@ -47,6 +51,7 @@ const noticiasCompletas: NoticiaItem[] = [
   },
   {
     id: 5,
+    slug: 'parceria-universidades-europeias',
     titulo: 'SECTI firma parceria com universidades europeias',
     categoria: 'Parcerias',
     autor: 'Roberto Silva',
@@ -57,6 +62,7 @@ const noticiasCompletas: NoticiaItem[] = [
   },
   {
     id: 6,
+    slug: 'certificacao-biotecnologia',
     titulo: 'Laboratório de Biotecnologia recebe certificação internacional',
     categoria: 'Pesquisa',
     autor: 'Dra. Fernanda Costa',
@@ -67,6 +73,7 @@ const noticiasCompletas: NoticiaItem[] = [
   },
   {
     id: 7,
+    slug: 'capacitacao-inteligencia-artificial',
     titulo: 'Programa de capacitação em IA treina 500 profissionais',
     categoria: 'Educação',
     autor: 'Prof. João Mendes',
@@ -77,6 +84,7 @@ const noticiasCompletas: NoticiaItem[] = [
   },
   {
     id: 8,
+    slug: 'festival-robotica',
     titulo: 'Festival de Robótica atrai milhares de jovens ao Recife',
     categoria: 'Eventos',
     autor: 'Luiza Almeida',
@@ -87,6 +95,7 @@ const noticiasCompletas: NoticiaItem[] = [
   },
   {
     id: 9,
+    slug: 'startup-agricultura-iot',
     titulo: 'Startup pernambucana desenvolve solução para agricultura',
     categoria: 'Inovação',
     autor: 'Marcos Pereira',
@@ -97,6 +106,7 @@ const noticiasCompletas: NoticiaItem[] = [
   },
   {
     id: 10,
+    slug: 'investimento-pesquisa-medica',
     titulo: 'SECTI investe R$ 20 milhões em pesquisa médica',
     categoria: 'Pesquisa',
     autor: 'Dra. Patrícia Lima',
@@ -107,6 +117,7 @@ const noticiasCompletas: NoticiaItem[] = [
   },
   {
     id: 11,
+    slug: 'semana-ciencia-tecnologia',
     titulo: 'Semana de Ciência e Tecnologia movimenta o estado',
     categoria: 'Eventos',
     autor: 'Equipe SECTI',
@@ -117,6 +128,7 @@ const noticiasCompletas: NoticiaItem[] = [
   },
   {
     id: 12,
+    slug: 'centro-energias-renovaveis',
     titulo: 'Novo centro de pesquisa em energias renováveis é inaugurado',
     categoria: 'Pesquisa',
     autor: 'Eng. Ricardo Nunes',

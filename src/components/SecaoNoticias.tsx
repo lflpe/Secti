@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 export type NoticiaItem = {
   id?: string | number;
+  slug: string;
   titulo: string;
   categoria?: string;
   autor?: string;

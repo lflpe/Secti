@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 
 export interface NoticiaItem {
   id: number;
+  slug: string;
   titulo: string;
   categoria: string;
   autor: string;
