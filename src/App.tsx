@@ -22,6 +22,8 @@ import { Parcerias } from './pages/public/secti/Parcerias.tsx';
 import { DashboardPage } from './pages/private/DashboardPage';
 import { SettingsPage } from './pages/private/SettingsPage';
 import {Legislacao} from "./pages/public/secti/Legislacao.tsx";
+import {ApresentacaoOuvidoria} from "./pages/public/ouvidoria/ApresentacaoOuvidoria.tsx";
+import {FaleComOuvidoria} from "./pages/public/ouvidoria/FaleComOuvidoria.tsx";
 
 function App() {
   return (
@@ -41,6 +43,8 @@ function App() {
           <Route path="/secti/servidor" element={<Servidor />} />
           <Route path="/secti/legislacao" element={<Legislacao/>}/>
           <Route path="/secti/parcerias" element={<Parcerias />} />
+          <Route path="/ouvidoria/apresentacao" element={<ApresentacaoOuvidoria/>}/>
+          <Route path="/ouvidoria/fale-com-ouvidoria" element={<FaleComOuvidoria/>}/>
           <Route
             path="/login"
             element={
