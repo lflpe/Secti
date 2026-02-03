@@ -12,6 +12,7 @@ import { ASecretaria } from './pages/public/ASecretaria';
 import { ASecretariaCargo } from './pages/public/ASecretariaCargo';
 import { Historia } from './pages/public/Historia';
 import { Documentos } from './pages/public/Documentos';
+import { Organograma } from './pages/public/Organograma';
 
 // Private Pages
 import { DashboardPage } from './pages/private/DashboardPage';
@@ -29,6 +30,7 @@ function App() {
           <Route path="/secti/a-secretaria-cargo" element={<ASecretariaCargo />} />
           <Route path="/secti/historia" element={<Historia />} />
           <Route path="/secti/documentos" element={<Documentos />} />
+          <Route path="/secti/organograma" element={<Organograma />} />
           <Route
             path="/login"
             element={
