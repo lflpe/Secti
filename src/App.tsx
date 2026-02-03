@@ -13,6 +13,7 @@ import { ASecretariaCargo } from './pages/public/ASecretariaCargo';
 import { Historia } from './pages/public/Historia';
 import { Documentos } from './pages/public/Documentos';
 import { Organograma } from './pages/public/Organograma';
+import { Certificacoes } from './pages/public/Certificacoes';
 
 // Private Pages
 import { DashboardPage } from './pages/private/DashboardPage';
@@ -31,6 +32,7 @@ function App() {
           <Route path="/secti/historia" element={<Historia />} />
           <Route path="/secti/documentos" element={<Documentos />} />
           <Route path="/secti/organograma" element={<Organograma />} />
+          <Route path="/secti/certificacoes" element={<Certificacoes />} />
           <Route
             path="/login"
             element={

@@ -14,7 +14,6 @@ interface PublicLayoutProps {
 }
 
 export const PublicLayout = ({ children }: PublicLayoutProps) => {
-  // font size as percentage (applied to the root element)
   const [fontPercent, setFontPercent] = useState<number>(100);
   const [altoContraste, setAltoContraste] = useState<boolean>(false);
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
@@ -24,7 +23,6 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
   const [transparenciaMobileOpen, setTransparenciaMobileOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    // Apply font size to the root (html) so Tailwind rem-based sizes scale
     try {
       document.documentElement.style.fontSize = `${fontPercent}%`;
     } catch {
@@ -41,7 +39,6 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
     }
   }, [altoContraste]);
 
-  // Lock body scroll while mobile menu is open and close on Escape
   useEffect(() => {
     const body = document.body;
     const originalOverflow = body.style.overflow;
@@ -348,9 +345,7 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
 
         <main>{children}</main>
 
-        {/* Footer com 3 rows conforme pedido */}
-        <footer className="mt-8">
-          {/* 1° row: fundo 195CE3, texto branco, 4 colunas, primeira coluna marca CTI verticalmente centralizada */}
+        <footer>
           <div className="bg-[#195CE3] text-white">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
               <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4 py-6">
@@ -369,7 +364,6 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
                     <div className="text-sm">Links úteis</div>
                   </div>
                 </div>
-                {/* 4ª coluna (ícones sociais) — usar text-size em vez de h/w */}
                 <div className="sm:col-span-1 flex mt-2 items-center justify-center md:justify-end">
                   <div className="flex items-center space-x-4">
                     <a href="https://www.instagram.com/secti.pernambuco/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-white hover:text-gray-200 transition duration-200 hover:scale-110">
@@ -413,7 +407,6 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
             </div>
           </div>
 
-          {/* 3° row: fundo B5C4FF, texto #161616 (assumi #161616), centralizado com desenvolvedor e marcas */}
           <div className="bg-white text-[#161616]">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 py-4">
