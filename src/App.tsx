@@ -15,6 +15,7 @@ import { Documentos } from './pages/public/Documentos';
 import { Organograma } from './pages/public/Organograma';
 import { Certificacoes } from './pages/public/Certificacoes';
 import { Servidor } from './pages/public/Servidor';
+import { Parcerias } from './pages/public/Parcerias';
 
 // Private Pages
 import { DashboardPage } from './pages/private/DashboardPage';
@@ -35,6 +36,7 @@ function App() {
           <Route path="/secti/organograma" element={<Organograma />} />
           <Route path="/secti/certificacoes" element={<Certificacoes />} />
           <Route path="/secti/servidor" element={<Servidor />} />
+          <Route path="/parcerias" element={<Parcerias />} />
           <Route
             path="/login"
             element={
