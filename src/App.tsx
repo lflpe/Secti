@@ -10,6 +10,7 @@ import { LoginPage } from './pages/public/LoginPage';
 import { NotFoundPage } from './pages/public/NotFoundPage';
 import { ASecretaria } from './pages/public/ASecretaria';
 import { ASecretariaCargo } from './pages/public/ASecretariaCargo';
+import { Historia } from './pages/public/Historia';
 
 // Private Pages
 import { DashboardPage } from './pages/private/DashboardPage';
@@ -25,6 +26,7 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/secti/a-secretaria" element={<ASecretaria />} />
           <Route path="/secti/a-secretaria-cargo" element={<ASecretariaCargo />} />
+          <Route path="/secti/historia" element={<Historia />} />
           <Route
             path="/login"
             element={
