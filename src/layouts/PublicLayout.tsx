@@ -8,10 +8,12 @@ import MarcaCTI from "../assets/MarcaCTI.png";
 import MarcaGov from "../assets/MarcaGov.png";
 import MarcaCTINegativa from "../assets/MarcaCTINegativa.png";
 import MarcaCTIPositiva from "../assets/MarcaCTIPositiva.png";
+import { fetchTransparenciaMenus, type TransparenciaMenuItem } from "../services/transparenciaService.ts";
 
 interface PublicLayoutProps {
   children: ReactNode;
 }
+
 
 export const PublicLayout = ({ children }: PublicLayoutProps) => {
   const location = useLocation();
@@ -24,6 +26,8 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
   const [sectiMobileOpen, setSectiMobileOpen] = useState<boolean>(false);
   const [transparenciaMobileOpen, setTransparenciaMobileOpen] = useState<boolean>(false);
   const [ouvidoriaMobileOpen, setOuvidoriaMobileOpen] = useState<boolean>(false);
+  const [transparenciaMenus, setTransparenciaMenus] = useState<TransparenciaMenuItem[]>([]);
+  const [loadingMenus, setLoadingMenus] = useState<boolean>(true);
 
   // Helper function to check if a path is active
   const isActiveLink = (path: string) => location.pathname === path;
@@ -53,6 +57,24 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
       void 0;
     }
   }, [fontPercent]);
+
+  // Buscar menus dinâmicos de transparência
+  useEffect(() => {
+    const loadTransparenciaMenus = async () => {
+      try {
+        setLoadingMenus(true);
+        const menus = await fetchTransparenciaMenus();
+        setTransparenciaMenus(menus);
+      } catch (error) {
+        console.error('Erro ao carregar menus de transparência:', error);
+        setTransparenciaMenus([]);
+      } finally {
+        setLoadingMenus(false);
+      }
+    };
+
+    loadTransparenciaMenus();
+  }, []);
 
   useEffect(() => {
     try {
@@ -169,24 +191,24 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
                     {transparenciaDropdownOpen && (
                       <div className="absolute left-0 mt-0 w-72 bg-white rounded-md shadow-lg z-50 border border-gray-200 max-h-96 overflow-y-auto">
                         <div className="py-1">
+                          {/* Menus Fixos */}
                           <Link to="/transparencia/informacoes-institucionais" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/informacoes-institucionais') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Informações Institucionais</Link>
                           <Link to="/transparencia/perguntas-frequentes" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/perguntas-frequentes') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Perguntas Frequentes</Link>
-                          <Link to="/transparencia/responsabilidade-fiscal" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/responsabilidade-fiscal') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Responsabilidade Fiscal</Link>
-                          <Link to="/transparencia/fiscalizacao-controle" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/fiscalizacao-controle') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Fiscalização e Controle</Link>
-                          <Link to="/transparencia/transferencias-acordos" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/transferencias-acordos') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Transferências Estaduais e Acordos</Link>
-                          <Link to="/transparencia/receitas-transparencias" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/receitas-transparencias') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Receitas Transparências da União Dívida Ativa e Renúncia de Receita</Link>
-                          <Link to="/transparencia/despesa" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/despesa') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Despesa</Link>
-                          <Link to="/transparencia/licitacoes-contratos" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/licitacoes-contratos') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Licitações Contratos e Fornecedores</Link>
-                          <Link to="/transparencia/obras-publicas" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/obras-publicas') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Obras Públicas</Link>
-                          <Link to="/transparencia/patrimonio-publico" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/patrimonio-publico') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Patrimônio Público</Link>
-                          <Link to="/transparencia/recursos-humanos" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/recursos-humanos') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Recursos Humanos</Link>
-                          <Link to="/transparencia/sic" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/sic') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>SIC</Link>
-                          <Link to="/transparencia/servidores" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/servidores') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Servidores</Link>
-                          <Link to="/transparencia/mapa-terceirizados" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/mapa-terceirizados') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Mapa Terceirizados</Link>
-                          <Link to="/transparencia/mapa-diarias-passagens" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/mapa-diarias-passagens') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Mapa de Diárias e Passagens</Link>
-                          <Link to="/transparencia/mapa-convenios" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/mapa-convenios') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Mapa de Convênios</Link>
-                          <Link to="/transparencia/mapa-contratos" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/mapa-contratos') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Mapa de Contratos</Link>
-                          <Link to="/transparencia/mapa-cargos-comissionados" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/transparencia/mapa-cargos-comissionados') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Mapa de Cargos Comissionados e Funções Gratificadas</Link>
+
+                          {/* Menus Dinâmicos */}
+                          {loadingMenus ? (
+                            <div className="px-4 py-2 text-sm text-gray-500">Carregando...</div>
+                          ) : (
+                            transparenciaMenus.map((menu) => (
+                              <Link 
+                                key={menu.id} 
+                                to={menu.url} 
+                                className={`block px-4 py-2 text-sm transition-colors ${isActiveLink(menu.url) ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}
+                              >
+                                {menu.titulo}
+                              </Link>
+                            ))
+                          )}
                         </div>
                       </div>
                     )}
@@ -371,24 +393,30 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
                   </button>
                   {transparenciaMobileOpen && (
                     <div className="ml-4 space-y-1 mt-1">
+                      {/* Menus Fixos */}
                       <Link to="/transparencia/informacoes-institucionais" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/informacoes-institucionais') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Informações Institucionais</Link>
                       <Link to="/transparencia/perguntas-frequentes" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/perguntas-frequentes') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Perguntas Frequentes</Link>
-                      <Link to="/transparencia/responsabilidade-fiscal" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/responsabilidade-fiscal') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Responsabilidade Fiscal</Link>
-                      <Link to="/transparencia/fiscalizacao-controle" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/fiscalizacao-controle') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Fiscalização e Controle</Link>
-                      <Link to="/transparencia/transferencias-acordos" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/transferencias-acordos') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Transferências Estaduais e Acordos</Link>
-                      <Link to="/transparencia/receitas-transparencias" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/receitas-transparencias') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Receitas Transparências da União Dívida Ativa e Renúncia de Receita</Link>
-                      <Link to="/transparencia/despesa" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/despesa') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Despesa</Link>
-                      <Link to="/transparencia/licitacoes-contratos" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/licitacoes-contratos') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Licitações Contratos e Fornecedores</Link>
-                      <Link to="/transparencia/obras-publicas" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/obras-publicas') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Obras Públicas</Link>
-                      <Link to="/transparencia/patrimonio-publico" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/patrimonio-publico') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Patrimônio Público</Link>
-                      <Link to="/transparencia/recursos-humanos" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/recursos-humanos') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Recursos Humanos</Link>
-                      <Link to="/transparencia/sic" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/sic') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>SIC</Link>
-                      <Link to="/transparencia/servidores" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/servidores') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Servidores</Link>
-                      <Link to="/transparencia/mapa-terceirizados" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/mapa-terceirizados') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Mapa Terceirizados</Link>
-                      <Link to="/transparencia/mapa-diarias-passagens" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/mapa-diarias-passagens') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Mapa de Diárias e Passagens</Link>
-                      <Link to="/transparencia/mapa-convenios" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/mapa-convenios') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Mapa de Convênios</Link>
-                      <Link to="/transparencia/mapa-contratos" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/mapa-contratos') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Mapa de Contratos</Link>
-                      <Link to="/transparencia/mapa-cargos-comissionados" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/transparencia/mapa-cargos-comissionados') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Mapa de Cargos Comissionados e Funções Gratificadas</Link>
+
+                      {/* Divisor */}
+                      {!loadingMenus && transparenciaMenus.length > 0 && (
+                        <div className="border-t border-gray-300 my-2"></div>
+                      )}
+
+                      {/* Menus Dinâmicos */}
+                      {loadingMenus ? (
+                        <div className="px-3 py-2 text-sm text-gray-500">Carregando...</div>
+                      ) : (
+                        transparenciaMenus.map((menu) => (
+                          <Link
+                            key={menu.id}
+                            to={menu.url}
+                            onClick={() => setMobileOpen(false)}
+                            className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink(menu.url) ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}
+                          >
+                            {menu.titulo}
+                          </Link>
+                        ))
+                      )}
                     </div>
                   )}
                 </div>
