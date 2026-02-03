@@ -235,9 +235,8 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
                         <div className="py-1">
                           <Link to="/ouvidoria/apresentacao" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/ouvidoria/apresentacao') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Apresentação da Ouvidoria</Link>
                           <Link to="/ouvidoria/fale-com-ouvidoria" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/ouvidoria/fale-com-ouvidoria') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Fale com a Ouvidoria - Ouve.pe</Link>
-                          <Link to="/ouvidoria/processo" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/ouvidoria/processo') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Processo</Link>
+                          <Link to="/ouvidoria/processos-e-relatorios" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/ouvidoria/processos-e-relatorios') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Processos e Relatórios</Link>
                           <Link to="/ouvidoria/rede-ouvidorias" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/ouvidoria/rede-ouvidorias') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Rede de Ouvidorias da Secti</Link>
-                          <Link to="/ouvidoria/relatorios" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/ouvidoria/relatorios') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Relatórios</Link>
                         </div>
                       </div>
                     )}
@@ -411,9 +410,8 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
                     <div className="ml-4 space-y-1 mt-1">
                       <Link to="/ouvidoria/apresentacao" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/ouvidoria/apresentacao') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Apresentação da Ouvidoria</Link>
                       <Link to="/ouvidoria/fale-com-ouvidoria" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/ouvidoria/fale-com-ouvidoria') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Fale com a Ouvidoria - Ouve.pe</Link>
-                      <Link to="/ouvidoria/processo" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/ouvidoria/processo') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Processo</Link>
+                      <Link to="/ouvidoria/processos-e-relatorios" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/ouvidoria/processos-e-relatorios') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Processos e Relatórios</Link>
                       <Link to="/ouvidoria/rede-ouvidorias" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/ouvidoria/rede-ouvidorias') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Rede de Ouvidorias da Secti</Link>
-                      <Link to="/ouvidoria/relatorios" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/ouvidoria/relatorios') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Relatórios</Link>
                     </div>
                   )}
                 </div>

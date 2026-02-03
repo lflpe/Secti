@@ -24,6 +24,8 @@ import { SettingsPage } from './pages/private/SettingsPage';
 import {Legislacao} from "./pages/public/secti/Legislacao.tsx";
 import {ApresentacaoOuvidoria} from "./pages/public/ouvidoria/ApresentacaoOuvidoria.tsx";
 import {FaleComOuvidoria} from "./pages/public/ouvidoria/FaleComOuvidoria.tsx";
+import {ProcessosERelatorios} from "./pages/public/ouvidoria/ProcessosERelatorios.tsx";
+import {RedeOuvidorias} from "./pages/public/ouvidoria/RedeOuvidorias.tsx";
 
 function App() {
   return (
@@ -45,6 +47,8 @@ function App() {
           <Route path="/secti/parcerias" element={<Parcerias />} />
           <Route path="/ouvidoria/apresentacao" element={<ApresentacaoOuvidoria/>}/>
           <Route path="/ouvidoria/fale-com-ouvidoria" element={<FaleComOuvidoria/>}/>
+          <Route path="/ouvidoria/processos-e-relatorios" element={<ProcessosERelatorios/>}/>
+          <Route path="/ouvidoria/rede-ouvidorias" element={<RedeOuvidorias/>}/>
           <Route
             path="/login"
             element={
