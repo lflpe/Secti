@@ -28,6 +28,7 @@ import {FaleComOuvidoria} from "./pages/public/ouvidoria/FaleComOuvidoria.tsx";
 import {ProcessosERelatorios} from "./pages/public/ouvidoria/ProcessosERelatorios.tsx";
 import {RedeOuvidorias} from "./pages/public/ouvidoria/RedeOuvidorias.tsx";
 import {PerguntasFrequentes} from "./pages/public/transparencia/PerguntasFrequentes.tsx";
+import {InformacoesInstitucionais} from "./pages/public/transparencia/InformacoesInstitucionais.tsx";
 
 function App() {
   return (
@@ -53,6 +54,7 @@ function App() {
           <Route path="/ouvidoria/processos-e-relatorios" element={<ProcessosERelatorios/>}/>
           <Route path="/ouvidoria/rede-ouvidorias" element={<RedeOuvidorias/>}/>
           <Route path="/transparencia/perguntas-frequentes" element={<PerguntasFrequentes/>}/>
+          <Route path="/transparencia/informacoes-institucionais" element={<InformacoesInstitucionais/>}/>
           <Route
             path="/login"
             element={

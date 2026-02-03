@@ -29,7 +29,7 @@ export const Accordion = ({ items }: AccordionProps) => {
           {/* Header/Question */}
           <button
             onClick={() => toggleAccordion(index)}
-            className="w-full px-6 py-4 flex items-center justify-between text-left bg-white hover:bg-gray-50 transition-colors duration-200"
+            className="w-full cursor-pointer px-6 py-4 flex items-center justify-between text-left bg-white hover:bg-gray-50 transition-colors duration-200"
             aria-expanded={activeIndex === index}
           >
             <span className="font-semibold text-[#0C2856] pr-4 text-base md:text-lg">
@@ -43,8 +43,8 @@ export const Accordion = ({ items }: AccordionProps) => {
 
           {/* Content/Answer */}
           <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              activeIndex === index ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+            className={`transition-all duration-300 ease-in-out ${
+              activeIndex === index ? 'opacity-100' : 'max-h-0 opacity-0'
             }`}
           >
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
