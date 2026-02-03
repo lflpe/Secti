@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInstagram, faLinkedin, faYoutube, faXTwitter } from '@fortawesome/free-brands-svg-icons';
@@ -14,6 +14,7 @@ interface PublicLayoutProps {
 }
 
 export const PublicLayout = ({ children }: PublicLayoutProps) => {
+  const location = useLocation();
   const [fontPercent, setFontPercent] = useState<number>(100);
   const [altoContraste, setAltoContraste] = useState<boolean>(false);
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
@@ -21,6 +22,18 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
   const [transparenciaDropdownOpen, setTransparenciaDropdownOpen] = useState<boolean>(false);
   const [sectiMobileOpen, setSectiMobileOpen] = useState<boolean>(false);
   const [transparenciaMobileOpen, setTransparenciaMobileOpen] = useState<boolean>(false);
+
+  // Helper function to check if a path is active
+  const isActiveLink = (path: string) => location.pathname === path;
+
+  // Helper function to check if any path in a group is active
+  const isActiveGroup = (paths: string[]) => paths.some(path => location.pathname.startsWith(path));
+
+  // Check if SECTI section is active
+  const isSectiActive = isActiveGroup(['/secti/']);
+
+  // Check if Transparencia section is active
+  const isTransparenciaActive = isActiveGroup(['/transparencia/']);
 
   useEffect(() => {
     try {
@@ -99,7 +112,11 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
                     onMouseEnter={() => setSectiDropdownOpen(true)}
                     onMouseLeave={() => setSectiDropdownOpen(false)}
                   >
-                    <button className="text-gray-700 hover:text-blue-600 px-2 py-2 rounded-md text-xs xl:text-sm font-medium flex items-center whitespace-nowrap">
+                    <button className={`px-2 py-2 rounded-md text-xs xl:text-sm font-medium flex items-center whitespace-nowrap transition-colors ${
+                      isSectiActive 
+                        ? 'text-blue-600 bg-blue-50' 
+                        : 'text-gray-700 hover:text-blue-600'
+                    }`}>
                       SECTI
                       <svg className="ml-1 h-3 w-3 xl:h-4 xl:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -108,15 +125,15 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
                     {sectiDropdownOpen && (
                       <div className="absolute left-0 mt-0 w-56 bg-white rounded-md shadow-lg z-50 border border-gray-200">
                         <div className="py-1">
-                          <Link to="/secti/a-secretaria" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">A Secretaria</Link>
-                          <Link to="/secti/a-secretaria-cargo" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">A Secretária</Link>
-                          <Link to="/secti/historia" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">História</Link>
-                          <Link to="/secti/documentos" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Documentos</Link>
-                          <Link to="/secti/organograma" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Organograma</Link>
-                          <Link to="/secti/certificacoes" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Certificações</Link>
-                          <Link to="/secti/servidor" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Servidor</Link>
-                          <Link to="/parcerias" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Parcerias</Link>
-                          <Link to="/legislacao" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Legislação</Link>
+                          <Link to="/secti/a-secretaria" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/secti/a-secretaria') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>A Secretaria</Link>
+                          <Link to="/secti/a-secretaria-cargo" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/secti/a-secretaria-cargo') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>A Secretária</Link>
+                          <Link to="/secti/historia" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/secti/historia') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>História</Link>
+                          <Link to="/secti/documentos" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/secti/documentos') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Documentos</Link>
+                          <Link to="/secti/organograma" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/secti/organograma') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Organograma</Link>
+                          <Link to="/secti/certificacoes" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/secti/certificacoes') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Certificações</Link>
+                          <Link to="/secti/servidor" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/secti/servidor') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Servidor</Link>
+                          <Link to="/secti/parcerias" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/secti/parcerias') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Parcerias</Link>
+                          <Link to="/secti/legislacao" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/secti/legislacao') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Legislação</Link>
                         </div>
                       </div>
                     )}
@@ -128,7 +145,11 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
                     onMouseEnter={() => setTransparenciaDropdownOpen(true)}
                     onMouseLeave={() => setTransparenciaDropdownOpen(false)}
                   >
-                    <button className="text-gray-700 hover:text-blue-600 px-2 py-2 rounded-md text-xs xl:text-sm font-medium flex items-center whitespace-nowrap">
+                    <button className={`px-2 py-2 rounded-md text-xs xl:text-sm font-medium flex items-center whitespace-nowrap transition-colors ${
+                      isTransparenciaActive 
+                        ? 'text-blue-600 bg-blue-50' 
+                        : 'text-gray-700 hover:text-blue-600'
+                    }`}>
                       Transparência
                       <svg className="ml-1 h-3 w-3 xl:h-4 xl:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -162,21 +183,33 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
 
                   <Link
                     to="/noticias"
-                    className="text-gray-700 hover:text-blue-600 px-2 py-2 rounded-md text-xs xl:text-sm font-medium whitespace-nowrap"
+                    className={`px-2 py-2 rounded-md text-xs xl:text-sm font-medium whitespace-nowrap transition-colors ${
+                      isActiveLink('/noticias') 
+                        ? 'text-blue-600 bg-blue-50' 
+                        : 'text-gray-700 hover:text-blue-600'
+                    }`}
                   >
                     Notícias
                   </Link>
 
                   <Link
                     to="/editais"
-                    className="text-gray-700 hover:text-blue-600 px-2 py-2 rounded-md text-xs xl:text-sm font-medium whitespace-nowrap"
+                    className={`px-2 py-2 rounded-md text-xs xl:text-sm font-medium whitespace-nowrap transition-colors ${
+                      isActiveLink('/editais') 
+                        ? 'text-blue-600 bg-blue-50' 
+                        : 'text-gray-700 hover:text-blue-600'
+                    }`}
                   >
                     Editais
                   </Link>
 
                   <Link
                     to="/ouvidoria"
-                    className="text-gray-700 hover:text-blue-600 px-2 py-2 rounded-md text-xs xl:text-sm font-medium whitespace-nowrap"
+                    className={`px-2 py-2 rounded-md text-xs xl:text-sm font-medium whitespace-nowrap transition-colors ${
+                      isActiveLink('/ouvidoria') 
+                        ? 'text-blue-600 bg-blue-50' 
+                        : 'text-gray-700 hover:text-blue-600'
+                    }`}
                   >
                     Ouvidoria
                   </Link>
@@ -271,7 +304,9 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
                 <div>
                   <button
                     onClick={() => setSectiMobileOpen(!sectiMobileOpen)}
-                    className="w-full text-left text-gray-700 px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 flex items-center justify-between"
+                    className={`w-full text-left px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 flex items-center justify-between transition-colors ${
+                      isSectiActive ? 'text-blue-600 bg-blue-50' : 'text-gray-700'
+                    }`}
                   >
                     SECTI
                     <svg className={`h-4 w-4 transition-transform ${sectiMobileOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -280,15 +315,15 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
                   </button>
                   {sectiMobileOpen && (
                     <div className="ml-4 space-y-1 mt-1">
-                      <Link to="/secti/a-secretaria" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">A Secretaria</Link>
-                      <Link to="/secti/a-secretaria-cargo" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">A Secretária</Link>
-                      <Link to="/secti/historia" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">História</Link>
-                      <Link to="/secti/documentos" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Documentos</Link>
-                      <Link to="/secti/organograma" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Organograma</Link>
-                      <Link to="/secti/certificacoes" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Certificações</Link>
-                      <Link to="/secti/servidor" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Servidor</Link>
-                      <Link to="/parcerias" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Parcerias</Link>
-                      <Link to="/legislacao" onClick={() => setMobileOpen(false)} className="block text-gray-600 px-3 py-2 rounded-md text-sm hover:bg-gray-100">Legislação</Link>
+                      <Link to="/secti/a-secretaria" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/secti/a-secretaria') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>A Secretaria</Link>
+                      <Link to="/secti/a-secretaria-cargo" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/secti/a-secretaria-cargo') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>A Secretária</Link>
+                      <Link to="/secti/historia" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/secti/historia') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>História</Link>
+                      <Link to="/secti/documentos" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/secti/documentos') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Documentos</Link>
+                      <Link to="/secti/organograma" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/secti/organograma') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Organograma</Link>
+                      <Link to="/secti/certificacoes" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/secti/certificacoes') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Certificações</Link>
+                      <Link to="/secti/servidor" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/secti/servidor') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Servidor</Link>
+                      <Link to="/secti/parcerias" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/secti/parcerias') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Parcerias</Link>
+                      <Link to="/secti/legislacao" onClick={() => setMobileOpen(false)} className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink('/secti/legislacao') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>Legislação</Link>
                     </div>
                   )}
                 </div>
