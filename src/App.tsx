@@ -32,6 +32,8 @@ import { ListarEdital } from './pages/private/editais/ListarEdital.tsx';
 import { CriarEdital } from './pages/private/editais/CriarEdital.tsx';
 import { ListarAvisosDeIntencao } from './pages/private/avisosdeintencao/ListarAvisosDeIntencao.tsx';
 import { CriarAvisosDeIntencao } from './pages/private/avisosdeintencao/CriarAvisosDeIntencao.tsx';
+import { ListarDocumentos } from './pages/private/documentos/ListarDocumentos.tsx';
+import { CriarDocumentos } from './pages/private/documentos/CriarDocumentos.tsx';
 import {Legislacao} from "./pages/public/secti/Legislacao.tsx";
 import {ApresentacaoOuvidoria} from "./pages/public/ouvidoria/ApresentacaoOuvidoria.tsx";
 import {FaleComOuvidoria} from "./pages/public/ouvidoria/FaleComOuvidoria.tsx";
@@ -174,6 +176,24 @@ function App() {
             element={
               <PrivateRoute>
                 <CriarAvisosDeIntencao />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Documentos - Admin */}
+          <Route
+            path="/admin/documentos"
+            element={
+              <PrivateRoute>
+                <ListarDocumentos />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/documentos/criar"
+            element={
+              <PrivateRoute>
+                <CriarDocumentos />
               </PrivateRoute>
             }
           />
