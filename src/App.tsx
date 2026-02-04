@@ -20,6 +20,7 @@ import { Organograma } from './pages/public/secti/Organograma.tsx';
 import { Certificacoes } from './pages/public/secti/Certificacoes.tsx';
 import { Servidor } from './pages/public/secti/Servidor.tsx';
 import { Parcerias } from './pages/public/secti/Parcerias.tsx';
+import { Legislacao } from './pages/public/secti/Legislacao.tsx';
 
 // Private Pages
 import { DashboardPage } from './pages/private/DashboardPage';
@@ -34,7 +35,18 @@ import { ListarAvisosDeIntencao } from './pages/private/avisosdeintencao/ListarA
 import { CriarAvisosDeIntencao } from './pages/private/avisosdeintencao/CriarAvisosDeIntencao.tsx';
 import { ListarDocumentos } from './pages/private/documentos/ListarDocumentos.tsx';
 import { CriarDocumentos } from './pages/private/documentos/CriarDocumentos.tsx';
-import {Legislacao} from "./pages/public/secti/Legislacao.tsx";
+import { ListarDocumentosServidor } from './pages/private/documentosservidor/ListarDocumentosServidor.tsx';
+import { CriarDocumentosServidor } from './pages/private/documentosservidor/CriarDocumentosServidor.tsx';
+import { ListarLegislacao } from './pages/private/legislacao/ListarLegislacao.tsx';
+import { CriarLegislacao } from './pages/private/legislacao/CriarLegislacao.tsx';
+import { ListarParcerias } from './pages/private/parcerias/ListarParcerias.tsx';
+import { CriarParcerias } from './pages/private/parcerias/CriarParcerias.tsx';
+import { ListarTransparencia } from './pages/private/transparencia/ListarTransparencia.tsx';
+import { CriarTransparencia } from './pages/private/transparencia/CriarTransparencia.tsx';
+import { ListarProcessos } from './pages/private/processos/ListarProcessos.tsx';
+import { CriarProcessos } from './pages/private/processos/CriarProcessos.tsx';
+import { ListarRelatorios } from './pages/private/relatorios/ListarRelatorios.tsx';
+import { CriarRelatorios } from './pages/private/relatorios/CriarRelatorios.tsx';
 import {ApresentacaoOuvidoria} from "./pages/public/ouvidoria/ApresentacaoOuvidoria.tsx";
 import {FaleComOuvidoria} from "./pages/public/ouvidoria/FaleComOuvidoria.tsx";
 import {ProcessosERelatorios} from "./pages/public/ouvidoria/ProcessosERelatorios.tsx";
@@ -194,6 +206,112 @@ function App() {
             element={
               <PrivateRoute>
                 <CriarDocumentos />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/documentos-servidor"
+            element={
+              <PrivateRoute>
+                <ListarDocumentosServidor />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/documentos-servidor/criar"
+            element={
+              <PrivateRoute>
+                <CriarDocumentosServidor />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Legislacao - Admin */}
+          <Route
+            path="/admin/legislacao"
+            element={
+              <PrivateRoute>
+                <ListarLegislacao />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/legislacao/criar"
+            element={
+              <PrivateRoute>
+                <CriarLegislacao />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Parcerias - Admin */}
+          <Route
+            path="/admin/parcerias"
+            element={
+              <PrivateRoute>
+                <ListarParcerias />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/parcerias/criar"
+            element={
+              <PrivateRoute>
+                <CriarParcerias />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Transparencia - Admin */}
+          <Route
+            path="/admin/transparencia"
+            element={
+              <PrivateRoute>
+                <ListarTransparencia />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/transparencia/criar"
+            element={
+              <PrivateRoute>
+                <CriarTransparencia />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Processos - Admin */}
+          <Route
+            path="/admin/processos"
+            element={
+              <PrivateRoute>
+                <ListarProcessos />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/processos/criar"
+            element={
+              <PrivateRoute>
+                <CriarProcessos />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Relatórios - Admin */}
+          <Route
+            path="/admin/relatorios"
+            element={
+              <PrivateRoute>
+                <ListarRelatorios />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/relatorios/criar"
+            element={
+              <PrivateRoute>
+                <CriarRelatorios />
               </PrivateRoute>
             }
           />
