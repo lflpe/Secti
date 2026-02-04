@@ -24,10 +24,14 @@ import { Parcerias } from './pages/public/secti/Parcerias.tsx';
 // Private Pages
 import { DashboardPage } from './pages/private/DashboardPage';
 import { SettingsPage } from './pages/private/SettingsPage';
-import { ListaNoticias } from './pages/private/noticias/ListaNoticias.tsx';
+ import { ListaNoticias } from './pages/private/noticias/ListaNoticias.tsx';
 import { CriarNoticia } from './pages/private/noticias/CriarNoticia.tsx';
 import { EditarNoticia } from './pages/private/noticias/EditarNoticia.tsx';
 import { VisualizarNoticiaAdmin } from './pages/private/noticias/VisualizarNoticia.tsx';
+import { ListarEdital } from './pages/private/editais/ListarEdital.tsx';
+import { CriarEdital } from './pages/private/editais/CriarEdital.tsx';
+import { ListarAvisosDeIntencao } from './pages/private/avisosdeintencao/ListarAvisosDeIntencao.tsx';
+import { CriarAvisosDeIntencao } from './pages/private/avisosdeintencao/CriarAvisosDeIntencao.tsx';
 import {Legislacao} from "./pages/public/secti/Legislacao.tsx";
 import {ApresentacaoOuvidoria} from "./pages/public/ouvidoria/ApresentacaoOuvidoria.tsx";
 import {FaleComOuvidoria} from "./pages/public/ouvidoria/FaleComOuvidoria.tsx";
@@ -134,6 +138,42 @@ function App() {
             element={
               <PrivateRoute>
                 <VisualizarNoticiaAdmin />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Editais - Admin */}
+          <Route
+            path="/admin/editais"
+            element={
+              <PrivateRoute>
+                <ListarEdital />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/editais/criar"
+            element={
+              <PrivateRoute>
+                <CriarEdital />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Avisos de Intenção - Admin */}
+          <Route
+            path="/admin/avisosdeintencao"
+            element={
+              <PrivateRoute>
+                <ListarAvisosDeIntencao />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/avisosdeintencao/criar"
+            element={
+              <PrivateRoute>
+                <CriarAvisosDeIntencao />
               </PrivateRoute>
             }
           />
