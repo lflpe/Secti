@@ -6,6 +6,8 @@ import { PublicRoute } from './guards/PublicRoute';
 // Public Pages
 import { Home } from './pages/public/Home.tsx';
 import { Login } from './pages/public/Login.tsx';
+import { RecuperarSenha } from './pages/public/RecuperarSenha.tsx';
+import { ResetarSenha } from './pages/public/ResetarSenha.tsx';
 import { Erro404 } from './pages/public/Erro404.tsx';
 import { TodasNoticias } from './pages/public/TodasNoticias.tsx';
 import { VisualizarNoticia } from './pages/public/VisualizarNoticia.tsx';
@@ -60,6 +62,22 @@ function App() {
             element={
               <PublicRoute>
                 <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/recuperar-senha"
+            element={
+              <PublicRoute>
+                <RecuperarSenha />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/resetar-senha"
+            element={
+              <PublicRoute>
+                <ResetarSenha />
               </PublicRoute>
             }
           />

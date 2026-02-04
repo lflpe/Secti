@@ -1,7 +1,24 @@
 export interface User {
   id: string;
-  name: string;
+  nome: string;
   email: string;
+}
+
+export interface Perfil {
+  id: number;
+  nome: string;
+}
+
+export interface Menu {
+  id: number;
+  nome: string;
+  descricao: string;
+  rota: string;
+  icone: string;
+  ordem: number;
+  menuPaiId: number;
+  menuPaiNome: string;
+  subMenus: string[];
 }
 
 export interface LoginCredentials {
@@ -10,8 +27,18 @@ export interface LoginCredentials {
 }
 
 export interface AuthResponse {
-  user: User;
   token: string;
+  expiraEm: string;
+  usuario: User;
+  permissoes: string[];
+  perfis: Perfil[];
+  menus: Menu[];
+}
+
+export interface ApiErrorResponse {
+  message: string;
+  errors?: Record<string, string[]>;
+  statusCode?: number;
 }
 
 export interface AuthContextType {
@@ -19,5 +46,5 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }

@@ -14,37 +14,37 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   useEffect(() => {
     // Check for existing authentication on mount
-    const initAuth = () => {
-      const token = authService.getToken();
-      const savedUser = authService.getUser();
+    const initAuth = async () => {
+      try {
+        // Try to get user from localStorage
+        const savedUser = authService.getUser();
 
-      if (token && savedUser && authService.isTokenValid(token)) {
-        setUser(savedUser);
-      } else {
-        authService.logout();
+        if (savedUser) {
+          setUser(savedUser);
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     };
 
     initAuth();
   }, []);
 
   const login = async (credentials: LoginCredentials) => {
-    setIsLoading(true);
-    try {
-      const response = await authService.login(credentials);
-      authService.saveToken(response.token);
-      authService.saveUser(response.user);
-      setUser(response.user);
-    } finally {
-      setIsLoading(false);
-    }
+    const response = await authService.login(credentials);
+    setUser(response.usuario);
   };
 
-  const logout = () => {
-    authService.logout();
-    setUser(null);
+  const logout = async () => {
+    try {
+      await authService.logout();
+      setUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const value = {

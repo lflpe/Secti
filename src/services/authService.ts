@@ -1,60 +1,80 @@
 import type { LoginCredentials, AuthResponse, User } from '../types/auth';
+import { apiClient } from '../lib/apiClient';
+import { API_ENDPOINTS } from '../config/api';
+import { handleApiError } from '../utils/errorHandler';
 
-const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'auth_user';
 
-// Simulated API call - Replace with actual API integration
+// Auth service using HttpOnly cookies for token storage
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Mock validation - Replace with actual API call
-    // NOTE: In demo mode, any email/password combination will work
-    // In production, replace this entire function with actual API authentication
-    if (credentials.email && credentials.password) {
-      // Simulated response - In production, this comes from your backend
-      const mockUser: User = {
-        id: '1',
-        name: 'Admin User',
-        email: credentials.email,
-      };
-
-      // Mock JWT token - In production, this comes from your backend
-      // Using encodeURIComponent to safely handle special characters
-      const payload = encodeURIComponent(
-        JSON.stringify({ userId: mockUser.id, email: mockUser.email })
+    try {
+      // Make API call to login endpoint
+      const response = await apiClient.post<AuthResponse>(
+        API_ENDPOINTS.auth.login,
+        {
+          email: credentials.email,
+          senha: credentials.password, // API expects 'senha' instead of 'password'
+        }
       );
-      const mockToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${payload}.mock_signature`;
 
-      return {
-        user: mockUser,
-        token: mockToken,
-      };
+      const authData = response.data;
+      const user = authData.usuario;
+
+      // Save user data to localStorage
+      this.saveUser(user);
+
+      return authData;
+    } catch (error) {
+      console.error('Login error:', error);
+      const errorMessage = handleApiError(error);
+      throw new Error(errorMessage);
     }
-
-    throw new Error('Invalid credentials');
   },
 
-  logout(): void {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+  async logout(): Promise<void> {
+    try {
+      // Call logout endpoint to clear HttpOnly cookie
+      await apiClient.post(API_ENDPOINTS.auth.logout);
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear user data from localStorage
+      localStorage.removeItem(USER_KEY);
+    }
   },
 
-  saveToken(token: string): void {
-    // NOTE: localStorage is used for demo purposes
-    // SECURITY: For production, consider using httpOnly cookies to prevent XSS attacks
-    // or implement additional security measures like token encryption
-    localStorage.setItem(TOKEN_KEY, token);
+  async recuperarSenha(email: string): Promise<void> {
+    try {
+      await apiClient.post(API_ENDPOINTS.auth.recuperarSenha, { email });
+    } catch (error) {
+      console.error('Recuperar senha error:', error);
+      const errorMessage = handleApiError(error);
+      throw new Error(errorMessage);
+    }
   },
 
-  getToken(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
+  async resetarSenha(data: {
+    email: string;
+    token: string;
+    novaSenha: string;
+    confirmarSenha: string;
+  }): Promise<void> {
+    try {
+      await apiClient.post(API_ENDPOINTS.auth.resetarSenha, data);
+    } catch (error) {
+      console.error('Resetar senha error:', error);
+      const errorMessage = handleApiError(error);
+      throw new Error(errorMessage);
+    }
+  },
+
+  async getCurrentUser(): Promise<User | null> {
+    // Since there's no /me endpoint in the API, just get from localStorage
+    return this.getUser();
   },
 
   saveUser(user: User): void {
-    // NOTE: localStorage is used for demo purposes
-    // SECURITY: For production, consider using httpOnly cookies
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   },
 
@@ -66,28 +86,6 @@ export const authService = {
       return JSON.parse(userStr);
     } catch {
       return null;
-    }
-  },
-
-  isTokenValid(token: string): boolean {
-    // Simple validation for demo purposes
-    // SECURITY: In production, verify token signature and check expiration
-    // using a library like jsonwebtoken or jose
-    if (!token) return false;
-
-    try {
-      // Basic JWT structure check (header.payload.signature)
-      const parts = token.split('.');
-      if (parts.length !== 3) return false;
-
-      // TODO: In production, add:
-      // 1. Signature verification
-      // 2. Expiration time check (exp claim)
-      // 3. Issuer validation (iss claim)
-      // 4. Audience validation (aud claim)
-      return true;
-    } catch {
-      return false;
     }
   },
 };
