@@ -24,6 +24,10 @@ import { Parcerias } from './pages/public/secti/Parcerias.tsx';
 // Private Pages
 import { DashboardPage } from './pages/private/DashboardPage';
 import { SettingsPage } from './pages/private/SettingsPage';
+import { ListaNoticias } from './pages/private/noticias/ListaNoticias.tsx';
+import { CriarNoticia } from './pages/private/noticias/CriarNoticia.tsx';
+import { EditarNoticia } from './pages/private/noticias/EditarNoticia.tsx';
+import { VisualizarNoticiaAdmin } from './pages/private/noticias/VisualizarNoticia.tsx';
 import {Legislacao} from "./pages/public/secti/Legislacao.tsx";
 import {ApresentacaoOuvidoria} from "./pages/public/ouvidoria/ApresentacaoOuvidoria.tsx";
 import {FaleComOuvidoria} from "./pages/public/ouvidoria/FaleComOuvidoria.tsx";
@@ -96,6 +100,40 @@ function App() {
             element={
               <PrivateRoute>
                 <SettingsPage />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Notícias - Admin */}
+          <Route
+            path="/admin/noticias"
+            element={
+              <PrivateRoute>
+                <ListaNoticias />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/noticias/criar"
+            element={
+              <PrivateRoute>
+                <CriarNoticia />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/noticias/editar/:slug"
+            element={
+              <PrivateRoute>
+                <EditarNoticia />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/noticias/visualizar/:slug"
+            element={
+              <PrivateRoute>
+                <VisualizarNoticiaAdmin />
               </PrivateRoute>
             }
           />
