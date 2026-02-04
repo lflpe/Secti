@@ -4,8 +4,7 @@ import { API_ENDPOINTS } from '../config/api';
 import { handleApiError } from '../utils/errorHandler';
 
 const USER_KEY = 'auth_user';
-
-// Auth service using HttpOnly cookies for token storage
+// Serviço de autenticação utilizando cookies HttpOnly para armazenamento de token
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
@@ -21,7 +20,7 @@ export const authService = {
       const authData = response.data;
       const user = authData.usuario;
 
-      // Save user data to localStorage
+      // Salva os dados do usuário no localStorage
       this.saveUser(user);
 
       return authData;
@@ -34,12 +33,12 @@ export const authService = {
 
   async logout(): Promise<void> {
     try {
-      // Call logout endpoint to clear HttpOnly cookie
+      // Chama o logout e remove o Cookie HTTPSonly
       await apiClient.post(API_ENDPOINTS.auth.logout);
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear user data from localStorage
+      // Limpa o userData from localStorage
       localStorage.removeItem(USER_KEY);
     }
   },
@@ -67,11 +66,6 @@ export const authService = {
       const errorMessage = handleApiError(error);
       throw new Error(errorMessage);
     }
-  },
-
-  async getCurrentUser(): Promise<User | null> {
-    // Since there's no /me endpoint in the API, just get from localStorage
-    return this.getUser();
   },
 
   saveUser(user: User): void {
