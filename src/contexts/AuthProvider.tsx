@@ -21,6 +21,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
         if (savedUser) {
           setUser(savedUser);
+        } else {
+          setUser(null);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);

@@ -11,16 +11,21 @@ export const apiClient = axios.create({
   },
 });
 
-// Request interceptor
-apiClient.interceptors.request.use(
-  (config) => {
-    // You can add additional headers here if needed
-    // For HttpOnly cookies, the cookie is automatically sent by the browser
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
+// Response interceptor
+apiClient.interceptors.response.use(
+    (response) => {
+      return response;
+    },
+    async (error) => {
+      // Se backend retorna 401, o HttpOnly cookie expirou ou é inválido
+      // Limpar dados do usuário e deixar navegador gerenciar cookie
+      if (error.response?.status === 401) {
+        localStorage.removeItem('auth_user');
+        // Navegador remove o HttpOnly cookie automaticamente se expirado
+      }
+
+      return Promise.reject(error);
+    }
 );
 
 // Response interceptor
@@ -29,18 +34,13 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error) => {
-    // Handle 401 Unauthorized errors - redirect to login
+    // Handle 401 Unauthorized errors
+    // Significa que o HttpOnly cookie expirou ou é inválido
     if (error.response?.status === 401) {
-      // Clear any stored user data
+      // Limpar dados do usuário do localStorage
       localStorage.removeItem('auth_user');
-
-      // Only redirect if not already on login page
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
-      }
     }
 
     return Promise.reject(error);
   }
 );
-

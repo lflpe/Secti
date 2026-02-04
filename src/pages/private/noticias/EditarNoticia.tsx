@@ -13,6 +13,7 @@ interface NoticiaFormData {
   imagemDestaque: string;
   imagemArquivo: File | null;
   status: 'Publicada' | 'Rascunho' | 'Arquivada';
+  destaque: boolean;
 }
 
 export const EditarNoticia = () => {
@@ -41,6 +42,7 @@ export const EditarNoticia = () => {
           imagemDestaque: 'https://via.placeholder.com/800x400?text=Programa+de+Inovação',
           imagemArquivo: null as File | null,
           status: 'Publicada' as 'Publicada' | 'Rascunho' | 'Arquivada',
+          destaque: true,
         };
 
         setInitialData(noticiaMock);

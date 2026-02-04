@@ -11,6 +11,7 @@ interface NoticiaFormData {
   imagemDestaque: string;
   imagemArquivo: File | null;
   status: 'Publicada' | 'Rascunho' | 'Arquivada';
+  destaque: boolean;
 }
 
 interface NoticiaFormProps {
@@ -22,6 +23,8 @@ interface NoticiaFormProps {
 export const NoticiaForm = ({ initialData, onSubmit, isSubmitting }: NoticiaFormProps) => {
   const navigate = useNavigate();
   const [tipoConteudo, setTipoConteudo] = useState<'simples' | 'rico'>('simples');
+  const [errosValidacao, setErrosValidacao] = useState<string[]>([]);
+
 
   const [formData, setFormData] = useState<NoticiaFormData>({
     titulo: '',
@@ -33,6 +36,7 @@ export const NoticiaForm = ({ initialData, onSubmit, isSubmitting }: NoticiaForm
     imagemDestaque: '',
     imagemArquivo: null,
     status: 'Rascunho',
+    destaque: false,
   });
 
   const categorias = [
@@ -94,11 +98,59 @@ export const NoticiaForm = ({ initialData, onSubmit, isSubmitting }: NoticiaForm
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validações do frontend (espelham validações do backend)
+    const erros: string[] = [];
+
+    // Título: obrigatório, mínimo 3 caracteres
+    if (!formData.titulo || formData.titulo.trim().length < 3) {
+      erros.push('Título é obrigatório e deve ter no mínimo 3 caracteres.');
+    }
+
+    // Conteúdo: obrigatório, mínimo 10 caracteres
+    if (!formData.conteudo || formData.conteudo.trim().length < 10) {
+      erros.push('Conteúdo é obrigatório e deve ter no mínimo 10 caracteres.');
+    }
+
+    // Imagem de capa: opcional, mas se fornecida deve ser URL válida
+    // Aceita: http://, https:// ou blob: (para uploads locais)
+    if (formData.imagemDestaque && formData.imagemDestaque.trim() !== '') {
+      const urlPattern = /^(https?:\/\/|blob:).+/i;
+      if (!urlPattern.test(formData.imagemDestaque)) {
+        erros.push('A URL da imagem de capa deve ser uma URL válida (http:// ou https://)');
+      }
+    }
+
+    if (erros.length > 0) {
+      setErrosValidacao(erros);
+      return;
+    }
+
+    setErrosValidacao([]);
     await onSubmit(formData);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Erros de Validação */}
+      {errosValidacao.length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-red-600 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <div>
+              <p className="text-sm font-medium text-red-900">Por favor, corrija os seguintes erros:</p>
+              <ul className="text-sm text-red-700 mt-1 list-disc list-inside">
+                {errosValidacao.map((erro, index) => (
+                  <li key={index}>{erro}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Card Principal */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
         {/* Título */}
@@ -111,11 +163,15 @@ export const NoticiaForm = ({ initialData, onSubmit, isSubmitting }: NoticiaForm
             id="titulo"
             name="titulo"
             required
+            minLength={3}
             value={formData.titulo}
             onChange={handleChange}
             className="block w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
             placeholder="Digite o título da notícia"
           />
+          <p className="mt-1 text-sm text-gray-500">
+            Mínimo de 3 caracteres. ({formData.titulo.length}/3+)
+          </p>
         </div>
 
         {/* Slug */}
@@ -177,12 +233,31 @@ export const NoticiaForm = ({ initialData, onSubmit, isSubmitting }: NoticiaForm
           </div>
         </div>
 
-        {/* Upload de Imagem */}
+        {/* Upload de Imagem ou URL */}
         <div>
-          <label htmlFor="imagemArquivo" className="block text-sm font-medium text-gray-700 mb-2">
-            Imagem de Destaque <span className="text-red-600">*</span>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Imagem de Capa <span className="text-gray-400">(opcional)</span>
           </label>
+
+          {/* Opção de URL */}
+          <div className="mb-4">
+            <label htmlFor="imagemUrl" className="block text-xs font-medium text-gray-600 mb-1">
+              URL da Imagem (http:// ou https://)
+            </label>
+            <input
+              type="url"
+              id="imagemUrl"
+              name="imagemDestaque"
+              value={formData.imagemDestaque}
+              onChange={handleChange}
+              className="block w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+              placeholder="https://exemplo.com/imagem.jpg"
+            />
+          </div>
+
+          {/* OU Upload de arquivo */}
           <div className="relative">
+            <p className="text-xs text-gray-500 mb-2 text-center">— ou faça upload de um arquivo —</p>
             <input
               type="file"
               id="imagemArquivo"
@@ -236,12 +311,11 @@ export const NoticiaForm = ({ initialData, onSubmit, isSubmitting }: NoticiaForm
         {/* Resumo */}
         <div>
           <label htmlFor="resumo" className="block text-sm font-medium text-gray-700 mb-2">
-            Resumo <span className="text-red-600">*</span>
+            Resumo <span className="text-gray-400">(opcional)</span>
           </label>
           <textarea
             id="resumo"
             name="resumo"
-            required
             rows={3}
             value={formData.resumo}
             onChange={handleChange}
@@ -303,7 +377,26 @@ export const NoticiaForm = ({ initialData, onSubmit, isSubmitting }: NoticiaForm
             ) : (
               'Modo HTML: use tags HTML para formatar o conteúdo: <p>, <h3>, <ul>, <li>, <strong>, <em>, etc.'
             )}
+            {' '}Mínimo de 10 caracteres. ({formData.conteudo.length}/10+)
           </p>
+        </div>
+
+        {/* Destaque */}
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="destaque"
+            name="destaque"
+            checked={formData.destaque}
+            onChange={(e) => setFormData(prev => ({ ...prev, destaque: e.target.checked }))}
+            className="w-5 h-5 text-[#195CE3] border-gray-300 rounded focus:ring-[#195CE3] cursor-pointer"
+          />
+          <label htmlFor="destaque" className="text-sm font-medium text-gray-700 cursor-pointer">
+            Marcar como destaque
+          </label>
+          <span className="text-xs text-gray-500">
+            (Notícias em destaque aparecem na página inicial)
+          </span>
         </div>
 
         {/* Status */}

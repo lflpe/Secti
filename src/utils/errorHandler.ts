@@ -1,11 +1,29 @@
 import type { ApiErrorResponse } from '../types/auth';
 import { AxiosError } from 'axios';
 
+interface ProblemDetails {
+  type?: string;
+  title?: string;
+  status?: number;
+  detail?: string;
+  instance?: string;
+  [key: string]: unknown;
+}
+
 export const handleApiError = (error: unknown): string => {
   if (error instanceof AxiosError) {
     // Erro da API com resposta
     if (error.response?.data) {
-      const apiError = error.response.data as ApiErrorResponse;
+      const apiError = error.response.data as ApiErrorResponse & ProblemDetails;
+
+      // Formato RFC 7807 (Problem Details) - usado pelo backend .NET
+      if (apiError.detail) {
+        return apiError.detail;
+      }
+
+      if (apiError.title && apiError.title !== 'One or more validation errors occurred.') {
+        return apiError.title;
+      }
 
       // Se houver uma mensagem específica
       if (apiError.message) {

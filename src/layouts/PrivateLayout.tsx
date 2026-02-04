@@ -144,7 +144,7 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar - Desktop */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-[#0C2856] text-white">
+      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:inset-y-0 bg-[#0C2856] text-white">
         {/* Logo */}
         <div className="flex items-center justify-center h-20 px-6 border-b border-[#195CE3]/20">
           <Link to="/dashboard" className="flex items-center">
@@ -248,7 +248,7 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 lg:pl-64">
+      <div className="flex-1">
         {/* Top Bar - Mobile Only */}
         <header className="lg:hidden bg-white shadow-sm sticky top-0 z-30">
           <div className="flex items-center justify-between h-16 px-4">
