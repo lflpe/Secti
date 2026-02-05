@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
+import { documentosService } from '../../../services/documentosService';
 
 export const CriarDocumentos = () => {
   const navigate = useNavigate();
@@ -9,6 +10,10 @@ export const CriarDocumentos = () => {
   const [sucesso, setSucesso] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
+    titulo: '',
+    descricao: '',
+    dataPublicacao: '',
+    pastaId: '',
     arquivo: null as File | null,
   });
 
@@ -16,7 +21,7 @@ export const CriarDocumentos = () => {
     nome: string;
     nomeComExtensao: string;
     tamanho: string;
-    tipo: 'pdf' | 'doc' | 'docx';
+    tipo: 'pdf' | 'xls' | 'xlsx' | 'csv' | 'outro';
   } | null>(null);
 
 
@@ -32,53 +37,59 @@ export const CriarDocumentos = () => {
     const file = e.target.files?.[0];
 
     if (!file) {
-      setFormData({
+      setFormData((prev) => ({
+        ...prev,
         arquivo: null,
-      });
+      }));
       setPreviewArquivo(null);
       return;
     }
 
-    // Validar tipo de arquivo
     const extensao = file.name.split('.').pop()?.toLowerCase();
-    const tiposPermitidos = ['pdf', 'doc', 'docx'];
+    const tiposPermitidos = ['pdf', 'xls', 'xlsx', 'csv'];
 
     if (!extensao || !tiposPermitidos.includes(extensao)) {
-      setErro('Por favor, selecione um arquivo PDF, DOC ou DOCX');
+      setErro('Por favor, selecione um arquivo PDF, XLS, XLSX ou CSV');
       return;
     }
 
-    // Validar tamanho máximo (ex: 10MB)
     const tamanhoMaximo = 10 * 1024 * 1024;
     if (file.size > tamanhoMaximo) {
-      setErro('O arquivo não pode ter mais de 10MB');
+      setErro('O arquivo nao pode ter mais de 10MB');
       return;
     }
 
     setErro(null);
 
-    // Extrair nome sem extensão
     const nomeArquivo = file.name.substring(0, file.name.lastIndexOf('.'));
 
-    setFormData({
+    setFormData((prev) => ({
+      ...prev,
       arquivo: file,
-    });
+    }));
 
     setPreviewArquivo({
       nome: nomeArquivo,
       nomeComExtensao: file.name,
       tamanho: formatFileSize(file.size),
-      tipo: extensao as 'pdf' | 'doc' | 'docx',
+      tipo: (extensao as 'pdf' | 'xls' | 'xlsx' | 'csv') ?? 'outro',
     });
   };
 
   const handleRemoverArquivo = () => {
-    setFormData({
+    setFormData((prev) => ({
+      ...prev,
       arquivo: null,
-    });
+    }));
     setPreviewArquivo(null);
     const input = document.getElementById('arquivo-input') as HTMLInputElement;
     if (input) input.value = '';
+  };
+
+  const formatDateForApi = (dateValue: string): string => {
+    if (!dateValue) return '';
+    const [year, month, day] = dateValue.split('-');
+    return `${day}-${month}-${year}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,7 +98,16 @@ export const CriarDocumentos = () => {
     setErro(null);
     setSucesso(null);
 
-    // Validação: arquivo obrigatório
+    if (!formData.titulo.trim()) {
+      setErro('Titulo e obrigatorio');
+      return;
+    }
+
+    if (!formData.dataPublicacao) {
+      setErro('Data de publicacao e obrigatoria');
+      return;
+    }
+
     if (!formData.arquivo) {
       setErro('Por favor, selecione um arquivo');
       return;
@@ -96,15 +116,16 @@ export const CriarDocumentos = () => {
     setIsSubmitting(true);
 
     try {
-      // Aqui você faria a chamada à API
-      // Exemplo: await api.post('/documentos', formData)
-
-      // Simular espera
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await documentosService.cadastrar({
+        titulo: formData.titulo.trim(),
+        descricao: formData.descricao.trim() || undefined,
+        dataPublicacao: formatDateForApi(formData.dataPublicacao),
+        pastaId: formData.pastaId ? Number(formData.pastaId) : undefined,
+        arquivo: formData.arquivo,
+      });
 
       setSucesso('Documento criado com sucesso!');
 
-      // Aguardar um momento para mostrar a mensagem de sucesso
       setTimeout(() => {
         navigate('/admin/documentos');
       }, 1500);
@@ -124,15 +145,20 @@ export const CriarDocumentos = () => {
             <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
           </svg>
         );
-      case 'doc':
-      case 'docx':
+      case 'xls':
+      case 'xlsx':
+      case 'csv':
         return (
-          <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
           </svg>
         );
       default:
-        return null;
+        return (
+          <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+          </svg>
+        );
     }
   };
 
@@ -183,15 +209,78 @@ export const CriarDocumentos = () => {
           </div>
         )}
 
-        {/* Formulário */}
+        {/* Formulario */}
         <form onSubmit={handleSubmit} className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-6">
+          {/* Informacoes do Documento */}
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label htmlFor="titulo" className="block text-sm font-medium text-gray-700 mb-2">
+                Titulo <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="titulo"
+                type="text"
+                value={formData.titulo}
+                onChange={(e) => setFormData((prev) => ({ ...prev, titulo: e.target.value }))}
+                placeholder="Digite o titulo do documento"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#195CE3] focus:border-transparent outline-none transition-colors"
+                maxLength={200}
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="descricao" className="block text-sm font-medium text-gray-700 mb-2">
+                Descricao
+              </label>
+              <textarea
+                id="descricao"
+                value={formData.descricao}
+                onChange={(e) => setFormData((prev) => ({ ...prev, descricao: e.target.value }))}
+                placeholder="Descricao do documento (opcional)"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#195CE3] focus:border-transparent outline-none transition-colors"
+                maxLength={500}
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="dataPublicacao" className="block text-sm font-medium text-gray-700 mb-2">
+                Data de Publicacao <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="dataPublicacao"
+                type="date"
+                value={formData.dataPublicacao}
+                onChange={(e) => setFormData((prev) => ({ ...prev, dataPublicacao: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#195CE3] focus:border-transparent outline-none transition-colors"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="pastaId" className="block text-sm font-medium text-gray-700 mb-2">
+                Pasta (ID)
+              </label>
+              <input
+                id="pastaId"
+                type="number"
+                value={formData.pastaId}
+                onChange={(e) => setFormData((prev) => ({ ...prev, pastaId: e.target.value }))}
+                placeholder="ID da pasta (opcional)"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#195CE3] focus:border-transparent outline-none transition-colors"
+                min={1}
+              />
+            </div>
+          </div>
+
           {/* Upload de Arquivo */}
           <div>
             <label htmlFor="arquivo-input" className="block text-sm font-medium text-gray-700 mb-2">
               Selecione o Arquivo do Documento <span className="text-red-500">*</span>
             </label>
             <p className="text-xs text-gray-500 mb-4">
-              O nome e tipo de arquivo serão extraídos automaticamente do arquivo enviado
+              O nome e tipo de arquivo serao extraidos automaticamente do arquivo enviado
             </p>
 
             {!previewArquivo ? (
@@ -203,12 +292,12 @@ export const CriarDocumentos = () => {
                   <div className="text-sm text-gray-600">
                     <span className="font-medium text-[#0C2856]">Clique aqui</span> ou arraste um arquivo
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">PDF, DOC ou DOCX (máximo 10MB)</p>
+                  <p className="text-xs text-gray-500 mt-1">PDF, XLS, XLSX ou CSV (maximo 10MB)</p>
                 </label>
                 <input
                   id="arquivo-input"
                   type="file"
-                  accept=".pdf,.doc,.docx"
+                  accept=".pdf,.xls,.xlsx,.csv"
                   onChange={handleArquivoChange}
                   className="hidden"
                 />
@@ -252,7 +341,7 @@ export const CriarDocumentos = () => {
             )}
           </div>
 
-          {/* Botões */}
+          {/* Botoes */}
           <div className="flex items-center gap-3 pt-6 border-t border-gray-200">
             <button
               type="submit"

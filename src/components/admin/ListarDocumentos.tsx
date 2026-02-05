@@ -4,9 +4,8 @@ import { DeleteModal } from './DeleteModal';
 export interface Documento {
   id: number;
   nome: string;
-  tipo: 'pdf' | 'doc' | 'docx';
-  tamanho: string;
-  dataUpload: string;
+  tipo: 'pdf' | 'xls' | 'xlsx' | 'csv' | 'outro';
+  anoPublicacao: number;
   url?: string;
 }
 
@@ -36,15 +35,20 @@ export const ListarDocumentos = ({
             <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
           </svg>
         );
-      case 'doc':
-      case 'docx':
+      case 'xls':
+      case 'xlsx':
+      case 'csv':
         return (
-          <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
           </svg>
         );
       default:
-        return null;
+        return (
+          <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+          </svg>
+        );
     }
   };
 
@@ -94,10 +98,7 @@ export const ListarDocumentos = ({
                   Tipo
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tamanho
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Data Upload
+                  Ano Publicação
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
@@ -119,10 +120,7 @@ export const ListarDocumentos = ({
                     <div className="text-sm text-gray-500 uppercase">{documento.tipo}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{documento.tamanho}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{documento.dataUpload}</div>
+                    <div className="text-sm text-gray-500">{documento.anoPublicacao}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
@@ -167,14 +165,14 @@ export const ListarDocumentos = ({
                       {documento.nome}
                     </h3>
                     <p className="text-xs text-gray-500 mt-1">
-                      {documento.tipo.toUpperCase()} • {documento.tamanho}
+                      {documento.tipo.toUpperCase()}
                     </p>
                   </div>
                 </div>
               </div>
               <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                 <p className="text-xs text-gray-500">
-                  Upload: {documento.dataUpload}
+                  Ano: {documento.anoPublicacao}
                 </p>
                 <div className="flex items-center gap-2">
                   {documento.url && (

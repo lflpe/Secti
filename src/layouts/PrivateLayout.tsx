@@ -1,11 +1,11 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts';
 import MarcaCTISidebar from '../assets/MarcaCTINegativaEColorida.png';
 import MarcaCTIHeader from '../assets/MarcaCTI.png';
 
 interface PrivateLayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
@@ -22,7 +22,7 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
   const isActive = (path: string) => location.pathname === path;
 
   // Mapeamento de menus para caminhos e ícones
-  const menuMapping: Record<string, { path: string; icon: ReactNode }> = {
+  const menuMapping: Record<string, { path: string; icon: React.JSX.Element }> = {
     'Dashboard': {
       path: '/admin/dashboard',
       icon: (
@@ -155,7 +155,12 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
     menuItems.unshift({
       name: 'Dashboard',
       path: '/admin/dashboard',
-      icon: menuMapping['Dashboard'].icon,
+      icon: menuMapping['Dashboard']?.icon ?? (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z" />
+        </svg>
+      ),
     });
   }
 
@@ -165,7 +170,7 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
       <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:inset-y-0 bg-[#0C2856] text-white">
         {/* Logo */}
         <div className="flex items-center justify-center h-20 px-6 border-b border-[#195CE3]/20">
-          <Link to="/dashboard" className="flex items-center">
+          <Link to="/admin/dashboard" className="flex items-center">
             <img src={MarcaCTISidebar} alt="SECTI" className="h-12 w-auto" />
           </Link>
         </div>

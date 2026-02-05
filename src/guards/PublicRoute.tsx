@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/useAuth';
+import { useAuth } from '../contexts';
 
 interface PublicRouteProps {
   children: React.ReactNode;
@@ -19,5 +19,5 @@ export const PublicRoute = ({ children }: PublicRouteProps) => {
     );
   }
 
-  return !isAuthenticated ? <>{children}</> : <Navigate to="/dashboard" replace />;
+  return !isAuthenticated ? <>{children}</> : <Navigate to="/admin/dashboard" replace />;
 };
