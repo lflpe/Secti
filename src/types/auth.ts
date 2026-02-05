@@ -12,13 +12,6 @@ export interface Perfil {
 export interface Menu {
   id: number;
   nome: string;
-  descricao: string;
-  rota: string;
-  icone: string;
-  ordem: number;
-  menuPaiId: number;
-  menuPaiNome: string;
-  subMenus: string[];
 }
 
 export interface LoginCredentials {
@@ -26,7 +19,7 @@ export interface LoginCredentials {
   password: string;
 }
 
-export interface AuthResponse {
+export interface AuthData {
   token: string;
   expiraEm: string;
   usuario: User;
@@ -35,14 +28,11 @@ export interface AuthResponse {
   menus: Menu[];
 }
 
-export interface ApiErrorResponse {
-  message: string;
-  errors?: Record<string, string[]>;
-  statusCode?: number;
-}
+export type AuthResponse = AuthData;
 
 export interface AuthContextType {
   user: User | null;
+  authData: AuthData | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;

@@ -5,27 +5,30 @@ import { API_CONFIG } from '../config/api';
 export const apiClient = axios.create({
   baseURL: API_CONFIG.baseURL,
   timeout: API_CONFIG.timeout,
-  withCredentials: API_CONFIG.withCredentials, // Important for HttpOnly cookies
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Response interceptor
-apiClient.interceptors.response.use(
-    (response) => {
-      return response;
-    },
-    async (error) => {
-      // Se backend retorna 401, o HttpOnly cookie expirou ou é inválido
-      // Limpar dados do usuário e deixar navegador gerenciar cookie
-      if (error.response?.status === 401) {
-        localStorage.removeItem('auth_user');
-        // Navegador remove o HttpOnly cookie automaticamente se expirado
+// Request interceptor to add Authorization header
+apiClient.interceptors.request.use(
+  (config) => {
+    const authDataStr = localStorage.getItem('auth_data');
+    if (authDataStr) {
+      try {
+        const authData = JSON.parse(authDataStr);
+        if (authData.token) {
+          config.headers.Authorization = `Bearer ${authData.token}`;
+        }
+      } catch (error) {
+        console.error('Error parsing auth data:', error);
       }
-
-      return Promise.reject(error);
     }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
 // Response interceptor
@@ -35,10 +38,9 @@ apiClient.interceptors.response.use(
   },
   async (error) => {
     // Handle 401 Unauthorized errors
-    // Significa que o HttpOnly cookie expirou ou é inválido
     if (error.response?.status === 401) {
-      // Limpar dados do usuário do localStorage
-      localStorage.removeItem('auth_user');
+      // Clear auth data from localStorage
+      localStorage.removeItem('auth_data');
     }
 
     return Promise.reject(error);

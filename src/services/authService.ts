@@ -1,18 +1,16 @@
-import type { LoginCredentials, AuthResponse, User } from '../types/auth';
+import type { LoginCredentials, AuthData, User } from '../types/auth';
 import { apiClient } from '../lib/apiClient';
 import { API_ENDPOINTS } from '../config/api';
 import { handleApiError } from '../utils/errorHandler';
 
-const USER_KEY = 'auth_user';
+const AUTH_DATA_KEY = 'auth_data';
 
-// Serviço de autenticação utilizando HttpOnly cookies
-// O backend retorna um cookie HttpOnly que será enviado automaticamente pelo navegador
-// Não precisa de armazenamento manual de token
+// Serviço de autenticação utilizando localStorage
 export const authService = {
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
+  async login(credentials: LoginCredentials): Promise<AuthData> {
     try {
       // Make API call to login endpoint
-      const response = await apiClient.post<AuthResponse>(
+      const response = await apiClient.post<AuthData>(
         API_ENDPOINTS.auth.login,
         {
           email: credentials.email,
@@ -21,11 +19,9 @@ export const authService = {
       );
 
       const authData = response.data;
-      const user = authData.usuario;
 
-      // HttpOnly cookie é salvo automaticamente pelo navegador
-      // Apenas salvar dados do usuário no localStorage
-      this.saveUser(user);
+      // Salvar todos os dados de autenticação no localStorage
+      this.saveAuthData(authData);
 
       return authData;
     } catch (error) {
@@ -37,13 +33,13 @@ export const authService = {
 
   async logout(): Promise<void> {
     try {
-      // Chamar logout para invalidar o HttpOnly cookie no backend
+      // Chamar logout para invalidar no backend se necessário
       await apiClient.post(API_ENDPOINTS.auth.logout);
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Limpar apenas dados do usuário
-      localStorage.removeItem(USER_KEY);
+      // Limpar dados de autenticação
+      localStorage.removeItem(AUTH_DATA_KEY);
     }
   },
 
@@ -72,18 +68,24 @@ export const authService = {
     }
   },
 
-  saveUser(user: User): void {
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  saveAuthData(authData: AuthData): void {
+    localStorage.setItem(AUTH_DATA_KEY, JSON.stringify(authData));
   },
 
-  getUser(): User | null {
-    const userStr = localStorage.getItem(USER_KEY);
-    if (!userStr) return null;
+  getAuthData(): AuthData | null {
+    const authStr = localStorage.getItem(AUTH_DATA_KEY);
+    if (!authStr) return null;
 
     try {
-      return JSON.parse(userStr);
+      return JSON.parse(authStr);
     } catch {
       return null;
     }
+  },
+
+  // Mantém compatibilidade
+  getUser(): User | null {
+    const authData = this.getAuthData();
+    return authData ? authData.usuario : null;
   },
 };

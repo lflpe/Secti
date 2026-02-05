@@ -1,89 +1,116 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
 import { TabelaNoticias, type NoticiaAdmin } from '../../../components/admin/TabelaNoticias';
-
-// Dados mockados - substituir por chamada à API
-const noticiasMock: NoticiaAdmin[] = [
-  {
-    id: 1,
-    slug: 'programa-inovacao-tecnologica',
-    titulo: 'Pernambuco lança novo programa de inovação tecnológica',
-    categoria: 'Inovação',
-    autor: 'Redação SECTI',
-    dataPublicacao: '15/12/2024',
-    status: 'Publicada',
-  },
-  {
-    id: 2,
-    slug: 'exposicao-sustentabilidade',
-    titulo: 'Espaço Ciência recebe nova exposição interativa sobre sustentabilidade',
-    categoria: 'Educação',
-    autor: 'Marina Santos',
-    dataPublicacao: '12/12/2024',
-    status: 'Publicada',
-  },
-  {
-    id: 3,
-    slug: 'incubadora-startups-2025',
-    titulo: 'Parqtel abre inscrições para incubadora de startups 2025',
-    categoria: 'Negócios',
-    autor: 'Carlos Oliveira',
-    dataPublicacao: '10/12/2024',
-    status: 'Publicada',
-  },
-  {
-    id: 4,
-    slug: 'hackathon-ciencia-dados',
-    titulo: 'Hackathon de Ciência de Dados acontece em Recife',
-    categoria: 'Eventos',
-    autor: 'Ana Paula Ferreira',
-    dataPublicacao: '08/12/2024',
-    status: 'Rascunho',
-  },
-  {
-    id: 5,
-    slug: 'parceria-universidades-europeias',
-    titulo: 'SECTI firma parceria com universidades europeias',
-    categoria: 'Parcerias',
-    autor: 'Roberto Silva',
-    dataPublicacao: '05/12/2024',
-    status: 'Publicada',
-  },
-  {
-    id: 6,
-    slug: 'certificacao-biotecnologia',
-    titulo: 'Laboratório de Biotecnologia recebe certificação internacional',
-    categoria: 'Pesquisa',
-    autor: 'Dra. Fernanda Costa',
-    dataPublicacao: '03/12/2024',
-    status: 'Arquivada',
-  },
-];
+import { noticiasService, type NoticiaListResponse, type NoticiaFiltros } from '../../../services/noticiasService';
+import { handleApiError } from '../../../utils/errorHandler';
 
 export const ListaNoticias = () => {
-  const [noticias, setNoticias] = useState<NoticiaAdmin[]>(noticiasMock);
+  const [noticias, setNoticias] = useState<NoticiaAdmin[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filtroStatus, setFiltroStatus] = useState<string>('Todas');
-  const [filtroCategoria, setFiltroCategoria] = useState<string>('Todas');
   const [busca, setBusca] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage] = useState(10);
 
-  // Filtrar notícias
-  const noticiasFiltradas = noticias.filter((noticia) => {
-    const matchStatus = filtroStatus === 'Todas' || noticia.status === filtroStatus;
-    const matchCategoria = filtroCategoria === 'Todas' || noticia.categoria === filtroCategoria;
-    const matchBusca = noticia.titulo.toLowerCase().includes(busca.toLowerCase()) ||
-                       noticia.autor.toLowerCase().includes(busca.toLowerCase());
+  // Carregar notícias da API
+  const loadNoticias = useCallback(async (page = 1, tituloFiltro = '', apenasPublicadas?: boolean) => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    return matchStatus && matchCategoria && matchBusca;
-  });
+      const loadAll = tituloFiltro || apenasPublicadas !== undefined;
+      const filtros: NoticiaFiltros = {
+        pagina: loadAll ? 1 : page,
+        itensPorPagina: loadAll ? 10000 : itemsPerPage,
+        tituloFiltro: tituloFiltro || undefined,
+      };
 
-  // Função para excluir notícia
-  const handleDelete = (id: number) => {
-    setNoticias(noticias.filter(n => n.id !== id));
+      const response: NoticiaListResponse = await noticiasService.listar(filtros);
+
+      // Converter dados da API para o formato esperado pelo componente
+      let noticiasFormatted: NoticiaAdmin[] = response.itens.map(item => ({
+        id: item.id,
+        slug: `noticia-${item.id}`, // Gerar slug baseado no ID
+        titulo: item.titulo,
+        categoria: 'Notícias', // Categoria padrão
+        autor: 'SECTI', // Autor padrão, pois a API não retorna
+        dataPublicacao: new Date(item.dataPublicacao).toLocaleDateString('pt-BR'),
+        status: item.publicada ? 'Publicada' : 'Rascunho',
+      }));
+
+      // Aplicar filtros no cliente se necessário
+      if (tituloFiltro) {
+        noticiasFormatted = noticiasFormatted.filter(n =>
+          n.titulo.toLowerCase().includes(tituloFiltro.toLowerCase())
+        );
+      }
+      if (apenasPublicadas === true) {
+        noticiasFormatted = noticiasFormatted.filter(n => n.status === 'Publicada');
+      } else if (apenasPublicadas === false) {
+        noticiasFormatted = noticiasFormatted.filter(n => n.status === 'Rascunho');
+      }
+
+      setTotalItems(noticiasFormatted.length);
+      const start = loadAll ? (page - 1) * itemsPerPage : 0;
+      const end = start + itemsPerPage;
+      setNoticias(noticiasFormatted.slice(start, end));
+      setCurrentPage(page);
+    } catch (err) {
+      const errorMessage = handleApiError(err);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [itemsPerPage]);
+
+  useEffect(() => {
+    loadNoticias();
+  }, [loadNoticias]);
+
+  // Função para excluir notícia (inativar)
+  const handleDelete = async (id: number) => {
+    try {
+      await noticiasService.inativar(id);
+      // Recarregar lista após inativar mantendo os filtros atuais
+      const apenasPublicadas = filtroStatus === 'Publicada' ? true :
+                             filtroStatus === 'Rascunho' ? false : undefined;
+      await loadNoticias(currentPage, busca, apenasPublicadas);
+    } catch (err) {
+      const errorMessage = handleApiError(err);
+      setError(errorMessage);
+    }
   };
 
-  // Obter categorias únicas
-  const categorias = ['Todas', ...Array.from(new Set(noticias.map(n => n.categoria)))];
+  // Função para ativar notícia
+  const handleActivate = async (id: number) => {
+    try {
+      await noticiasService.ativar(id);
+      // Recarregar lista após ativar mantendo os filtros atuais
+      const apenasPublicadas = filtroStatus === 'Publicada' ? true :
+                             filtroStatus === 'Rascunho' ? false : undefined;
+      await loadNoticias(currentPage, busca, apenasPublicadas);
+    } catch (err) {
+      const errorMessage = handleApiError(err);
+      setError(errorMessage);
+    }
+  };
+
+  // Buscar notícias
+  const handleSearch = () => {
+    const apenasPublicadas = filtroStatus === 'Publicada' ? true :
+                           filtroStatus === 'Rascunho' ? false : undefined;
+    loadNoticias(1, busca, apenasPublicadas);
+  };
+
+  // Limpar busca
+  const handleClearSearch = () => {
+    setBusca('');
+    setFiltroStatus('Todas');
+    loadNoticias(1);
+  };
 
   return (
     <PrivateLayout>
@@ -93,7 +120,7 @@ export const ListaNoticias = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Gerenciar Notícias</h1>
             <p className="text-gray-600 mt-2">
-              {noticiasFiltradas.length} {noticiasFiltradas.length === 1 ? 'notícia encontrada' : 'notícias encontradas'}
+              {loading ? 'Carregando...' : `${totalItems} ${totalItems === 1 ? 'notícia encontrada' : 'notícias encontradas'}`}
             </p>
           </div>
           <Link
@@ -106,6 +133,22 @@ export const ListaNoticias = () => {
             <span>Nova Notícia</span>
           </Link>
         </div>
+
+        {/* Mensagem de erro */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex">
+              <div className="shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -126,8 +169,9 @@ export const ListaNoticias = () => {
                   id="busca"
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
-                  placeholder="Buscar por título ou autor..."
+                  placeholder="Buscar por título..."
                 />
               </div>
             </div>
@@ -141,89 +185,86 @@ export const ListaNoticias = () => {
                 id="status"
                 value={filtroStatus}
                 onChange={(e) => setFiltroStatus(e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+                className="block cursor-pointer w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
               >
                 <option value="Todas">Todas</option>
                 <option value="Publicada">Publicada</option>
                 <option value="Rascunho">Rascunho</option>
-                <option value="Arquivada">Arquivada</option>
               </select>
             </div>
 
-            {/* Filtro Categoria */}
-            <div>
-              <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-2">
-                Categoria
-              </label>
-              <select
-                id="categoria"
-                value={filtroCategoria}
-                onChange={(e) => setFiltroCategoria(e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+            {/* Botões de ação */}
+            <div className="flex items-end gap-2">
+              <button
+                onClick={handleSearch}
+                disabled={loading}
+                className="flex-1 cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {categorias.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+                {loading ? 'Buscando...' : 'Buscar'}
+              </button>
+              <button
+                onClick={handleClearSearch}
+                disabled={loading}
+                className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Limpar
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Estatísticas */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 font-medium">Publicadas</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {noticias.filter(n => n.status === 'Publicada').length}
-                </p>
-              </div>
-              <div className="bg-green-100 p-3 rounded-lg">
-                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
+        {/* Tabela */}
+        {loading ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0C2856]"></div>
+              <span className="ml-2 text-gray-600">Carregando notícias...</span>
             </div>
           </div>
+        ) : (
+          <TabelaNoticias
+            noticias={noticias}
+            onDelete={handleDelete}
+            onActivate={handleActivate}
+            emptyMessage={busca || filtroStatus !== 'Todas' ? 'Não há nenhuma notícia com esse filtro.' : undefined}
+          />
+        )}
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 font-medium">Rascunhos</p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {noticias.filter(n => n.status === 'Rascunho').length}
-                </p>
-              </div>
-              <div className="bg-yellow-100 p-3 rounded-lg">
-                <svg className="w-6 h-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-              </div>
+        {/* Paginação */}
+        {totalItems > itemsPerPage && (
+          <div className="flex items-center justify-between bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
+            <div className="flex items-center text-sm text-gray-700">
+              Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, totalItems)} de {totalItems} resultados
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => {
+                  const apenasPublicadas = filtroStatus === 'Publicada' ? true :
+                                         filtroStatus === 'Rascunho' ? false : undefined;
+                  loadNoticias(currentPage - 1, busca, apenasPublicadas);
+                }}
+                disabled={currentPage === 1 || loading}
+                className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Anterior
+              </button>
+              <span className="px-3 py-1 text-sm text-gray-700">
+                Página {currentPage} de {Math.ceil(totalItems / itemsPerPage)}
+              </span>
+              <button
+                onClick={() => {
+                  const apenasPublicadas = filtroStatus === 'Publicada' ? true :
+                                         filtroStatus === 'Rascunho' ? false : undefined;
+                  loadNoticias(currentPage + 1, busca, apenasPublicadas);
+                }}
+                disabled={currentPage === Math.ceil(totalItems / itemsPerPage) || loading}
+                className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Próxima
+              </button>
             </div>
           </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 font-medium">Arquivadas</p>
-                <p className="text-2xl font-bold text-gray-600">
-                  {noticias.filter(n => n.status === 'Arquivada').length}
-                </p>
-              </div>
-              <div className="bg-gray-100 p-3 rounded-lg">
-                <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tabela de Notícias */}
-        <TabelaNoticias noticias={noticiasFiltradas} onDelete={handleDelete} />
+        )}
       </div>
     </PrivateLayout>
   );

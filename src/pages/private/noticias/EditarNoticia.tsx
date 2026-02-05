@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
 import { NoticiaForm } from '../../../components/admin/NoticiaForm';
+import { noticiasService, type NoticiaDetalhada } from '../../../services/noticiasService';
+import { handleApiError } from '../../../utils/errorHandler';
 
 interface NoticiaFormData {
   titulo: string;
@@ -22,33 +24,46 @@ export const EditarNoticia = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [initialData, setInitialData] = useState<NoticiaFormData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simular carregamento dos dados da notícia
     const carregarNoticia = async () => {
-      setIsLoading(true);
-      try {
-        // Simular chamada à API
-        await new Promise(resolve => setTimeout(resolve, 500));
+      if (!slug) return;
 
-        // Dados mockados - substituir por chamada real à API
-        const noticiaMock: NoticiaFormData = {
-          titulo: 'Pernambuco lança novo programa de inovação tecnológica',
-          slug: slug || '',
-          categoria: 'Inovação',
-          autor: 'Redação SECTI',
-          resumo: 'Iniciativa visa fomentar startups e projetos inovadores no estado.',
-          conteudo: '<p>O Governo de Pernambuco, por meio da Secretaria de Ciência, Tecnologia e Inovação (SECTI), apresentou nesta segunda-feira (15) o novo Programa Estadual de Inovação Tecnológica.</p><p>A iniciativa prevê investimentos de R$ 50 milhões em startups, pesquisas e desenvolvimento de tecnologias sustentáveis.</p>',
-          imagemDestaque: 'https://via.placeholder.com/800x400?text=Programa+de+Inovação',
-          imagemArquivo: null as File | null,
-          status: 'Publicada' as 'Publicada' | 'Rascunho' | 'Arquivada',
-          destaque: true,
+      // Extrair ID do slug (formato: noticia-{id})
+      const idMatch = slug.match(/^noticia-(\d+)$/);
+      if (!idMatch) {
+        setError('Slug inválido');
+        setIsLoading(false);
+        return;
+      }
+
+      const noticiaId = parseInt(idMatch[1], 10);
+
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const noticia: NoticiaDetalhada = await noticiasService.buscarPorId(noticiaId);
+
+        // Converter dados da API para o formato do formulário
+        const formData: NoticiaFormData = {
+          titulo: noticia.titulo,
+          slug: slug,
+          categoria: 'Notícias', // Categoria padrão
+          autor: 'SECTI', // Autor padrão
+          resumo: noticia.resumo,
+          conteudo: noticia.conteudo,
+          imagemDestaque: noticia.imagemCapaUrl,
+          imagemArquivo: null,
+          status: noticia.publicada ? 'Publicada' : 'Rascunho',
+          destaque: noticia.destaque,
         };
 
-        setInitialData(noticiaMock);
-      } catch (error) {
-        console.error('Erro ao carregar notícia:', error);
-        alert('Erro ao carregar notícia.');
+        setInitialData(formData);
+      } catch (err) {
+        const errorMessage = handleApiError(err);
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -58,19 +73,42 @@ export const EditarNoticia = () => {
   }, [slug]);
 
   const handleSubmit = async (formData: NoticiaFormData) => {
+    if (!slug) return;
+
+    // Extrair ID do slug
+    const idMatch = slug.match(/^noticia-(\d+)$/);
+    if (!idMatch) {
+      setError('Slug inválido');
+      return;
+    }
+
+    const noticiaId = parseInt(idMatch[1], 10);
+
     setIsSubmitting(true);
+    setError(null);
 
     try {
-      // Simular chamada à API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Preparar dados para o endpoint
+      const imagemUrl = formData.imagemDestaque && !formData.imagemDestaque.startsWith('blob:')
+        ? formData.imagemDestaque
+        : undefined;
 
-      console.log('Notícia atualizada:', formData);
+      const dadosNoticia = {
+        titulo: formData.titulo,
+        conteudo: formData.conteudo,
+        resumo: formData.resumo || undefined,
+        imagemCapaUrl: imagemUrl,
+        destaque: formData.destaque || false,
+      };
 
-      // Redirecionar para lista de notícias
+      // Chamar API
+      await noticiasService.editar(noticiaId, dadosNoticia);
+
+      // Redirecionar para a lista
       navigate('/admin/noticias');
-    } catch (error) {
-      console.error('Erro ao atualizar notícia:', error);
-      alert('Erro ao atualizar notícia. Tente novamente.');
+    } catch (err) {
+      const errorMessage = handleApiError(err);
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -79,14 +117,9 @@ export const EditarNoticia = () => {
   if (isLoading) {
     return (
       <PrivateLayout>
-        <div className="flex items-center justify-center min-h-100">
-          <div className="text-center">
-            <svg className="animate-spin h-12 w-12 text-[#0C2856] mx-auto mb-4" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-            </svg>
-            <p className="text-gray-600">Carregando notícia...</p>
-          </div>
+        <div className="flex items-center justify-center min-h-96">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0C2856]"></div>
+          <span className="ml-2 text-gray-600">Carregando notícia...</span>
         </div>
       </PrivateLayout>
     );
@@ -94,23 +127,52 @@ export const EditarNoticia = () => {
 
   return (
     <PrivateLayout>
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="space-y-6 overflow-x-hidden">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Editar Notícia</h1>
-            <p className="text-gray-600 mt-2">Atualize as informações da notícia</p>
+            <p className="text-gray-600 mt-2">
+              Faça as alterações necessárias na notícia selecionada.
+            </p>
           </div>
           <button
-            type="button"
             onClick={() => navigate('/admin/noticias')}
-            className="text-gray-600 cursor-pointer hover:text-gray-900 font-medium transition-colors"
+            className="inline-flex cursor-pointer items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
           >
-            Cancelar
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Voltar
           </button>
         </div>
 
-        <NoticiaForm initialData={initialData || undefined} onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+        {/* Mensagem de erro */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex">
+              <div className="shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Formulário */}
+        {initialData && (
+          <div className="overflow-x-hidden">
+            <NoticiaForm
+              initialData={initialData}
+              onSubmit={handleSubmit}
+              isSubmitting={isSubmitting}
+            />
+          </div>
+        )}
       </div>
     </PrivateLayout>
   );

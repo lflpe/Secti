@@ -22,14 +22,64 @@ export interface NoticiaResponse {
   usuarioCriacaoNome: string;
 }
 
-// Type para erros da API
-export interface ApiValidationError {
-  type?: string;
-  title?: string;
-  status?: number;
-  detail?: string;
-  instance?: string;
-  [key: string]: unknown;
+// Type para notícia detalhada
+export interface NoticiaDetalhada {
+  id: number;
+  titulo: string;
+  conteudo: string;
+  resumo: string;
+  imagemCapaUrl: string;
+  publicada: boolean;
+  destaque: boolean;
+  dataPublicacao: string;
+  dataCriacao: string;
+  dataAtualizacao: string;
+}
+
+// Type para notícia na listagem
+export interface NoticiaListagem {
+  id: number;
+  titulo: string;
+  resumo: string;
+  publicada: boolean;
+  destaque: boolean;
+  dataPublicacao: string;
+  dataCriacao: string;
+}
+
+// Type para resposta de listagem paginada
+export interface NoticiaListResponse {
+  itens: NoticiaListagem[];
+  total: number;
+  pagina: number;
+  itensPorPagina: number;
+}
+
+// Type para edição de notícia
+export interface EditarNoticiaRequest {
+  titulo: string;
+  conteudo: string;
+  resumo?: string;
+  imagemCapaUrl?: string;
+  destaque?: boolean;
+}
+
+// Type para resposta de edição
+export interface EditarNoticiaResponse {
+  id: number;
+  titulo: string;
+  resumo: string;
+  publicada: boolean;
+  destaque: boolean;
+  dataAtualizacao: string;
+}
+
+// Type para filtros de listagem
+export interface NoticiaFiltros {
+  tituloFiltro?: string;
+  apenasPublicadas?: boolean;
+  pagina?: number;
+  itensPorPagina?: number;
 }
 
 // Validações do frontend (espelham as validações do backend)
@@ -77,6 +127,68 @@ export const noticiasService = {
 
     const response = await apiClient.post<NoticiaResponse>('/Noticia/cadastrar', data);
     return response.data;
+  },
+
+  /**
+   * Lista notícias com filtros e paginação
+   */
+  listar: async (filtros?: NoticiaFiltros): Promise<NoticiaListResponse> => {
+    const params = new URLSearchParams();
+
+    if (filtros?.tituloFiltro) {
+      params.append('TituloFiltro', filtros.tituloFiltro);
+    }
+    if (filtros?.apenasPublicadas !== undefined) {
+      params.append('ApenasPublicadas', filtros.apenasPublicadas.toString());
+    }
+    if (filtros?.pagina !== undefined) {
+      params.append('Pagina', filtros.pagina.toString());
+    }
+    if (filtros?.itensPorPagina !== undefined) {
+      params.append('ItensPorPagina', filtros.itensPorPagina.toString());
+    }
+
+    const queryString = params.toString();
+    const url = `/Noticia/listar${queryString ? `?${queryString}` : ''}`;
+
+    const response = await apiClient.get<NoticiaListResponse>(url);
+    return response.data;
+  },
+
+  /**
+   * Busca uma notícia por ID
+   */
+  buscarPorId: async (id: number): Promise<NoticiaDetalhada> => {
+    const response = await apiClient.get<NoticiaDetalhada>(`/Noticia/${id}`);
+    return response.data;
+  },
+
+  /**
+   * Edita uma notícia existente
+   */
+  editar: async (id: number, data: EditarNoticiaRequest): Promise<EditarNoticiaResponse> => {
+    // Validar dados antes de enviar
+    const errosValidacao = validarNoticia(data);
+    if (errosValidacao.length > 0) {
+      throw new Error(errosValidacao.join(' '));
+    }
+
+    const response = await apiClient.put<EditarNoticiaResponse>(`/Noticia/editar/${id}`, data);
+    return response.data;
+  },
+
+  /**
+   * Inativa (despublica) uma notícia
+   */
+  inativar: async (id: number): Promise<void> => {
+    await apiClient.post(`/Noticia/inativar/${id}`);
+  },
+
+  /**
+   * Ativa (publica) uma notícia
+   */
+  ativar: async (id: number): Promise<void> => {
+    await apiClient.post(`/Noticia/ativar/${id}`);
   },
 };
 
