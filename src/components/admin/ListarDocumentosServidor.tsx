@@ -1,45 +1,44 @@
 import { useState } from 'react';
 import { DeleteModal } from './DeleteModal';
-import { downloadDocumento } from '../../services/documentosService';
+import { downloadDocumentoServidor } from '../../services/documentosServidorService';
 
-export interface Documento {
+export interface DocumentoServidor {
   id: number;
   nome: string;
   tipo: 'pdf' | 'xls' | 'xlsx' | 'csv' | 'outro';
+  categoria: string;
   anoPublicacao: number;
   caminhoArquivo?: string;
   nomeArquivo?: string;
 }
 
-interface ListarDocumentosProps {
-  documentos: Documento[];
+interface ListarDocumentosServidorProps {
+  documentos: DocumentoServidor[];
   onDelete: (id: number) => void;
   emptyStateTitle?: string;
   emptyStateDescription?: string;
   showHeader?: boolean;
-  downloadFn?: (caminhoArquivo: string, nomeArquivo?: string) => Promise<void>;
 }
 
-export const ListarDocumentos = ({
+export const ListarDocumentosServidor = ({
   documentos,
   onDelete,
   emptyStateTitle = "Nenhum documento encontrado",
   emptyStateDescription = "Nenhum documento foi adicionado ainda",
-  showHeader = true,
-  downloadFn = downloadDocumento
-}: ListarDocumentosProps) => {
+  showHeader = true
+}: ListarDocumentosServidorProps) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedDocumento, setSelectedDocumento] = useState<Documento | null>(null);
+  const [selectedDocumento, setSelectedDocumento] = useState<DocumentoServidor | null>(null);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
-  const handleDownload = async (documento: Documento) => {
+  const handleDownload = async (documento: DocumentoServidor) => {
     if (!documento.caminhoArquivo) return;
 
     setDownloadError(null);
     setDownloadingId(documento.id);
     try {
-      await downloadFn(documento.caminhoArquivo, documento.nomeArquivo);
+      await downloadDocumentoServidor(documento.caminhoArquivo, documento.nomeArquivo);
     } catch (error) {
       console.error('Erro ao baixar documento:', error);
       setDownloadError('Erro ao baixar o documento. Tente novamente.');
@@ -73,8 +72,8 @@ export const ListarDocumentos = ({
     }
   };
 
-  const handleDelete = (id: number, nome: string) => {
-    setSelectedDocumento({ id, nome } as Documento);
+  const handleDeleteClick = (id: number, nome: string) => {
+    setSelectedDocumento({ id, nome } as DocumentoServidor);
     setDeleteModalOpen(true);
   };
 
@@ -125,7 +124,7 @@ export const ListarDocumentos = ({
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
         {showHeader && (
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h3 className="text-lg font-medium text-gray-900">Documentos</h3>
+            <h3 className="text-lg font-medium text-gray-900">Documentos do Servidor</h3>
           </div>
         )}
 
@@ -136,6 +135,9 @@ export const ListarDocumentos = ({
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Nome
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Categoria
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Tipo
@@ -158,6 +160,11 @@ export const ListarDocumentos = ({
                         {documento.nome}
                       </div>
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {documento.categoria}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500 uppercase">{documento.tipo}</div>
@@ -187,7 +194,7 @@ export const ListarDocumentos = ({
                         </button>
                       )}
                       <button
-                        onClick={() => handleDelete(documento.id, documento.nome)}
+                        onClick={() => handleDeleteClick(documento.id, documento.nome)}
                         className="text-red-600 cursor-pointer hover:text-red-900 transition-colors"
                         title="Excluir"
                       >
@@ -206,24 +213,22 @@ export const ListarDocumentos = ({
         {/* Mobile Cards */}
         <div className="md:hidden divide-y divide-gray-200">
           {documentos.map((documento) => (
-            <div key={documento.id} className="p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-start gap-3 flex-1">
+            <div key={documento.id} className="p-4 hover:bg-gray-50 transition-colors">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3 min-w-0 flex-1">
                   {getIconeTipo(documento.tipo)}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-gray-900 wrap-break-word">
-                      {documento.nome}
-                    </h3>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {documento.tipo.toUpperCase()}
-                    </p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-900 line-clamp-2">{documento.nome}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {documento.categoria}
+                      </span>
+                      <span className="uppercase">{documento.tipo}</span>
+                      <span>•</span>
+                      <span>{documento.anoPublicacao}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                <p className="text-xs text-gray-500">
-                  Ano: {documento.anoPublicacao}
-                </p>
                 <div className="flex items-center gap-2">
                   {documento.caminhoArquivo && (
                     <button
@@ -245,7 +250,7 @@ export const ListarDocumentos = ({
                     </button>
                   )}
                   <button
-                    onClick={() => handleDelete(documento.id, documento.nome)}
+                    onClick={() => handleDeleteClick(documento.id, documento.nome)}
                     className="text-red-600 cursor-pointer hover:text-red-900 transition-colors"
                     title="Excluir"
                   >
@@ -260,19 +265,15 @@ export const ListarDocumentos = ({
         </div>
       </div>
 
-      {/* Delete Modal */}
+      {/* Modal de confirmação de exclusão */}
       <DeleteModal
         isOpen={deleteModalOpen}
-        onClose={() => {
-          setDeleteModalOpen(false);
-          setSelectedDocumento(null);
-        }}
+        onClose={() => setDeleteModalOpen(false)}
         onConfirm={confirmDelete}
         title="Excluir Documento"
-        message={`Tem certeza de que deseja excluir o documento "${selectedDocumento?.nome}"? Esta ação não pode ser desfeita.`}
-        confirmText="Excluir"
-        cancelText="Cancelar"
+        message={`Tem certeza que deseja excluir o documento "${selectedDocumento?.nome}"? Esta ação não pode ser desfeita.`}
       />
     </>
   );
 };
+

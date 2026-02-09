@@ -1,5 +1,77 @@
 import { apiClient } from '../lib/apiClient';
 import { handleApiError } from '../utils/errorHandler';
+import { API_CONFIG } from '../config/api';
+
+/**
+ * Constrói a URL completa para download de um documento (uso interno)
+ */
+const getDocumentoDownloadUrl = (caminhoArquivo: string): string => {
+  if (!caminhoArquivo) return '';
+
+  // Se já é uma URL completa, retorna como está
+  if (caminhoArquivo.startsWith('http://') || caminhoArquivo.startsWith('https://')) {
+    return caminhoArquivo;
+  }
+
+  // Remove /api do final da baseURL se existir, pois arquivos estáticos são servidos da raiz
+  let baseUrl = API_CONFIG.baseURL || '';
+  if (baseUrl.endsWith('/api')) {
+    baseUrl = baseUrl.slice(0, -4);
+  }
+
+  // Garante que não tenha barras duplicadas
+  const caminho = caminhoArquivo.startsWith('/') ? caminhoArquivo : `/${caminhoArquivo}`;
+
+  return `${baseUrl}${caminho}`;
+};
+
+/**
+ * Faz o download de um documento internamente e dispara o download no navegador
+ * @param caminhoArquivo - Caminho relativo do arquivo
+ * @param nomeArquivo - Nome do arquivo para download (opcional)
+ */
+export const downloadDocumento = async (caminhoArquivo: string, nomeArquivo?: string): Promise<void> => {
+  if (!caminhoArquivo) {
+    throw new Error('Caminho do arquivo não informado');
+  }
+
+  const url = getDocumentoDownloadUrl(caminhoArquivo);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+    });
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+
+  if (!response.ok) {
+    throw new Error(`Erro ao baixar arquivo: ${response.status}`);
+  }
+
+  try {
+    const blob = await response.blob();
+
+    // Extrai o nome do arquivo do caminho se não foi fornecido
+    const fileName = nomeArquivo || caminhoArquivo.split('/').pop() || 'documento';
+
+    // Cria um link temporário para download
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+
+    // Limpa o link temporário
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+};
 
 export interface CadastrarDocumentoRequest {
   titulo: string;

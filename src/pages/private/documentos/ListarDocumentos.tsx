@@ -47,12 +47,16 @@ export const ListarDocumentos = () => {
 
       const response = await documentosService.listar(filtros);
 
-      let documentosFormatados: Documento[] = response.documentos.map((doc) => ({
+      // Filtrar apenas documentos ativos (não excluídos/inativados)
+      const documentosAtivos = response.documentos.filter((doc) => doc.ativo);
+
+      let documentosFormatados: Documento[] = documentosAtivos.map((doc) => ({
         id: doc.id,
         nome: doc.titulo,
         tipo: getTipoFromNome(doc.nomeArquivo, doc.caminhoArquivo),
         anoPublicacao: doc.anoPublicacao,
-        url: doc.caminhoArquivo,
+        caminhoArquivo: doc.caminhoArquivo,
+        nomeArquivo: doc.nomeArquivo,
       }));
 
       // Filtro por título no cliente (API não tem filtro por título)

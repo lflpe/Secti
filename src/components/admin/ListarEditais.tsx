@@ -1,48 +1,47 @@
 import { useState } from 'react';
 import { DeleteModal } from './DeleteModal';
-import { downloadDocumento } from '../../services/documentosService';
+import { downloadEdital } from '../../services/editaisService';
 
-export interface Documento {
+export interface Edital {
   id: number;
   nome: string;
   tipo: 'pdf' | 'xls' | 'xlsx' | 'csv' | 'outro';
+  categoria: string;
   anoPublicacao: number;
   caminhoArquivo?: string;
   nomeArquivo?: string;
 }
 
-interface ListarDocumentosProps {
-  documentos: Documento[];
+interface ListarEditaisProps {
+  editais: Edital[];
   onDelete: (id: number) => void;
   emptyStateTitle?: string;
   emptyStateDescription?: string;
   showHeader?: boolean;
-  downloadFn?: (caminhoArquivo: string, nomeArquivo?: string) => Promise<void>;
 }
 
-export const ListarDocumentos = ({
-  documentos,
+export const ListarEditais = ({
+  editais,
   onDelete,
-  emptyStateTitle = "Nenhum documento encontrado",
-  emptyStateDescription = "Nenhum documento foi adicionado ainda",
-  showHeader = true,
-  downloadFn = downloadDocumento
-}: ListarDocumentosProps) => {
+  emptyStateTitle = "Nenhum edital encontrado",
+  emptyStateDescription = "Nenhum edital foi adicionado ainda",
+  showHeader = true
+}: ListarEditaisProps) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedDocumento, setSelectedDocumento] = useState<Documento | null>(null);
+  const [selectedEdital, setSelectedEdital] = useState<Edital | null>(null);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
-  const handleDownload = async (documento: Documento) => {
-    if (!documento.caminhoArquivo) return;
+  const handleDownload = async (edital: Edital) => {
+    if (!edital.caminhoArquivo) return;
 
     setDownloadError(null);
-    setDownloadingId(documento.id);
+    setDownloadingId(edital.id);
     try {
-      await downloadFn(documento.caminhoArquivo, documento.nomeArquivo);
+      await downloadEdital(edital.caminhoArquivo, edital.nomeArquivo);
     } catch (error) {
-      console.error('Erro ao baixar documento:', error);
-      setDownloadError('Erro ao baixar o documento. Tente novamente.');
+      console.error('Erro ao baixar edital:', error);
+      setDownloadError('Erro ao baixar o edital. Tente novamente.');
     } finally {
       setDownloadingId(null);
     }
@@ -73,20 +72,20 @@ export const ListarDocumentos = ({
     }
   };
 
-  const handleDelete = (id: number, nome: string) => {
-    setSelectedDocumento({ id, nome } as Documento);
+  const handleDeleteClick = (id: number, nome: string) => {
+    setSelectedEdital({ id, nome } as Edital);
     setDeleteModalOpen(true);
   };
 
   const confirmDelete = () => {
-    if (selectedDocumento) {
-      onDelete(selectedDocumento.id);
+    if (selectedEdital) {
+      onDelete(selectedEdital.id);
       setDeleteModalOpen(false);
-      setSelectedDocumento(null);
+      setSelectedEdital(null);
     }
   };
 
-  if (documentos.length === 0) {
+  if (editais.length === 0) {
     return (
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-12 text-center">
         <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -125,7 +124,7 @@ export const ListarDocumentos = ({
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
         {showHeader && (
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h3 className="text-lg font-medium text-gray-900">Documentos</h3>
+            <h3 className="text-lg font-medium text-gray-900">Editais</h3>
           </div>
         )}
 
@@ -136,6 +135,9 @@ export const ListarDocumentos = ({
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Nome
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Categoria
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Tipo
@@ -149,32 +151,37 @@ export const ListarDocumentos = ({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {documentos.map((documento) => (
-                <tr key={documento.id} className="hover:bg-gray-50 transition-colors">
+              {editais.map((edital) => (
+                <tr key={edital.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      {getIconeTipo(documento.tipo)}
+                      {getIconeTipo(edital.tipo)}
                       <div className="text-sm font-medium text-gray-900 line-clamp-2">
-                        {documento.nome}
+                        {edital.nome}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 uppercase">{documento.tipo}</div>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {edital.categoria}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{documento.anoPublicacao}</div>
+                    <div className="text-sm text-gray-500 uppercase">{edital.tipo}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-500">{edital.anoPublicacao}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
-                      {documento.caminhoArquivo && (
+                      {edital.caminhoArquivo && (
                         <button
-                          onClick={() => handleDownload(documento)}
-                          disabled={downloadingId === documento.id}
+                          onClick={() => handleDownload(edital)}
+                          disabled={downloadingId === edital.id}
                           className="text-blue-600 hover:text-blue-900 transition-colors disabled:opacity-50 cursor-pointer"
                           title="Download"
                         >
-                          {downloadingId === documento.id ? (
+                          {downloadingId === edital.id ? (
                             <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -187,7 +194,7 @@ export const ListarDocumentos = ({
                         </button>
                       )}
                       <button
-                        onClick={() => handleDelete(documento.id, documento.nome)}
+                        onClick={() => handleDeleteClick(edital.id, edital.nome)}
                         className="text-red-600 cursor-pointer hover:text-red-900 transition-colors"
                         title="Excluir"
                       >
@@ -205,34 +212,32 @@ export const ListarDocumentos = ({
 
         {/* Mobile Cards */}
         <div className="md:hidden divide-y divide-gray-200">
-          {documentos.map((documento) => (
-            <div key={documento.id} className="p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-start gap-3 flex-1">
-                  {getIconeTipo(documento.tipo)}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-gray-900 wrap-break-word">
-                      {documento.nome}
-                    </h3>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {documento.tipo.toUpperCase()}
-                    </p>
+          {editais.map((edital) => (
+            <div key={edital.id} className="p-4 hover:bg-gray-50 transition-colors">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3 min-w-0 flex-1">
+                  {getIconeTipo(edital.tipo)}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-900 line-clamp-2">{edital.nome}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {edital.categoria}
+                      </span>
+                      <span className="uppercase">{edital.tipo}</span>
+                      <span>•</span>
+                      <span>{edital.anoPublicacao}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                <p className="text-xs text-gray-500">
-                  Ano: {documento.anoPublicacao}
-                </p>
                 <div className="flex items-center gap-2">
-                  {documento.caminhoArquivo && (
+                  {edital.caminhoArquivo && (
                     <button
-                      onClick={() => handleDownload(documento)}
-                      disabled={downloadingId === documento.id}
+                      onClick={() => handleDownload(edital)}
+                      disabled={downloadingId === edital.id}
                       className="text-blue-600 hover:text-blue-900 transition-colors disabled:opacity-50 cursor-pointer"
                       title="Download"
                     >
-                      {downloadingId === documento.id ? (
+                      {downloadingId === edital.id ? (
                         <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -245,7 +250,7 @@ export const ListarDocumentos = ({
                     </button>
                   )}
                   <button
-                    onClick={() => handleDelete(documento.id, documento.nome)}
+                    onClick={() => handleDeleteClick(edital.id, edital.nome)}
                     className="text-red-600 cursor-pointer hover:text-red-900 transition-colors"
                     title="Excluir"
                   >
@@ -260,18 +265,13 @@ export const ListarDocumentos = ({
         </div>
       </div>
 
-      {/* Delete Modal */}
+      {/* Modal de confirmação de exclusão */}
       <DeleteModal
         isOpen={deleteModalOpen}
-        onClose={() => {
-          setDeleteModalOpen(false);
-          setSelectedDocumento(null);
-        }}
+        onClose={() => setDeleteModalOpen(false)}
         onConfirm={confirmDelete}
-        title="Excluir Documento"
-        message={`Tem certeza de que deseja excluir o documento "${selectedDocumento?.nome}"? Esta ação não pode ser desfeita.`}
-        confirmText="Excluir"
-        cancelText="Cancelar"
+        title="Excluir Edital"
+        message={`Tem certeza que deseja excluir o edital "${selectedEdital?.nome}"? Esta ação não pode ser desfeita.`}
       />
     </>
   );

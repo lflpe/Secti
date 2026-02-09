@@ -1,0 +1,422 @@
+import { apiClient } from '../lib/apiClient';
+import { handleApiError } from '../utils/errorHandler';
+import { API_CONFIG } from '../config/api';
+
+/**
+ * Constrói a URL completa para download de um edital (uso interno)
+ */
+const getEditalDownloadUrl = (caminhoArquivo: string): string => {
+  if (!caminhoArquivo) return '';
+
+  // Se já é uma URL completa, retorna como está
+  if (caminhoArquivo.startsWith('http://') || caminhoArquivo.startsWith('https://')) {
+    return caminhoArquivo;
+  }
+
+  // Remove /api do final da baseURL se existir, pois arquivos estáticos são servidos da raiz
+  let baseUrl = API_CONFIG.baseURL || '';
+  if (baseUrl.endsWith('/api')) {
+    baseUrl = baseUrl.slice(0, -4);
+  }
+
+  // Garante que não tenha barras duplicadas
+  const caminho = caminhoArquivo.startsWith('/') ? caminhoArquivo : `/${caminhoArquivo}`;
+
+  return `${baseUrl}${caminho}`;
+};
+
+/**
+ * Faz o download de um edital internamente e dispara o download no navegador
+ * @param caminhoArquivo - Caminho relativo do arquivo
+ * @param nomeArquivo - Nome do arquivo para download (opcional)
+ */
+export const downloadEdital = async (caminhoArquivo: string, nomeArquivo?: string): Promise<void> => {
+  if (!caminhoArquivo) {
+    throw new Error('Caminho do arquivo não informado');
+  }
+
+  const url = getEditalDownloadUrl(caminhoArquivo);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+    });
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+
+  if (!response.ok) {
+    throw new Error(`Erro ao baixar arquivo: ${response.status}`);
+  }
+
+  try {
+    const blob = await response.blob();
+
+    // Extrai o nome do arquivo do caminho se não foi fornecido
+    const fileName = nomeArquivo || caminhoArquivo.split('/').pop() || 'edital';
+
+    // Cria um link temporário para download
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+
+    // Limpa o link temporário
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+};
+
+// ==================== INTERFACES ====================
+
+export interface CadastrarEditalRequest {
+  titulo: string;
+  categoria: string;
+  anoPublicacao: number;
+  caminho?: string;
+  arquivo: File;
+}
+
+export interface EditalResponse {
+  id: number;
+  titulo: string;
+  categoria: string;
+  caminhoArquivo: string;
+  nomeArquivo: string;
+  anoPublicacao: number;
+  dataCriacao: string;
+  caminho?: string;
+  usuarioCriacaoNome?: string;
+}
+
+export interface EditalListItem {
+  id: number;
+  titulo: string;
+  categoria: string;
+  caminhoArquivo: string;
+  nomeArquivo: string;
+  anoPublicacao: number;
+  dataCriacao: string;
+  ativo: boolean;
+  caminho?: string;
+  usuarioCriacaoNome?: string;
+}
+
+export interface EditalListResponse {
+  editais: EditalListItem[];
+  totalItens: number;
+  pagina: number;
+  itensPorPagina: number;
+  totalPaginas: number;
+  caminhoFiltro?: string;
+  categoriaFiltro?: string;
+}
+
+export interface EditalListFilters {
+  caminho?: string;
+  categoria?: string;
+  apenasAtivos?: boolean;
+  ordenarPor?: string;
+  ordenarDescendente?: boolean;
+  pagina?: number;
+  itensPorPagina?: number;
+}
+
+export interface EditalPublicoItem {
+  id: number;
+  titulo: string;
+  caminhoArquivo: string;
+  anoPublicacao: number;
+}
+
+export interface EditalPublicoListResponse {
+  editais: EditalPublicoItem[];
+  totalItens: number;
+  pagina: number;
+  itensPorPagina: number;
+  totalPaginas: number;
+}
+
+export interface EditalPublicoFilters {
+  caminho?: string;
+  categoria?: string;
+  ordenarPor?: string;
+  ordenarDescendente?: boolean;
+  pagina?: number;
+  itensPorPagina?: number;
+}
+
+export interface EditalDetalhe {
+  id: number;
+  titulo: string;
+  categoria: string;
+  caminhoArquivo: string;
+  anoPublicacao: number;
+  ativo: boolean;
+  dataCriacao: string;
+  caminho?: string;
+}
+
+export interface EditarEditalRequest {
+  titulo: string;
+  categoria: string;
+  anoPublicacao: number;
+  caminho?: string;
+  arquivo?: File;
+}
+
+// ==================== VALIDAÇÕES ====================
+
+const validarTitulo = (titulo: string): string[] => {
+  const erros: string[] = [];
+  if (!titulo || titulo.trim().length === 0) {
+    erros.push('O título é obrigatório.');
+  } else if (titulo.trim().length < 3) {
+    erros.push('O título deve ter no mínimo 3 caracteres.');
+  } else if (titulo.trim().length > 200) {
+    erros.push('O título deve ter no máximo 200 caracteres.');
+  }
+  return erros;
+};
+
+const validarCategoria = (categoria: string): string[] => {
+  const erros: string[] = [];
+  if (!categoria || categoria.trim().length === 0) {
+    erros.push('A categoria é obrigatória.');
+  } else if (categoria.trim().length > 100) {
+    erros.push('A categoria deve ter no máximo 100 caracteres.');
+  }
+  return erros;
+};
+
+const validarAnoPublicacao = (ano: number): string[] => {
+  const erros: string[] = [];
+  if (!ano) {
+    erros.push('O ano de publicação é obrigatório.');
+  } else if (ano < 1900 || ano > 3000) {
+    erros.push('O ano de publicação deve estar entre 1900 e 3000.');
+  }
+  return erros;
+};
+
+const validarArquivo = (arquivo: File | null | undefined, obrigatorio = true): string[] => {
+  const erros: string[] = [];
+
+  if (obrigatorio && !arquivo) {
+    erros.push('O arquivo é obrigatório.');
+    return erros;
+  }
+
+  if (arquivo) {
+    const extensoesPermitidas = ['pdf', 'xls', 'xlsx', 'csv'];
+    const extensao = arquivo.name.split('.').pop()?.toLowerCase();
+
+    if (!extensao || !extensoesPermitidas.includes(extensao)) {
+      erros.push('Formato de arquivo inválido. Formatos aceitos: PDF, XLS, XLSX, CSV.');
+    }
+
+    const tamanhoMaximo = 10 * 1024 * 1024; // 10MB
+    if (arquivo.size > tamanhoMaximo) {
+      erros.push('O arquivo não pode ter mais de 10MB.');
+    }
+  }
+
+  return erros;
+};
+
+// ==================== SERVICE ====================
+
+const buildFormData = (data: CadastrarEditalRequest | EditarEditalRequest): FormData => {
+  const formData = new FormData();
+
+  formData.append('Titulo', data.titulo.trim());
+  formData.append('Categoria', data.categoria.trim());
+  formData.append('AnoPublicacao', data.anoPublicacao.toString());
+
+  if (data.caminho) {
+    formData.append('Caminho', data.caminho.trim());
+  }
+
+  if (data.arquivo) {
+    formData.append('arquivo', data.arquivo);
+  }
+
+  return formData;
+};
+
+export const editaisService = {
+  /**
+   * Cadastra um novo edital
+   */
+  cadastrar: async (data: CadastrarEditalRequest): Promise<EditalResponse> => {
+    // Validações
+    const erros: string[] = [
+      ...validarTitulo(data.titulo),
+      ...validarCategoria(data.categoria),
+      ...validarAnoPublicacao(data.anoPublicacao),
+      ...validarArquivo(data.arquivo, true),
+    ];
+
+    if (erros.length > 0) {
+      throw new Error(erros.join(' '));
+    }
+
+    try {
+      const response = await apiClient.post<EditalResponse>(
+        '/Edital/cadastrar',
+        buildFormData(data),
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  /**
+   * Lista editais com filtros e paginação
+   */
+  listar: async (filtros?: EditalListFilters): Promise<EditalListResponse> => {
+    const params = new URLSearchParams();
+
+    if (filtros?.caminho) {
+      params.append('Caminho', filtros.caminho);
+    }
+    if (filtros?.categoria) {
+      params.append('Categoria', filtros.categoria);
+    }
+    if (filtros?.apenasAtivos !== undefined) {
+      params.append('ApenasAtivos', filtros.apenasAtivos.toString());
+    }
+    if (filtros?.ordenarPor) {
+      params.append('OrdenarPor', filtros.ordenarPor);
+    }
+    if (filtros?.ordenarDescendente !== undefined) {
+      params.append('OrdenarDescendente', filtros.ordenarDescendente.toString());
+    }
+    if (filtros?.pagina !== undefined) {
+      params.append('Pagina', filtros.pagina.toString());
+    }
+    if (filtros?.itensPorPagina !== undefined) {
+      params.append('ItensPorPagina', filtros.itensPorPagina.toString());
+    }
+
+    const queryString = params.toString();
+    const url = `/Edital/listar${queryString ? `?${queryString}` : ''}`;
+
+    try {
+      const response = await apiClient.get<EditalListResponse>(url);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  /**
+   * Lista editais públicos (sem autenticação)
+   */
+  listarPublico: async (filtros?: EditalPublicoFilters): Promise<EditalPublicoListResponse> => {
+    const params = new URLSearchParams();
+
+    if (filtros?.caminho) {
+      params.append('Caminho', filtros.caminho);
+    }
+    if (filtros?.categoria) {
+      params.append('Categoria', filtros.categoria);
+    }
+    if (filtros?.ordenarPor) {
+      params.append('OrdenarPor', filtros.ordenarPor);
+    }
+    if (filtros?.ordenarDescendente !== undefined) {
+      params.append('OrdenarDescendente', filtros.ordenarDescendente.toString());
+    }
+    if (filtros?.pagina !== undefined) {
+      params.append('Pagina', filtros.pagina.toString());
+    }
+    if (filtros?.itensPorPagina !== undefined) {
+      params.append('ItensPorPagina', filtros.itensPorPagina.toString());
+    }
+
+    const queryString = params.toString();
+    const url = `/Edital/listar-publico${queryString ? `?${queryString}` : ''}`;
+
+    try {
+      const response = await apiClient.get<EditalPublicoListResponse>(url);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  /**
+   * Obtém edital por ID
+   */
+  obterPorId: async (id: number): Promise<EditalDetalhe> => {
+    try {
+      const response = await apiClient.get<EditalDetalhe>(`/Edital/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  /**
+   * Edita um edital existente
+   */
+  editar: async (id: number, data: EditarEditalRequest): Promise<EditalDetalhe> => {
+    // Validações
+    const erros: string[] = [
+      ...validarTitulo(data.titulo),
+      ...validarCategoria(data.categoria),
+      ...validarAnoPublicacao(data.anoPublicacao),
+      ...validarArquivo(data.arquivo, false), // Arquivo opcional na edição
+    ];
+
+    if (erros.length > 0) {
+      throw new Error(erros.join(' '));
+    }
+
+    try {
+      const response = await apiClient.put<EditalDetalhe>(
+        `/Edital/editar/${id}`,
+        buildFormData(data),
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  /**
+   * Inativa um edital
+   */
+  inativar: async (id: number): Promise<void> => {
+    try {
+      await apiClient.post(`/Edital/inativar/${id}`);
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  /**
+   * Ativa um edital
+   */
+  ativar: async (id: number): Promise<void> => {
+    try {
+      await apiClient.post(`/Edital/ativar/${id}`);
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+};

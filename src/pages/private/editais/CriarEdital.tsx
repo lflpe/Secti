@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
+import { editaisService } from '../../../services/editaisService';
+import { handleApiError } from '../../../utils/errorHandler';
 
 export const CriarEdital = () => {
   const navigate = useNavigate();
@@ -9,6 +11,10 @@ export const CriarEdital = () => {
   const [sucesso, setSucesso] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
+    titulo: '',
+    categoria: '',
+    anoPublicacao: new Date().getFullYear(),
+    caminho: '',
     arquivo: null as File | null,
   });
 
@@ -16,9 +22,8 @@ export const CriarEdital = () => {
     nome: string;
     nomeComExtensao: string;
     tamanho: string;
-    tipo: 'pdf' | 'doc' | 'docx';
+    tipo: 'pdf' | 'xls' | 'xlsx' | 'csv';
   } | null>(null);
-
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -32,23 +37,21 @@ export const CriarEdital = () => {
     const file = e.target.files?.[0];
 
     if (!file) {
-      setFormData({
-        arquivo: null,
-      });
+      setFormData(prev => ({ ...prev, arquivo: null }));
       setPreviewArquivo(null);
       return;
     }
 
     // Validar tipo de arquivo
     const extensao = file.name.split('.').pop()?.toLowerCase();
-    const tiposPermitidos = ['pdf', 'doc', 'docx'];
+    const tiposPermitidos = ['pdf', 'xls', 'xlsx', 'csv'];
 
     if (!extensao || !tiposPermitidos.includes(extensao)) {
-      setErro('Por favor, selecione um arquivo PDF, DOC ou DOCX');
+      setErro('Por favor, selecione um arquivo PDF, XLS, XLSX ou CSV');
       return;
     }
 
-    // Validar tamanho máximo (ex: 10MB)
+    // Validar tamanho máximo (10MB)
     const tamanhoMaximo = 10 * 1024 * 1024;
     if (file.size > tamanhoMaximo) {
       setErro('O arquivo não pode ter mais de 10MB');
@@ -60,22 +63,23 @@ export const CriarEdital = () => {
     // Extrair nome sem extensão
     const nomeArquivo = file.name.substring(0, file.name.lastIndexOf('.'));
 
-    setFormData({
-      arquivo: file,
-    });
+    // Preencher título automaticamente se estiver vazio
+    if (!formData.titulo) {
+      setFormData(prev => ({ ...prev, titulo: nomeArquivo, arquivo: file }));
+    } else {
+      setFormData(prev => ({ ...prev, arquivo: file }));
+    }
 
     setPreviewArquivo({
       nome: nomeArquivo,
       nomeComExtensao: file.name,
       tamanho: formatFileSize(file.size),
-      tipo: extensao as 'pdf' | 'doc' | 'docx',
+      tipo: extensao as 'pdf' | 'xls' | 'xlsx' | 'csv',
     });
   };
 
   const handleRemoverArquivo = () => {
-    setFormData({
-      arquivo: null,
-    });
+    setFormData(prev => ({ ...prev, arquivo: null }));
     setPreviewArquivo(null);
     const input = document.getElementById('arquivo-input') as HTMLInputElement;
     if (input) input.value = '';
@@ -87,7 +91,22 @@ export const CriarEdital = () => {
     setErro(null);
     setSucesso(null);
 
-    // Validação: arquivo obrigatório
+    // Validações
+    if (!formData.titulo || formData.titulo.trim().length < 3) {
+      setErro('O título é obrigatório e deve ter no mínimo 3 caracteres');
+      return;
+    }
+
+    if (!formData.categoria || formData.categoria.trim().length === 0) {
+      setErro('A categoria é obrigatória');
+      return;
+    }
+
+    if (!formData.anoPublicacao || formData.anoPublicacao < 1900 || formData.anoPublicacao > 3000) {
+      setErro('O ano de publicação é obrigatório e deve estar entre 1900 e 3000');
+      return;
+    }
+
     if (!formData.arquivo) {
       setErro('Por favor, selecione um arquivo');
       return;
@@ -96,11 +115,13 @@ export const CriarEdital = () => {
     setIsSubmitting(true);
 
     try {
-      // Aqui você faria a chamada à API
-      // Exemplo: await api.post('/editais', formData)
-
-      // Simular espera
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await editaisService.cadastrar({
+        titulo: formData.titulo.trim(),
+        categoria: formData.categoria.trim(),
+        anoPublicacao: formData.anoPublicacao,
+        caminho: formData.caminho?.trim() || undefined,
+        arquivo: formData.arquivo,
+      });
 
       setSucesso('Edital criado com sucesso!');
 
@@ -109,7 +130,7 @@ export const CriarEdital = () => {
         navigate('/admin/editais');
       }, 1500);
     } catch (error) {
-      const mensagemErro = error instanceof Error ? error.message : 'Erro ao criar edital';
+      const mensagemErro = handleApiError(error);
       setErro(mensagemErro);
     } finally {
       setIsSubmitting(false);
@@ -124,15 +145,20 @@ export const CriarEdital = () => {
             <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
           </svg>
         );
-      case 'doc':
-      case 'docx':
+      case 'xls':
+      case 'xlsx':
+      case 'csv':
         return (
-          <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
           </svg>
         );
       default:
-        return null;
+        return (
+          <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+          </svg>
+        );
     }
   };
 
@@ -185,14 +211,79 @@ export const CriarEdital = () => {
 
         {/* Formulário */}
         <form onSubmit={handleSubmit} className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-6">
+          {/* Título */}
+          <div>
+            <label htmlFor="titulo" className="block text-sm font-medium text-gray-700 mb-2">
+              Título do Edital <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="titulo"
+              value={formData.titulo}
+              onChange={(e) => setFormData(prev => ({ ...prev, titulo: e.target.value }))}
+              placeholder="Digite o título do edital"
+              maxLength={200}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#195CE3] focus:border-transparent outline-none transition-colors"
+            />
+            <p className="text-xs text-gray-500 mt-1">Mínimo 3 caracteres, máximo 200 caracteres</p>
+          </div>
+
+          {/* Categoria */}
+          <div>
+            <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-2">
+              Categoria <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="categoria"
+              value={formData.categoria}
+              onChange={(e) => setFormData(prev => ({ ...prev, categoria: e.target.value }))}
+              placeholder="Ex: Licitações, Bolsas, Parcerias"
+              maxLength={100}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#195CE3] focus:border-transparent outline-none transition-colors"
+            />
+            <p className="text-xs text-gray-500 mt-1">Máximo 100 caracteres</p>
+          </div>
+
+          {/* Ano de Publicação */}
+          <div>
+            <label htmlFor="anoPublicacao" className="block text-sm font-medium text-gray-700 mb-2">
+              Ano de Publicação <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              id="anoPublicacao"
+              value={formData.anoPublicacao}
+              onChange={(e) => setFormData(prev => ({ ...prev, anoPublicacao: Number(e.target.value) }))}
+              min={1900}
+              max={3000}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#195CE3] focus:border-transparent outline-none transition-colors"
+            />
+            <p className="text-xs text-gray-500 mt-1">Entre 1900 e 3000</p>
+          </div>
+
+          {/* Caminho (opcional) */}
+          <div>
+            <label htmlFor="caminho" className="block text-sm font-medium text-gray-700 mb-2">
+              Caminho/Pasta (opcional)
+            </label>
+            <input
+              type="text"
+              id="caminho"
+              value={formData.caminho}
+              onChange={(e) => setFormData(prev => ({ ...prev, caminho: e.target.value }))}
+              placeholder="Ex: editais/licitacoes"
+              maxLength={500}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#195CE3] focus:border-transparent outline-none transition-colors"
+            />
+            <p className="text-xs text-gray-500 mt-1">Indica a pasta onde o arquivo será apresentado</p>
+          </div>
+
           {/* Upload de Arquivo */}
           <div>
             <label htmlFor="arquivo-input" className="block text-sm font-medium text-gray-700 mb-2">
-              Selecione o Arquivo do Edital <span className="text-red-500">*</span>
+              Arquivo <span className="text-red-500">*</span>
             </label>
-            <p className="text-xs text-gray-500 mb-4">
-              O nome e tipo de arquivo serão extraídos automaticamente do arquivo enviado
-            </p>
 
             {!previewArquivo ? (
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 hover:bg-gray-50 transition-colors cursor-pointer">
@@ -203,12 +294,12 @@ export const CriarEdital = () => {
                   <div className="text-sm text-gray-600">
                     <span className="font-medium text-[#0C2856]">Clique aqui</span> ou arraste um arquivo
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">PDF, DOC ou DOCX (máximo 10MB)</p>
+                  <p className="text-xs text-gray-500 mt-1">PDF, XLS, XLSX ou CSV (máximo 10MB)</p>
                 </label>
                 <input
                   id="arquivo-input"
                   type="file"
-                  accept=".pdf,.doc,.docx"
+                  accept=".pdf,.xls,.xlsx,.csv"
                   onChange={handleArquivoChange}
                   className="hidden"
                 />
