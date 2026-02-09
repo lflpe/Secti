@@ -57,6 +57,9 @@ import {InformacoesInstitucionais} from "./pages/public/transparencia/Informacoe
 import {ListarUsuarios} from "./pages/private/usuarios/ListarUsuarios.tsx";
 import {CriarUsuarios} from "./pages/private/usuarios/CriarUsuarios.tsx";
 import {EditarUsuarios} from "./pages/private/usuarios/EditarUsuarios.tsx";
+import {ListarCategorias} from "./pages/private/categorias/ListarCategorias.tsx";
+import {CriarCategorias} from "./pages/private/categorias/CriarCategorias.tsx";
+import {EditarCategorias} from "./pages/private/categorias/EditarCategorias.tsx";
 
 function App() {
   return (
@@ -342,6 +345,31 @@ function App() {
             element={
               <PrivateRouteWithMenuAccess requiredMenu="Usuários">
                 <EditarUsuarios/>
+              </PrivateRouteWithMenuAccess>
+            }
+          />
+          {/* Categorias - Admin */}
+          <Route
+            path="/admin/categorias"
+            element={
+              <PrivateRouteWithMenuAccess requiredMenu="Categorias">
+                <ListarCategorias />
+              </PrivateRouteWithMenuAccess>
+            }
+          />
+          <Route
+            path="/admin/categorias/criar"
+            element={
+              <PrivateRouteWithMenuAccess requiredMenu="Categorias">
+                <CriarCategorias />
+              </PrivateRouteWithMenuAccess>
+            }
+          />
+          <Route
+            path="/admin/categorias/editar/:id"
+            element={
+              <PrivateRouteWithMenuAccess requiredMenu="Categorias">
+                <EditarCategorias />
               </PrivateRouteWithMenuAccess>
             }
           />
