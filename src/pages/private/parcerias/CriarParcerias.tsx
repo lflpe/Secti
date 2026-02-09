@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
+import { parceriasService, type CadastrarParceriaRequest } from '../../../services/parceriasService';
+import { handleApiError } from '../../../utils/errorHandler';
 
 export const CriarParcerias = () => {
   const navigate = useNavigate();
@@ -9,6 +11,10 @@ export const CriarParcerias = () => {
   const [sucesso, setSucesso] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
+    titulo: '',
+    categoria: '',
+    anoPublicacao: new Date().getFullYear(),
+    caminho: '',
     arquivo: null as File | null,
   });
 
@@ -16,7 +22,7 @@ export const CriarParcerias = () => {
     nome: string;
     nomeComExtensao: string;
     tamanho: string;
-    tipo: 'pdf' | 'doc' | 'docx';
+    tipo: 'pdf' | 'xls' | 'xlsx' | 'csv' | 'outro';
   } | null>(null);
 
 
@@ -33,6 +39,7 @@ export const CriarParcerias = () => {
 
     if (!file) {
       setFormData({
+        ...formData,
         arquivo: null,
       });
       setPreviewArquivo(null);
@@ -41,14 +48,14 @@ export const CriarParcerias = () => {
 
     // Validar tipo de arquivo
     const extensao = file.name.split('.').pop()?.toLowerCase();
-    const tiposPermitidos = ['pdf', 'doc', 'docx'];
+    const tiposPermitidos = ['pdf', 'xls', 'xlsx', 'csv'];
 
     if (!extensao || !tiposPermitidos.includes(extensao)) {
-      setErro('Por favor, selecione um arquivo PDF, DOC ou DOCX');
+      setErro('Por favor, selecione um arquivo PDF, XLS, XLSX ou CSV');
       return;
     }
 
-    // Validar tamanho máximo (ex: 10MB)
+    // Validar tamanho máximo (10MB)
     const tamanhoMaximo = 10 * 1024 * 1024;
     if (file.size > tamanhoMaximo) {
       setErro('O arquivo não pode ter mais de 10MB');
@@ -61,6 +68,7 @@ export const CriarParcerias = () => {
     const nomeArquivo = file.name.substring(0, file.name.lastIndexOf('.'));
 
     setFormData({
+      ...formData,
       arquivo: file,
     });
 
@@ -68,12 +76,13 @@ export const CriarParcerias = () => {
       nome: nomeArquivo,
       nomeComExtensao: file.name,
       tamanho: formatFileSize(file.size),
-      tipo: extensao as 'pdf' | 'doc' | 'docx',
+      tipo: extensao as 'pdf' | 'xls' | 'xlsx' | 'csv',
     });
   };
 
   const handleRemoverArquivo = () => {
     setFormData({
+      ...formData,
       arquivo: null,
     });
     setPreviewArquivo(null);
@@ -87,7 +96,22 @@ export const CriarParcerias = () => {
     setErro(null);
     setSucesso(null);
 
-    // Validação: arquivo obrigatório
+    // Validações
+    if (!formData.titulo || formData.titulo.trim().length < 3) {
+      setErro('O título deve ter no mínimo 3 caracteres');
+      return;
+    }
+
+    if (!formData.categoria || formData.categoria.trim().length === 0) {
+      setErro('A categoria é obrigatória');
+      return;
+    }
+
+    if (!formData.anoPublicacao || formData.anoPublicacao < 1900 || formData.anoPublicacao > 3000) {
+      setErro('O ano de publicação deve estar entre 1900 e 3000');
+      return;
+    }
+
     if (!formData.arquivo) {
       setErro('Por favor, selecione um arquivo');
       return;
@@ -96,11 +120,15 @@ export const CriarParcerias = () => {
     setIsSubmitting(true);
 
     try {
-      // Aqui você faria a chamada à API
-      // Exemplo: await api.post('/parcerias', formData)
+      const request: CadastrarParceriaRequest = {
+        titulo: formData.titulo,
+        categoria: formData.categoria,
+        anoPublicacao: formData.anoPublicacao,
+        caminho: formData.caminho || undefined,
+        arquivo: formData.arquivo,
+      };
 
-      // Simular espera
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await parceriasService.cadastrar(request);
 
       setSucesso('Parceria criada com sucesso!');
 
@@ -109,7 +137,7 @@ export const CriarParcerias = () => {
         navigate('/admin/parcerias');
       }, 1500);
     } catch (error) {
-      const mensagemErro = error instanceof Error ? error.message : 'Erro ao criar parceria';
+      const mensagemErro = handleApiError(error);
       setErro(mensagemErro);
     } finally {
       setIsSubmitting(false);
@@ -124,15 +152,25 @@ export const CriarParcerias = () => {
             <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
           </svg>
         );
-      case 'doc':
-      case 'docx':
+      case 'xls':
+      case 'xlsx':
+        return (
+          <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+          </svg>
+        );
+      case 'csv':
         return (
           <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
           </svg>
         );
       default:
-        return null;
+        return (
+          <svg className="w-8 h-8 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+          </svg>
+        );
     }
   };
 
@@ -185,13 +223,80 @@ export const CriarParcerias = () => {
 
         {/* Formulário */}
         <form onSubmit={handleSubmit} className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-6">
+          {/* Título */}
+          <div>
+            <label htmlFor="titulo" className="block text-sm font-medium text-gray-700 mb-2">
+              Título da Parceria <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="titulo"
+              value={formData.titulo}
+              onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
+              placeholder="Digite o título da parceria"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+              required
+            />
+          </div>
+
+          {/* Categoria */}
+          <div>
+            <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-2">
+              Categoria <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="categoria"
+              value={formData.categoria}
+              onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
+              placeholder="Ex: Nacional, Internacional, etc."
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+              required
+            />
+          </div>
+
+          {/* Ano de Publicação */}
+          <div>
+            <label htmlFor="anoPublicacao" className="block text-sm font-medium text-gray-700 mb-2">
+              Ano de Publicação <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              id="anoPublicacao"
+              value={formData.anoPublicacao}
+              onChange={(e) => setFormData({ ...formData, anoPublicacao: Number(e.target.value) })}
+              min={1900}
+              max={3000}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+              required
+            />
+          </div>
+
+          {/* Caminho (opcional) */}
+          <div>
+            <label htmlFor="caminho" className="block text-sm font-medium text-gray-700 mb-2">
+              Caminho (Opcional)
+            </label>
+            <input
+              type="text"
+              id="caminho"
+              value={formData.caminho}
+              onChange={(e) => setFormData({ ...formData, caminho: e.target.value })}
+              placeholder="Ex: /documentos/parcerias"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Pasta/caminho onde o arquivo está sendo apresentado (opcional)
+            </p>
+          </div>
+
           {/* Upload de Arquivo */}
           <div>
             <label htmlFor="arquivo-input" className="block text-sm font-medium text-gray-700 mb-2">
-              Selecione o Arquivo da Parceria <span className="text-red-500">*</span>
+              Arquivo da Parceria <span className="text-red-500">*</span>
             </label>
             <p className="text-xs text-gray-500 mb-4">
-              O nome e tipo de arquivo serão extraídos automaticamente do arquivo enviado
+              Selecione o arquivo da parceria (PDF, XLS, XLSX ou CSV)
             </p>
 
             {!previewArquivo ? (
@@ -203,12 +308,12 @@ export const CriarParcerias = () => {
                   <div className="text-sm text-gray-600">
                     <span className="font-medium text-[#0C2856]">Clique aqui</span> ou arraste um arquivo
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">PDF, DOC ou DOCX (máximo 10MB)</p>
+                  <p className="text-xs text-gray-500 mt-1">PDF, XLS, XLSX ou CSV (máximo 10MB)</p>
                 </label>
                 <input
                   id="arquivo-input"
                   type="file"
-                  accept=".pdf,.doc,.docx"
+                  accept=".pdf,.xls,.xlsx,.csv"
                   onChange={handleArquivoChange}
                   className="hidden"
                 />
