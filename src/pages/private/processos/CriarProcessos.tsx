@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
 import { processosService } from '../../../services/processosService';
+import {SelectCategoria} from "../../../components/common/SelectCategoria.tsx";
 
 export const CriarProcessos = () => {
   const navigate = useNavigate();
@@ -231,14 +232,12 @@ export const CriarProcessos = () => {
             <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-2">
               Categoria <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
-              id="categoria"
-              value={formData.categoria}
-              onChange={(e) => setFormData(prev => ({ ...prev, categoria: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2856] focus:border-transparent"
-              placeholder="Digite a categoria do processo"
-              maxLength={100}
+            <SelectCategoria
+                id="categoria"
+                value={formData.categoria}
+                onChange={(valor) => setFormData(prev => ({ ...prev, categoria: valor }))}
+                required
+                className="w-full"
             />
             <p className="text-xs text-gray-500 mt-1">Máximo 100 caracteres</p>
           </div>

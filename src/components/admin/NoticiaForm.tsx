@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SelectCategoria } from '../common/SelectCategoria';
 
 interface NoticiaFormData {
   titulo: string;
@@ -38,15 +39,6 @@ export const NoticiaForm = ({ initialData, onSubmit, isSubmitting }: NoticiaForm
     status: 'Rascunho',
     destaque: false,
   });
-
-  const categorias = [
-    'Inovação',
-    'Educação',
-    'Negócios',
-    'Eventos',
-    'Parcerias',
-    'Pesquisa',
-  ];
 
   useEffect(() => {
     if (initialData) {
@@ -200,20 +192,13 @@ export const NoticiaForm = ({ initialData, onSubmit, isSubmitting }: NoticiaForm
             <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-2">
               Categoria <span className="text-red-600">*</span>
             </label>
-            <select
+            <SelectCategoria
               id="categoria"
-              name="categoria"
-              required
               value={formData.categoria}
-              onChange={handleChange}
+              onChange={(value) => setFormData(prev => ({ ...prev, categoria: value }))}
+              required
               className="block w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
-            >
-              {categorias.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>

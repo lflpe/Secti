@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
 import { parceriasService, type CadastrarParceriaRequest } from '../../../services/parceriasService';
 import { handleApiError } from '../../../utils/errorHandler';
+import { SelectCategoria } from '../../../components/common/SelectCategoria';
 
 export const CriarParcerias = () => {
   const navigate = useNavigate();
@@ -24,7 +25,6 @@ export const CriarParcerias = () => {
     tamanho: string;
     tipo: 'pdf' | 'xls' | 'xlsx' | 'csv' | 'outro';
   } | null>(null);
-
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -244,14 +244,12 @@ export const CriarParcerias = () => {
             <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-2">
               Categoria <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
+            <SelectCategoria
               id="categoria"
               value={formData.categoria}
-              onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-              placeholder="Ex: Nacional, Internacional, etc."
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+              onChange={(value) => setFormData({ ...formData, categoria: value })}
               required
+              className="block w-full"
             />
           </div>
 

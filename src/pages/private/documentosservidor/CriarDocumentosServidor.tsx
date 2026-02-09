@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
 import { documentosServidorService } from '../../../services/documentosServidorService';
 import { handleApiError } from '../../../utils/errorHandler';
+import { SelectCategoria } from '../../../components/common/SelectCategoria';
 
 export const CriarDocumentosServidor = () => {
   const navigate = useNavigate();
@@ -24,7 +25,6 @@ export const CriarDocumentosServidor = () => {
     tamanho: string;
     tipo: 'pdf' | 'xls' | 'xlsx' | 'csv';
   } | null>(null);
-
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -234,16 +234,13 @@ export const CriarDocumentosServidor = () => {
             <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-2">
               Categoria <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
+            <SelectCategoria
               id="categoria"
               value={formData.categoria}
-              onChange={(e) => setFormData(prev => ({ ...prev, categoria: e.target.value }))}
-              placeholder="Ex: Regulamentos, Manuais, Normas"
-              maxLength={100}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#195CE3] focus:border-transparent outline-none transition-colors"
+              onChange={(value) => setFormData(prev => ({ ...prev, categoria: value }))}
+              required
+              className="w-full"
             />
-            <p className="text-xs text-gray-500 mt-1">Máximo 100 caracteres</p>
           </div>
 
           {/* Ano de Publicação */}

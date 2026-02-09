@@ -60,6 +60,9 @@ import {EditarUsuarios} from "./pages/private/usuarios/EditarUsuarios.tsx";
 import {ListarCategorias} from "./pages/private/categorias/ListarCategorias.tsx";
 import {CriarCategorias} from "./pages/private/categorias/CriarCategorias.tsx";
 import {EditarCategorias} from "./pages/private/categorias/EditarCategorias.tsx";
+import {ListarPerfil} from "./pages/private/perfis/ListarPerfil.tsx";
+import {CriarPerfil} from "./pages/private/perfis/CriarPerfil.tsx";
+import {EditarPerfil} from "./pages/private/perfis/EditarPerfil.tsx";
 
 function App() {
   return (
@@ -373,6 +376,32 @@ function App() {
               </PrivateRouteWithMenuAccess>
             }
           />
+          {/* Perfis - Admin */}
+          <Route
+            path="/admin/perfis"
+            element={
+              <PrivateRouteWithMenuAccess requiredMenu="Perfis">
+                <ListarPerfil />
+              </PrivateRouteWithMenuAccess>
+            }
+          />
+          <Route
+            path="/admin/perfis/criar"
+            element={
+              <PrivateRouteWithMenuAccess requiredMenu="Perfis">
+                <CriarPerfil />
+              </PrivateRouteWithMenuAccess>
+            }
+          />
+          <Route
+            path="/admin/perfis/editar/:id"
+            element={
+              <PrivateRouteWithMenuAccess requiredMenu="Perfis">
+                <EditarPerfil />
+              </PrivateRouteWithMenuAccess>
+            }
+          />
+
           {/* 404 Not Found */}
           <Route path="*" element={<Erro404 />} />
         </Routes>
