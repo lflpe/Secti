@@ -2,11 +2,11 @@ import { apiClient } from '../lib/apiClient';
 import { handleApiError } from '../utils/errorHandler';
 
 /**
- * Faz o download de um documento do servidor internamente e dispara o download no navegador
+ * Faz o download de um aviso de intenção de contratar internamente e dispara o download no navegador
  * @param caminhoArquivo - Caminho relativo do arquivo
  * @param nomeArquivo - Nome do arquivo para download (opcional)
  */
-export const downloadDocumentoServidor = async (caminhoArquivo: string, nomeArquivo?: string): Promise<void> => {
+export const downloadAviso = async (caminhoArquivo: string, nomeArquivo?: string): Promise<void> => {
   if (!caminhoArquivo) {
     throw new Error('Caminho do arquivo não informado');
   }
@@ -14,7 +14,7 @@ export const downloadDocumentoServidor = async (caminhoArquivo: string, nomeArqu
   const url = caminhoArquivo.startsWith('http') ? caminhoArquivo : `${window.location.origin}${caminhoArquivo}`;
   const link = document.createElement('a');
   link.href = url;
-  link.download = nomeArquivo || caminhoArquivo.split('/').pop() || 'documento';
+  link.download = nomeArquivo || caminhoArquivo.split('/').pop() || 'aviso';
   link.target = '_blank';
   document.body.appendChild(link);
   link.click();
@@ -23,7 +23,7 @@ export const downloadDocumentoServidor = async (caminhoArquivo: string, nomeArqu
 
 // ==================== INTERFACES ====================
 
-export interface CadastrarDocumentoServidorRequest {
+export interface CadastrarAvisoIntencaoContratarRequest {
   titulo: string;
   categoria: string;
   anoPublicacao: number;
@@ -31,7 +31,7 @@ export interface CadastrarDocumentoServidorRequest {
   arquivo: File;
 }
 
-export interface DocumentoServidorResponse {
+export interface AvisoIntencaoContratarResponse {
   id: number;
   titulo: string;
   categoria: string;
@@ -43,7 +43,7 @@ export interface DocumentoServidorResponse {
   usuarioCriacaoNome?: string;
 }
 
-export interface DocumentoServidorListItem {
+export interface AvisoIntencaoContratarListItem {
   id: number;
   titulo: string;
   categoria: string;
@@ -56,20 +56,18 @@ export interface DocumentoServidorListItem {
   usuarioCriacaoNome?: string;
 }
 
-export interface DocumentoServidorListResponse {
-  documentos: DocumentoServidorListItem[];
+export interface AvisoIntencaoContratarListResponse {
+  avisos: AvisoIntencaoContratarListItem[];
   totalItens: number;
-  paginaAtual: number;
+  pagina: number;
+  itensPorPagina: number;
   totalPaginas: number;
   caminhoFiltro?: string;
-  categoriaFiltro?: string;
-  anoFiltro?: number;
 }
 
-export interface DocumentoServidorListFilters {
+export interface AvisoIntencaoContratarListFilters {
   caminho?: string;
   categoria?: string;
-  ano?: number;
   apenasAtivos?: boolean;
   ordenarPor?: string;
   ordenarDescendente?: boolean;
@@ -77,22 +75,22 @@ export interface DocumentoServidorListFilters {
   itensPorPagina?: number;
 }
 
-export interface DocumentoServidorPublicoItem {
+export interface AvisoIntencaoContratarPublicoItem {
   id: number;
   titulo: string;
   caminhoArquivo: string;
   anoPublicacao: number;
 }
 
-export interface DocumentoServidorPublicoListResponse {
-  documentos: DocumentoServidorPublicoItem[];
+export interface AvisoIntencaoContratarPublicoListResponse {
+  avisos: AvisoIntencaoContratarPublicoItem[];
   totalItens: number;
   pagina: number;
   itensPorPagina: number;
   totalPaginas: number;
 }
 
-export interface DocumentoServidorPublicoFilters {
+export interface AvisoIntencaoContratarPublicoFilters {
   caminho?: string;
   categoria?: string;
   ordenarPor?: string;
@@ -101,7 +99,7 @@ export interface DocumentoServidorPublicoFilters {
   itensPorPagina?: number;
 }
 
-export interface DocumentoServidorDetalhe {
+export interface AvisoIntencaoContratarDetalhe {
   id: number;
   titulo: string;
   categoria: string;
@@ -112,7 +110,7 @@ export interface DocumentoServidorDetalhe {
   caminho?: string;
 }
 
-export interface EditarDocumentoServidorRequest {
+export interface EditarAvisoIntencaoContratarRequest {
   titulo: string;
   categoria: string;
   anoPublicacao: number;
@@ -181,7 +179,7 @@ const validarArquivo = (arquivo: File | null | undefined, obrigatorio = true): s
 
 // ==================== SERVICE ====================
 
-const buildFormData = (data: CadastrarDocumentoServidorRequest | EditarDocumentoServidorRequest): FormData => {
+const buildFormData = (data: CadastrarAvisoIntencaoContratarRequest | EditarAvisoIntencaoContratarRequest): FormData => {
   const formData = new FormData();
 
   formData.append('Titulo', data.titulo.trim());
@@ -199,11 +197,11 @@ const buildFormData = (data: CadastrarDocumentoServidorRequest | EditarDocumento
   return formData;
 };
 
-export const documentosServidorService = {
+export const avisosIntencaoContratarService = {
   /**
-   * Cadastra um novo documento do servidor
+   * Cadastra um novo aviso de intenção de contratar
    */
-  cadastrar: async (data: CadastrarDocumentoServidorRequest): Promise<DocumentoServidorResponse> => {
+  cadastrar: async (data: CadastrarAvisoIntencaoContratarRequest): Promise<AvisoIntencaoContratarResponse> => {
     // Validações
     const erros: string[] = [
       ...validarTitulo(data.titulo),
@@ -217,8 +215,8 @@ export const documentosServidorService = {
     }
 
     try {
-      const response = await apiClient.post<DocumentoServidorResponse>(
-        '/DocumentoServidor/cadastrar',
+      const response = await apiClient.post<AvisoIntencaoContratarResponse>(
+        '/AvisoIntencaoContratar/cadastrar',
         buildFormData(data),
         {
           headers: { 'Content-Type': 'multipart/form-data' },
@@ -231,9 +229,9 @@ export const documentosServidorService = {
   },
 
   /**
-   * Lista documentos do servidor com filtros e paginação
+   * Lista avisos de intenção de contratar com filtros e paginação
    */
-  listar: async (filtros?: DocumentoServidorListFilters): Promise<DocumentoServidorListResponse> => {
+  listar: async (filtros?: AvisoIntencaoContratarListFilters): Promise<AvisoIntencaoContratarListResponse> => {
     const params = new URLSearchParams();
 
     if (filtros?.caminho) {
@@ -241,9 +239,6 @@ export const documentosServidorService = {
     }
     if (filtros?.categoria) {
       params.append('Categoria', filtros.categoria);
-    }
-    if (filtros?.ano !== undefined) {
-      params.append('Ano', filtros.ano.toString());
     }
     if (filtros?.apenasAtivos !== undefined) {
       params.append('ApenasAtivos', filtros.apenasAtivos.toString());
@@ -262,10 +257,10 @@ export const documentosServidorService = {
     }
 
     const queryString = params.toString();
-    const url = `/DocumentoServidor/listar${queryString ? `?${queryString}` : ''}`;
+    const url = `/AvisoIntencaoContratar/listar${queryString ? `?${queryString}` : ''}`;
 
     try {
-      const response = await apiClient.get<DocumentoServidorListResponse>(url);
+      const response = await apiClient.get<AvisoIntencaoContratarListResponse>(url);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -273,9 +268,9 @@ export const documentosServidorService = {
   },
 
   /**
-   * Lista documentos do servidor públicos (sem autenticação)
+   * Lista avisos de intenção de contratar públicos (sem autenticação)
    */
-  listarPublico: async (filtros?: DocumentoServidorPublicoFilters): Promise<DocumentoServidorPublicoListResponse> => {
+  listarPublico: async (filtros?: AvisoIntencaoContratarPublicoFilters): Promise<AvisoIntencaoContratarPublicoListResponse> => {
     const params = new URLSearchParams();
 
     if (filtros?.caminho) {
@@ -298,10 +293,10 @@ export const documentosServidorService = {
     }
 
     const queryString = params.toString();
-    const url = `/DocumentoServidor/listar-publico${queryString ? `?${queryString}` : ''}`;
+    const url = `/AvisoIntencaoContratar/listar-publico${queryString ? `?${queryString}` : ''}`;
 
     try {
-      const response = await apiClient.get<DocumentoServidorPublicoListResponse>(url);
+      const response = await apiClient.get<AvisoIntencaoContratarPublicoListResponse>(url);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -309,11 +304,11 @@ export const documentosServidorService = {
   },
 
   /**
-   * Obtém documento do servidor por ID
+   * Obtém aviso de intenção de contratar por ID
    */
-  obterPorId: async (id: number): Promise<DocumentoServidorDetalhe> => {
+  obterPorId: async (id: number): Promise<AvisoIntencaoContratarDetalhe> => {
     try {
-      const response = await apiClient.get<DocumentoServidorDetalhe>(`/DocumentoServidor/${id}`);
+      const response = await apiClient.get<AvisoIntencaoContratarDetalhe>(`/AvisoIntencaoContratar/${id}`);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -321,9 +316,9 @@ export const documentosServidorService = {
   },
 
   /**
-   * Edita um documento do servidor existente
+   * Edita um aviso de intenção de contratar existente
    */
-  editar: async (id: number, data: EditarDocumentoServidorRequest): Promise<DocumentoServidorDetalhe> => {
+  editar: async (id: number, data: EditarAvisoIntencaoContratarRequest): Promise<AvisoIntencaoContratarDetalhe> => {
     // Validações
     const erros: string[] = [
       ...validarTitulo(data.titulo),
@@ -337,8 +332,8 @@ export const documentosServidorService = {
     }
 
     try {
-      const response = await apiClient.put<DocumentoServidorDetalhe>(
-        `/DocumentoServidor/editar/${id}`,
+      const response = await apiClient.put<AvisoIntencaoContratarDetalhe>(
+        `/AvisoIntencaoContratar/editar/${id}`,
         buildFormData(data),
         {
           headers: { 'Content-Type': 'multipart/form-data' },
@@ -351,22 +346,22 @@ export const documentosServidorService = {
   },
 
   /**
-   * Inativa um documento do servidor
+   * Inativa um aviso de intenção de contratar
    */
   inativar: async (id: number): Promise<void> => {
     try {
-      await apiClient.post(`/DocumentoServidor/inativar/${id}`);
+      await apiClient.post(`/AvisoIntencaoContratar/inativar/${id}`);
     } catch (error) {
       throw new Error(handleApiError(error));
     }
   },
 
   /**
-   * Ativa um documento do servidor
+   * Ativa um aviso de intenção de contratar
    */
   ativar: async (id: number): Promise<void> => {
     try {
-      await apiClient.post(`/DocumentoServidor/ativar/${id}`);
+      await apiClient.post(`/AvisoIntencaoContratar/ativar/${id}`);
     } catch (error) {
       throw new Error(handleApiError(error));
     }

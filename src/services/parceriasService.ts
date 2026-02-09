@@ -1,29 +1,5 @@
 import { apiClient } from '../lib/apiClient';
 import { handleApiError } from '../utils/errorHandler';
-import { API_CONFIG } from '../config/api';
-
-/**
- * Constrói a URL completa para download de uma parceria (uso interno)
- */
-const getParceriaDownloadUrl = (caminhoArquivo: string): string => {
-  if (!caminhoArquivo) return '';
-
-  // Se já é uma URL completa, retorna como está
-  if (caminhoArquivo.startsWith('http://') || caminhoArquivo.startsWith('https://')) {
-    return caminhoArquivo;
-  }
-
-  // Remove /api do final da baseURL se existir, pois arquivos estáticos são servidos da raiz
-  let baseUrl = API_CONFIG.baseURL || '';
-  if (baseUrl.endsWith('/api')) {
-    baseUrl = baseUrl.slice(0, -4);
-  }
-
-  // Garante que não tenha barras duplicadas
-  const caminho = caminhoArquivo.startsWith('/') ? caminhoArquivo : `/${caminhoArquivo}`;
-
-  return `${baseUrl}${caminho}`;
-};
 
 /**
  * Faz o download de uma parceria internamente e dispara o download no navegador
@@ -35,42 +11,14 @@ export const downloadParceria = async (caminhoArquivo: string, nomeArquivo?: str
     throw new Error('Caminho do arquivo não informado');
   }
 
-  const url = getParceriaDownloadUrl(caminhoArquivo);
-
-  let response: Response;
-  try {
-    response = await fetch(url, {
-      method: 'GET',
-      credentials: 'include',
-    });
-  } catch (error) {
-    throw new Error(handleApiError(error));
-  }
-
-  if (!response.ok) {
-    throw new Error(`Erro ao baixar arquivo: ${response.status}`);
-  }
-
-  try {
-    const blob = await response.blob();
-
-    // Extrai o nome do arquivo do caminho se não foi fornecido
-    const fileName = nomeArquivo || caminhoArquivo.split('/').pop() || 'parceria';
-
-    // Cria um link temporário para download
-    const downloadUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-
-    // Limpa o link temporário
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(downloadUrl);
-  } catch (error) {
-    throw new Error(handleApiError(error));
-  }
+  const url = caminhoArquivo.startsWith('http') ? caminhoArquivo : `${window.location.origin}${caminhoArquivo}`;
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = nomeArquivo || caminhoArquivo.split('/').pop() || 'parceria';
+  link.target = '_blank';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
 // ==================== INTERFACES ====================
