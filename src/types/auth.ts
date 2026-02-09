@@ -2,6 +2,8 @@ export interface User {
   id: string;
   nome: string;
   email: string;
+  ativo?: boolean;
+  status?: number; // 1 = Ativo, 2 = Inativo, 3 = Admin
 }
 
 export interface Perfil {

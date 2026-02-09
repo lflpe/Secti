@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
+import { relatoriosService } from '../../../services/relatoriosService';
 
 export const CriarRelatorios = () => {
   const navigate = useNavigate();
@@ -9,6 +10,10 @@ export const CriarRelatorios = () => {
   const [sucesso, setSucesso] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
+    titulo: '',
+    categoria: '',
+    anoPublicacao: new Date().getFullYear(),
+    caminho: '',
     arquivo: null as File | null,
   });
 
@@ -16,9 +21,8 @@ export const CriarRelatorios = () => {
     nome: string;
     nomeComExtensao: string;
     tamanho: string;
-    tipo: 'pdf' | 'doc' | 'docx' | 'xlsx';
+    tipo: 'pdf' | 'xls' | 'xlsx' | 'csv' | 'outro';
   } | null>(null);
-
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -32,19 +36,20 @@ export const CriarRelatorios = () => {
     const file = e.target.files?.[0];
 
     if (!file) {
-      setFormData({
+      setFormData(prev => ({
+        ...prev,
         arquivo: null,
-      });
+      }));
       setPreviewArquivo(null);
       return;
     }
 
     // Validar tipo de arquivo
     const extensao = file.name.split('.').pop()?.toLowerCase();
-    const tiposPermitidos = ['pdf', 'doc', 'docx', 'xlsx'];
+    const tiposPermitidos = ['pdf', 'xls', 'xlsx', 'csv'];
 
     if (!extensao || !tiposPermitidos.includes(extensao)) {
-      setErro('Por favor, selecione um arquivo PDF, DOC, DOCX ou XLSX');
+      setErro('Por favor, selecione um arquivo PDF, XLS, XLSX ou CSV');
       return;
     }
 
@@ -60,22 +65,24 @@ export const CriarRelatorios = () => {
     // Extrair nome sem extensão
     const nomeArquivo = file.name.substring(0, file.name.lastIndexOf('.'));
 
-    setFormData({
+    setFormData(prev => ({
+      ...prev,
       arquivo: file,
-    });
+    }));
 
     setPreviewArquivo({
       nome: nomeArquivo,
       nomeComExtensao: file.name,
       tamanho: formatFileSize(file.size),
-      tipo: extensao as 'pdf' | 'doc' | 'docx' | 'xlsx',
+      tipo: extensao as 'pdf' | 'xls' | 'xlsx' | 'csv',
     });
   };
 
   const handleRemoverArquivo = () => {
-    setFormData({
+    setFormData(prev => ({
+      ...prev,
       arquivo: null,
-    });
+    }));
     setPreviewArquivo(null);
     const input = document.getElementById('arquivo-input') as HTMLInputElement;
     if (input) input.value = '';
@@ -87,7 +94,22 @@ export const CriarRelatorios = () => {
     setErro(null);
     setSucesso(null);
 
-    // Validação: arquivo obrigatório
+    // Validações
+    if (!formData.titulo || formData.titulo.trim().length === 0) {
+      setErro('Por favor, informe o título');
+      return;
+    }
+
+    if (!formData.categoria || formData.categoria.trim().length === 0) {
+      setErro('Por favor, informe a categoria');
+      return;
+    }
+
+    if (!formData.anoPublicacao) {
+      setErro('Por favor, informe o ano de publicação');
+      return;
+    }
+
     if (!formData.arquivo) {
       setErro('Por favor, selecione um arquivo');
       return;
@@ -96,11 +118,13 @@ export const CriarRelatorios = () => {
     setIsSubmitting(true);
 
     try {
-      // Aqui você faria a chamada à API
-      // Exemplo: await api.post('/relatorios', formData)
-
-      // Simular espera
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await relatoriosService.cadastrar({
+        titulo: formData.titulo,
+        categoria: formData.categoria,
+        anoPublicacao: formData.anoPublicacao,
+        caminho: formData.caminho || undefined,
+        arquivo: formData.arquivo,
+      });
 
       setSucesso('Relatório criado com sucesso!');
 
@@ -191,13 +215,81 @@ export const CriarRelatorios = () => {
 
         {/* Formulário */}
         <form onSubmit={handleSubmit} className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-6">
+          {/* Título */}
+          <div>
+            <label htmlFor="titulo" className="block text-sm font-medium text-gray-700 mb-2">
+              Título <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="titulo"
+              value={formData.titulo}
+              onChange={(e) => setFormData(prev => ({ ...prev, titulo: e.target.value }))}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2856] focus:border-transparent"
+              placeholder="Digite o título do relatório"
+              maxLength={200}
+            />
+            <p className="text-xs text-gray-500 mt-1">Mínimo 3 caracteres, máximo 200 caracteres</p>
+          </div>
+
+          {/* Categoria */}
+          <div>
+            <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-2">
+              Categoria <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="categoria"
+              value={formData.categoria}
+              onChange={(e) => setFormData(prev => ({ ...prev, categoria: e.target.value }))}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2856] focus:border-transparent"
+              placeholder="Digite a categoria do relatório"
+              maxLength={100}
+            />
+            <p className="text-xs text-gray-500 mt-1">Máximo 100 caracteres</p>
+          </div>
+
+          {/* Ano de Publicação */}
+          <div>
+            <label htmlFor="anoPublicacao" className="block text-sm font-medium text-gray-700 mb-2">
+              Ano de Publicação <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              id="anoPublicacao"
+              value={formData.anoPublicacao}
+              onChange={(e) => setFormData(prev => ({ ...prev, anoPublicacao: parseInt(e.target.value) || new Date().getFullYear() }))}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2856] focus:border-transparent"
+              min={1900}
+              max={3000}
+            />
+            <p className="text-xs text-gray-500 mt-1">Entre 1900 e 3000</p>
+          </div>
+
+          {/* Caminho (Opcional) */}
+          <div>
+            <label htmlFor="caminho" className="block text-sm font-medium text-gray-700 mb-2">
+              Caminho
+            </label>
+            <input
+              type="text"
+              id="caminho"
+              value={formData.caminho}
+              onChange={(e) => setFormData(prev => ({ ...prev, caminho: e.target.value }))}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2856] focus:border-transparent"
+              placeholder="Digite o caminho (opcional)"
+              maxLength={500}
+            />
+            <p className="text-xs text-gray-500 mt-1">Opcional, máximo 500 caracteres</p>
+          </div>
+
           {/* Upload de Arquivo */}
           <div>
             <label htmlFor="arquivo-input" className="block text-sm font-medium text-gray-700 mb-2">
               Selecione o Arquivo do Relatório <span className="text-red-500">*</span>
             </label>
             <p className="text-xs text-gray-500 mb-4">
-              O nome e tipo de arquivo serão extraídos automaticamente do arquivo enviado
+              Formatos aceitos: PDF, XLS, XLSX, CSV (máximo 10MB)
             </p>
 
             {!previewArquivo ? (
@@ -209,12 +301,12 @@ export const CriarRelatorios = () => {
                   <div className="text-sm text-gray-600">
                     <span className="font-medium text-[#0C2856]">Clique aqui</span> ou arraste um arquivo
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">PDF, DOC, DOCX ou XLSX (máximo 10MB)</p>
+                  <p className="text-xs text-gray-500 mt-1">PDF, XLS, XLSX ou CSV (máximo 10MB)</p>
                 </label>
                 <input
                   id="arquivo-input"
                   type="file"
-                  accept=".pdf,.doc,.docx,.xlsx"
+                  accept=".pdf,.xls,.xlsx,.csv"
                   onChange={handleArquivoChange}
                   className="hidden"
                 />

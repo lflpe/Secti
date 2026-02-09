@@ -8,27 +8,36 @@ const AUTH_DATA_KEY = 'auth_data';
 // Serviço de autenticação utilizando localStorage
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthData> {
+    let response;
+
     try {
       // Make API call to login endpoint
-      const response = await apiClient.post<AuthData>(
+      response = await apiClient.post<AuthData>(
         API_ENDPOINTS.auth.login,
         {
           email: credentials.email,
           senha: credentials.password, // API expects 'senha' instead of 'password'
         }
       );
-
-      const authData = response.data;
-
-      // Salvar todos os dados de autenticação no localStorage
-      this.saveAuthData(authData);
-
-      return authData;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Login API error:', error);
       const errorMessage = handleApiError(error);
       throw new Error(errorMessage);
     }
+
+    const authData = response.data;
+
+    // Validar status do usuário FORA do try-catch de API
+    // Status 1 = Ativo, Status 2 = Inativo, Status 3 = Admin
+    if (authData.usuario.status === 2) {
+      // Status 2 = Inativo (Suspenso) - não salvar dados de autenticação
+      throw new Error('Sua conta está suspensa. Por favor, entre em contato com um administrador para recuperar o acesso.');
+    }
+
+    // Salvar todos os dados de autenticação no localStorage
+    this.saveAuthData(authData);
+
+    return authData;
   },
 
   async logout(): Promise<void> {
@@ -83,7 +92,7 @@ export const authService = {
     }
   },
 
-  // Mantém compatibilidade
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getUser(): User | null {
     const authData = this.getAuthData();
     return authData ? authData.usuario : null;

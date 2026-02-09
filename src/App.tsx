@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import {AuthProvider} from "./contexts";
 import { PrivateRoute } from './guards/PrivateRoute';
+import { PrivateRouteWithMenuAccess } from './guards/PrivateRouteWithMenuAccess';
 import { PublicRoute } from './guards/PublicRoute';
 
 // Public Pages
@@ -53,6 +54,9 @@ import {ProcessosERelatorios} from "./pages/public/ouvidoria/ProcessosERelatorio
 import {RedeOuvidorias} from "./pages/public/ouvidoria/RedeOuvidorias.tsx";
 import {PerguntasFrequentes} from "./pages/public/transparencia/PerguntasFrequentes.tsx";
 import {InformacoesInstitucionais} from "./pages/public/transparencia/InformacoesInstitucionais.tsx";
+import {ListarUsuarios} from "./pages/private/usuarios/ListarUsuarios.tsx";
+import {CriarUsuarios} from "./pages/private/usuarios/CriarUsuarios.tsx";
+import {EditarUsuarios} from "./pages/private/usuarios/EditarUsuarios.tsx";
 
 function App() {
   return (
@@ -126,33 +130,33 @@ function App() {
           <Route
             path="/admin/noticias"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Notícias">
                 <ListaNoticias />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
           <Route
             path="/admin/noticias/criar"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Notícias">
                 <CriarNoticia />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
           <Route
             path="/admin/noticias/editar/:slug"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Notícias">
                 <EditarNoticia />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
           <Route
             path="/admin/noticias/visualizar/:slug"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Notícias">
                 <VisualizarNoticiaAdmin />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
 
@@ -160,17 +164,17 @@ function App() {
           <Route
             path="/admin/editais"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Editais">
                 <ListarEdital />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
           <Route
             path="/admin/editais/criar"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Editais">
                 <CriarEdital />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
 
@@ -178,17 +182,17 @@ function App() {
           <Route
             path="/admin/avisosdeintencao"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Aviso de Intenção de Contratar">
                 <ListarAvisosDeIntencao />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
           <Route
             path="/admin/avisosdeintencao/criar"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Aviso de Intenção de Contratar">
                 <CriarAvisosDeIntencao />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
 
@@ -196,33 +200,33 @@ function App() {
           <Route
             path="/admin/documentos"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Documentos">
                 <ListarDocumentos />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
           <Route
             path="/admin/documentos/criar"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Documentos">
                 <CriarDocumentos />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
           <Route
             path="/admin/documentos-servidor"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Documentos do Servidor">
                 <ListarDocumentosServidor />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
           <Route
             path="/admin/documentos-servidor/criar"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Documentos do Servidor">
                 <CriarDocumentosServidor />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
 
@@ -230,17 +234,17 @@ function App() {
           <Route
             path="/admin/legislacao"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Legislação">
                 <ListarLegislacao />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
           <Route
             path="/admin/legislacao/criar"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Legislação">
                 <CriarLegislacao />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
 
@@ -248,17 +252,17 @@ function App() {
           <Route
             path="/admin/parcerias"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Parcerias">
                 <ListarParcerias />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
           <Route
             path="/admin/parcerias/criar"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Parcerias">
                 <CriarParcerias />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
 
@@ -266,17 +270,17 @@ function App() {
           <Route
             path="/admin/transparencia"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Transparência">
                 <ListarTransparencia />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
           <Route
             path="/admin/transparencia/criar"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Transparência">
                 <CriarTransparencia />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
 
@@ -284,17 +288,17 @@ function App() {
           <Route
             path="/admin/processos"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Processos">
                 <ListarProcessos />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
           <Route
             path="/admin/processos/criar"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Processos">
                 <CriarProcessos />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
 
@@ -302,20 +306,45 @@ function App() {
           <Route
             path="/admin/relatorios"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Relatórios">
                 <ListarRelatorios />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
           <Route
             path="/admin/relatorios/criar"
             element={
-              <PrivateRoute>
+              <PrivateRouteWithMenuAccess requiredMenu="Relatórios">
                 <CriarRelatorios />
-              </PrivateRoute>
+              </PrivateRouteWithMenuAccess>
             }
           />
 
+          {/* Usuários - Admin */}
+          <Route
+            path="/admin/usuarios"
+            element={
+              <PrivateRouteWithMenuAccess requiredMenu="Usuários">
+                <ListarUsuarios/>
+              </PrivateRouteWithMenuAccess>
+            }
+          />
+          <Route
+            path="/admin/usuarios/criar"
+            element={
+              <PrivateRouteWithMenuAccess requiredMenu="Usuários">
+                <CriarUsuarios/>
+              </PrivateRouteWithMenuAccess>
+            }
+          />
+          <Route
+            path="/admin/usuarios/editar/:id"
+            element={
+              <PrivateRouteWithMenuAccess requiredMenu="Usuários">
+                <EditarUsuarios/>
+              </PrivateRouteWithMenuAccess>
+            }
+          />
           {/* 404 Not Found */}
           <Route path="*" element={<Erro404 />} />
         </Routes>

@@ -1,60 +1,128 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
-import { ListarDocumentos as ListarDocumentosComponent, type Documento } from '../../../components/admin/ListarDocumentos';
-
-// Dados mockados - substituir por chamada à API
-const legislacaoMock: Documento[] = [
-  {
-    id: 1,
-    nome: 'Lei Complementar nº 123/2024 - Organização Administrativa',
-    tipo: 'pdf',
-    tamanho: '2.4 MB',
-    dataUpload: '25/12/2024',
-    url: '#',
-  },
-  {
-    id: 2,
-    nome: 'Decreto nº 456/2024 - Regulamentação de Serviços',
-    tipo: 'docx',
-    tamanho: '1.9 MB',
-    dataUpload: '23/12/2024',
-    url: '#',
-  },
-  {
-    id: 3,
-    nome: 'Lei Ordinária nº 789/2024 - Gestão de Recursos Humanos',
-    tipo: 'pdf',
-    tamanho: '3.2 MB',
-    dataUpload: '20/12/2024',
-    url: '#',
-  },
-  {
-    id: 4,
-    nome: 'Portaria nº 101/2024 - Normas Internas',
-    tipo: 'docx',
-    tamanho: '1.5 MB',
-    dataUpload: '18/12/2024',
-    url: '#',
-  },
-];
+import { ListarLegislacao as ListarLegislacaoComponent, type Legislacao } from '../../../components/admin/ListarLegislacao';
+import { legislacaoService, type LegislacaoListFilters } from '../../../services/legislacaoService';
+import { handleApiError } from '../../../utils/errorHandler';
 
 export const ListarLegislacao = () => {
-  const [legislacao, setLegislacao] = useState<Documento[]>(legislacaoMock);
+  const [legislacoes, setLegislacoes] = useState<Legislacao[]>([]);
   const [filtroTipo, setFiltroTipo] = useState<string>('Todos');
+  const [filtroCategoria, setFiltroCategoria] = useState<string>('');
   const [busca, setBusca] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const [totalItens, setTotalItens] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
-  // Filtrar legislação
-  const legislacaoFiltrada = legislacao.filter((documento) => {
-    const matchTipo = filtroTipo === 'Todos' || documento.tipo === filtroTipo;
-    const matchBusca = documento.nome.toLowerCase().includes(busca.toLowerCase());
+  const getTipoFromNome = (nomeArquivo?: string, caminhoArquivo?: string): Legislacao['tipo'] => {
+    const origem = nomeArquivo || caminhoArquivo || '';
+    const parts = origem.split('.');
+    if (parts.length < 2) return 'outro';
+    const ext = parts.pop()?.toLowerCase();
+    if (ext === 'pdf' || ext === 'xls' || ext === 'xlsx' || ext === 'csv') {
+      return ext;
+    }
+    return 'outro';
+  };
 
-    return matchTipo && matchBusca;
-  });
+  const carregarLegislacoes = useCallback(async (
+    page = 1,
+    categoria?: string,
+    tituloFiltro = '',
+    tipoFiltro = 'Todos'
+  ) => {
+    setIsLoading(true);
+    setErro(null);
+    try {
+      // Se há filtros locais (título ou tipo), busca todos para filtrar no cliente
+      const precisaFiltroLocal = tituloFiltro || tipoFiltro !== 'Todos';
 
-  // Função para excluir legislação
-  const handleDelete = (id: number) => {
-    setLegislacao(legislacao.filter(l => l.id !== id));
+      const filtros: LegislacaoListFilters = {
+        ordenarPor: 'titulo',
+        ordenarDescendente: false,
+        apenasAtivas: true,
+        pagina: precisaFiltroLocal ? 1 : page,
+        itensPorPagina: precisaFiltroLocal ? 10000 : itemsPerPage,
+      };
+
+      if (categoria) {
+        filtros.categoria = categoria;
+      }
+
+      const response = await legislacaoService.listar(filtros);
+
+      let legislacoesFormatadas: Legislacao[] = response.legislacoes.map((legislacao) => ({
+        id: legislacao.id,
+        nome: legislacao.titulo,
+        tipo: getTipoFromNome(legislacao.nomeArquivo, legislacao.caminhoArquivo),
+        categoria: legislacao.categoria,
+        anoPublicacao: legislacao.anoPublicacao,
+        caminhoArquivo: legislacao.caminhoArquivo,
+        nomeArquivo: legislacao.nomeArquivo,
+      }));
+
+      // Filtro por título no cliente (API não tem filtro por título)
+      if (tituloFiltro) {
+        legislacoesFormatadas = legislacoesFormatadas.filter(l =>
+          l.nome.toLowerCase().includes(tituloFiltro.toLowerCase())
+        );
+      }
+
+      // Filtro por tipo no cliente (API não tem filtro por tipo de arquivo)
+      if (tipoFiltro && tipoFiltro !== 'Todos') {
+        legislacoesFormatadas = legislacoesFormatadas.filter(l =>
+          l.tipo === tipoFiltro
+        );
+      }
+
+      // Paginação no cliente quando há filtros locais
+      if (precisaFiltroLocal) {
+        setTotalItens(legislacoesFormatadas.length);
+        const start = (page - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        setLegislacoes(legislacoesFormatadas.slice(start, end));
+      } else {
+        setLegislacoes(legislacoesFormatadas);
+        setTotalItens(response.totalItens);
+      }
+
+      setCurrentPage(page);
+    } catch (error) {
+      const mensagemErro = handleApiError(error);
+      setErro(mensagemErro);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [itemsPerPage]);
+
+  useEffect(() => {
+    carregarLegislacoes();
+  }, [carregarLegislacoes]);
+
+  // Buscar legislações via endpoint
+  const handleSearch = () => {
+    carregarLegislacoes(1, filtroCategoria || undefined, busca, filtroTipo);
+  };
+
+  // Limpar filtros
+  const handleClearSearch = () => {
+    setBusca('');
+    setFiltroTipo('Todos');
+    setFiltroCategoria('');
+    carregarLegislacoes(1, undefined, '', 'Todos');
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await legislacaoService.inativar(id);
+      // Recarregar lista mantendo filtros
+      await carregarLegislacoes(currentPage, filtroCategoria || undefined, busca, filtroTipo);
+    } catch (error) {
+      const mensagemErro = handleApiError(error);
+      setErro(mensagemErro);
+    }
   };
 
   return (
@@ -65,7 +133,7 @@ export const ListarLegislacao = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Gerenciar Legislação</h1>
             <p className="text-gray-600 mt-2">
-              {legislacaoFiltrada.length} {legislacaoFiltrada.length === 1 ? 'documento encontrado' : 'documentos encontrados'}
+              {isLoading ? 'Carregando...' : `${totalItens} ${totalItens === 1 ? 'legislação encontrada' : 'legislações encontradas'}`}
             </p>
           </div>
           <Link
@@ -79,63 +147,114 @@ export const ListarLegislacao = () => {
           </Link>
         </div>
 
+        {erro && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-red-600 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <div>
+                <h3 className="text-sm font-medium text-red-800">Erro ao carregar legislações</h3>
+                <p className="text-sm text-red-700 mt-1">{erro}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Filtros */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Busca */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Buscar por Nome
+              <label htmlFor="busca" className="block text-sm font-medium text-gray-700 mb-2">
+                Buscar por Título
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  id="busca"
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+                  placeholder="Digite o título da legislação..."
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Filtro por Categoria */}
+            <div>
+              <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-2">
+                Categoria
               </label>
               <input
                 type="text"
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-                placeholder="Digite o nome da legislação..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#195CE3] focus:border-transparent outline-none transition-colors"
+                id="categoria"
+                value={filtroCategoria}
+                onChange={(e) => setFiltroCategoria(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+                placeholder="Ex: Lei, Decreto"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
               />
             </div>
 
             {/* Filtro por Tipo */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="tipo" className="block text-sm font-medium text-gray-700 mb-2">
                 Tipo de Arquivo
               </label>
               <select
+                id="tipo"
                 value={filtroTipo}
                 onChange={(e) => setFiltroTipo(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#195CE3] focus:border-transparent outline-none transition-colors"
+                className="block w-full cursor-pointer px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
               >
                 <option value="Todos">Todos</option>
                 <option value="pdf">PDF</option>
-                <option value="doc">DOC</option>
-                <option value="docx">DOCX</option>
+                <option value="xls">XLS</option>
+                <option value="xlsx">XLSX</option>
+                <option value="csv">CSV</option>
               </select>
             </div>
 
-            {/* Botão Limpar */}
-            <div className="flex items-end">
+            {/* Botões de ação */}
+            <div className="flex items-end gap-2">
               <button
-                onClick={() => {
-                  setBusca('');
-                  setFiltroTipo('Todos');
-                }}
-                className="w-full cursor-pointer px-3 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                onClick={handleSearch}
+                disabled={isLoading}
+                className="flex-1 cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Limpar Filtros
+                {isLoading ? 'Buscando...' : 'Buscar'}
+              </button>
+              <button
+                onClick={handleClearSearch}
+                disabled={isLoading}
+                className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Limpar
               </button>
             </div>
           </div>
         </div>
 
-        {/* Lista de Legislação */}
-        <ListarDocumentosComponent
-          documentos={legislacaoFiltrada}
-          onDelete={handleDelete}
-          emptyStateTitle="Nenhuma legislação encontrada"
-          emptyStateDescription="Crie uma nova legislação para começar"
-          showHeader={false}
-        />
+        {isLoading ? (
+          <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-12 text-center">
+            <p className="text-sm text-gray-500">Carregando legislações...</p>
+          </div>
+        ) : (
+          <ListarLegislacaoComponent
+            legislacoes={legislacoes}
+            onDelete={handleDelete}
+            emptyStateTitle="Nenhuma legislação encontrada"
+            emptyStateDescription="Crie uma nova legislação para começar"
+            showHeader={false}
+          />
+        )}
       </div>
     </PrivateLayout>
   );
