@@ -24,6 +24,12 @@ apiClient.interceptors.request.use(
         console.error('Error parsing auth data:', error);
       }
     }
+
+    // Se for FormData, remover Content-Type para deixar o navegador definir automaticamente
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
     return config;
   },
   (error) => {

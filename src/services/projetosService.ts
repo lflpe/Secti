@@ -22,6 +22,14 @@ export interface ProjetoResponse {
   dataCriacao: string;
 }
 
+// Type para pergunta frequente
+export interface PerguntaFrequenteAPI {
+  id: number;
+  pergunta: string;
+  resposta: string;
+  ordem: number;
+}
+
 // Type para projeto detalhado
 export interface ProjetoDetalhado {
   id: number;
@@ -30,7 +38,7 @@ export interface ProjetoDetalhado {
   fotoCapaCaminho: string;
   logoCaminho: string;
   url: string;
-  perguntasFrequentes: string;
+  perguntasFrequentes: PerguntaFrequenteAPI[] | string;
   ativo: boolean;
   dataCriacao: string;
 }
@@ -216,6 +224,8 @@ export const projetosService = {
     if (data.fotoCapa) formData.append('FotoCapa', data.fotoCapa);
     if (data.logo) formData.append('Logo', data.logo);
 
+    // PUT é o método correto para edição, o interceptor do apiClient já remove o Content-Type
+    // para que o navegador defina automaticamente o boundary correto para multipart/form-data
     const response = await apiClient.put<EditarProjetoResponse>(`/Projeto/editar/${id}`, formData);
     return response.data;
   },

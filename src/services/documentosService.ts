@@ -216,9 +216,8 @@ export const documentosService = {
     }
 
     try {
-      const response = await apiClient.post<DocumentoResponse>('/Documento/cadastrar', buildFormData(data), {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      // O interceptor do apiClient já remove o Content-Type para FormData
+      const response = await apiClient.post<DocumentoResponse>('/Documento/cadastrar', buildFormData(data));
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -292,9 +291,8 @@ export const documentosService = {
     }
 
     try {
-      const response = await apiClient.put<DocumentoDetalhado>(`/Documento/editar/${id}`, buildFormData(data), {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      // O interceptor do apiClient já remove o Content-Type para FormData
+      const response = await apiClient.put<DocumentoDetalhado>(`/Documento/editar/${id}`, buildFormData(data));
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));

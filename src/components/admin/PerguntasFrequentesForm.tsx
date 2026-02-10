@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export interface PerguntaFrequente {
   id?: string;
@@ -18,6 +18,12 @@ export const PerguntasFrequentesForm = ({
   isSubmitting = false
 }: PerguntasFrequentesFormProps) => {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  // Debug: Log quando as perguntas mudarem
+  useEffect(() => {
+    console.log('[PerguntasFrequentesForm] Perguntas recebidas:', perguntas);
+    console.log('[PerguntasFrequentesForm] Quantidade:', perguntas.length);
+  }, [perguntas]);
 
   // Gerar ID único para novas perguntas
   const generateId = () => {

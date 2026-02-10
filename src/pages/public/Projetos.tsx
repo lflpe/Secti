@@ -4,6 +4,7 @@ import { PublicLayout } from '../../layouts/PublicLayout';
 import { HeroSection } from '../../components/HeroSection';
 import { ProjetosList } from '../../components/ProjetosList';
 import type { ProjetoItem } from '../../components/ProjetosList';
+import { AccordionPerguntas, type PerguntaFrequentePublica } from '../../components/AccordionPerguntas';
 import { projetosService } from '../../services/projetosService';
 import { handleApiError } from '../../utils/errorHandler';
 import { LoadingScreen } from '../../components/LoadingScreen';
@@ -11,6 +12,7 @@ import { LoadingScreen } from '../../components/LoadingScreen';
 export const Projetos = () => {
   const { id } = useParams<{ id: string }>();
   const [projetos, setProjetos] = useState<ProjetoItem[]>([]);
+  const [perguntasFrequentes, setPerguntasFrequentes] = useState<PerguntaFrequentePublica[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const itensPorPagina = 100;
@@ -30,7 +32,7 @@ export const Projetos = () => {
           const projetoFormatado: ProjetoItem = {
             id: response.id,
             titulo: response.titulo,
-            descricao: response.fotoCapaCaminho ? 'Projeto com documentação' : 'Projeto sem documentação',
+            descricao: response.descricao || 'Projeto sem descrição',
             fotoCapaCaminho: response.fotoCapaCaminho,
             logoCaminho: response.logoCaminho,
             url: response.url,
@@ -39,6 +41,29 @@ export const Projetos = () => {
           };
 
           setProjetos([projetoFormatado]);
+
+          // Processar perguntas frequentes
+          if (response.perguntasFrequentes) {
+            try {
+              let perguntas: PerguntaFrequentePublica[];
+
+              if (Array.isArray(response.perguntasFrequentes)) {
+                // Se já for um array, usar diretamente
+                perguntas = response.perguntasFrequentes.sort((a, b) => a.ordem - b.ordem);
+              } else {
+                // Se for string, fazer parse
+                const parsed = JSON.parse(response.perguntasFrequentes);
+                perguntas = Array.isArray(parsed)
+                  ? parsed.sort((a: PerguntaFrequentePublica, b: PerguntaFrequentePublica) => a.ordem - b.ordem)
+                  : [];
+              }
+
+              setPerguntasFrequentes(perguntas);
+            } catch (e) {
+              console.error('Erro ao processar perguntas frequentes:', e);
+              setPerguntasFrequentes([]);
+            }
+          }
         } else {
           // Se nenhum ID, buscar todos os projetos públicos
           response = await projetosService.listarPublico({
@@ -91,6 +116,18 @@ export const Projetos = () => {
           isLoading={isLoading}
           error={error}
         />
+
+        {/* Perguntas Frequentes - Exibir apenas quando visualizar projeto específico */}
+        {id && perguntasFrequentes.length > 0 && (
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                Perguntas Frequentes
+              </h2>
+              <AccordionPerguntas perguntas={perguntasFrequentes} />
+            </div>
+          </div>
+        )}
       </div>
     </PublicLayout>
   );

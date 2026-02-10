@@ -50,11 +50,49 @@ export const EditarProjeto = () => {
         // Carregar perguntas frequentes
         try {
           if (projeto.perguntasFrequentes) {
-            const perguntas = JSON.parse(projeto.perguntasFrequentes);
-            setPerguntasFrequentes(perguntas || []);
+            console.log('Perguntas recebidas do backend:', projeto.perguntasFrequentes);
+            console.log('Tipo:', typeof projeto.perguntasFrequentes);
+            console.log('É array?', Array.isArray(projeto.perguntasFrequentes));
+
+            let perguntas: PerguntaFrequente[] = [];
+
+            if (Array.isArray(projeto.perguntasFrequentes)) {
+              // Se já for um array, mapear para o formato do frontend
+              console.log('Processando como array...');
+              perguntas = projeto.perguntasFrequentes.map((p, index) => ({
+                id: p.id?.toString() || `pf-${index}-${Date.now()}`,
+                pergunta: p.pergunta || '',
+                resposta: p.resposta || '',
+              }));
+            } else {
+              // Se não for array, deve ser string - fazer parse
+              console.log('Processando como string JSON...');
+              try {
+                const parsed = JSON.parse(projeto.perguntasFrequentes) as unknown;
+                console.log('JSON parseado:', parsed);
+
+                if (Array.isArray(parsed)) {
+                  perguntas = parsed.map((p: { id?: number; pergunta?: string; resposta?: string; ordem?: number }, index: number) => ({
+                    id: p.id?.toString() || `pf-${index}-${Date.now()}`,
+                    pergunta: p.pergunta || '',
+                    resposta: p.resposta || '',
+                  }));
+                } else {
+                  console.warn('JSON parseado não é um array:', parsed);
+                }
+              } catch (parseError) {
+                console.error('Erro ao fazer parse do JSON:', parseError);
+              }
+            }
+
+            console.log('Perguntas formatadas para o estado:', perguntas);
+            setPerguntasFrequentes(perguntas);
+          } else {
+            console.log('Nenhuma pergunta frequente encontrada');
+            setPerguntasFrequentes([]);
           }
         } catch (e) {
-          console.error('Erro ao parsear perguntas frequentes:', e);
+          console.error('Erro ao processar perguntas frequentes:', e);
           setPerguntasFrequentes([]);
         }
 
