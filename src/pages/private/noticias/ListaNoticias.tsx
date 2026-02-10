@@ -116,7 +116,7 @@ export const ListaNoticias = () => {
     <PrivateLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Gerenciar Notícias</h1>
             <p className="text-gray-600 mt-2">
@@ -125,7 +125,7 @@ export const ListaNoticias = () => {
           </div>
           <Link
             to="/admin/noticias/criar"
-            className="inline-flex items-center gap-2 bg-[#0C2856] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#195CE3] transition-colors shadow-md hover:shadow-lg"
+            className="inline-flex items-center justify-center gap-2 bg-[#0C2856] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#195CE3] transition-colors shadow-md hover:shadow-lg whitespace-nowrap"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -154,7 +154,7 @@ export const ListaNoticias = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Busca */}
-            <div>
+            <div className="md:col-span-2">
               <label htmlFor="busca" className="block text-sm font-medium text-gray-700 mb-2">
                 Buscar
               </label>
@@ -194,18 +194,18 @@ export const ListaNoticias = () => {
             </div>
 
             {/* Botões de ação */}
-            <div className="flex items-end gap-2">
+            <div className="md:col-span-3 flex gap-2 flex-col sm:flex-row">
               <button
                 onClick={handleSearch}
                 disabled={loading}
-                className="flex-1 cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 {loading ? 'Buscando...' : 'Buscar'}
               </button>
               <button
                 onClick={handleClearSearch}
                 disabled={loading}
-                className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 sm:flex-auto px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Limpar
               </button>
@@ -232,11 +232,11 @@ export const ListaNoticias = () => {
 
         {/* Paginação */}
         {totalItems > itemsPerPage && (
-          <div className="flex items-center justify-between bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center text-sm text-gray-700">
-              Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, totalItems)} de {totalItems} resultados
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
+            <div className="text-sm text-gray-700">
+              Mostrando <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> a <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> de <span className="font-medium">{totalItems}</span> resultados
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-end">
               <button
                 onClick={() => {
                   const apenasPublicadas = filtroStatus === 'Publicada' ? true :
@@ -244,12 +244,12 @@ export const ListaNoticias = () => {
                   loadNoticias(currentPage - 1, busca, apenasPublicadas);
                 }}
                 disabled={currentPage === 1 || loading}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Anterior
               </button>
               <span className="px-3 py-1 text-sm text-gray-700">
-                Página {currentPage} de {Math.ceil(totalItems / itemsPerPage)}
+                Página <span className="font-medium">{currentPage}</span> de <span className="font-medium">{Math.ceil(totalItems / itemsPerPage)}</span>
               </span>
               <button
                 onClick={() => {
@@ -258,7 +258,7 @@ export const ListaNoticias = () => {
                   loadNoticias(currentPage + 1, busca, apenasPublicadas);
                 }}
                 disabled={currentPage === Math.ceil(totalItems / itemsPerPage) || loading}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Próxima
               </button>

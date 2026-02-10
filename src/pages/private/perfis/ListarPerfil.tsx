@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
 import { perfilService, type PerfilListaItem } from '../../../services/perfilService';
 import { handleApiError } from '../../../utils/errorHandler';
@@ -91,17 +91,22 @@ export const ListarPerfil = () => {
       <div>
         {/* Header */}
         <div className="mb-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Perfis</h1>
-            <button
-              onClick={() => navigate('/admin/perfis/criar')}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer flex items-center gap-2"
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Perfis</h1>
+              <p className="text-gray-600 mt-2 mb-2">
+                {isLoading ? 'Carregando...' : `${paginacao.totalItens} ${paginacao.totalItens === 1 ? 'perfil encontrado' : 'perfis encontrados'}`}
+              </p>
+            </div>
+            <Link
+                to="/admin/perfis/criar"
+                className="inline-flex items-center justify-center mb-5 md:mb-0 px-4 py-2 bg-[#0C2856] text-white font-medium rounded-lg hover:bg-[#195CE3] transition-colors whitespace-nowrap"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Novo Perfil
-            </button>
+              Novo perfil
+            </Link>
           </div>
 
           {/* Mensagens */}
@@ -135,15 +140,28 @@ export const ListarPerfil = () => {
             </div>
           )}
 
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           {/* Busca */}
-          <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Buscar por nome do perfil..."
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+          <div>
+            <label htmlFor="busca" className="block text-sm font-medium text-gray-700 mb-2">
+              Buscar por Nome do Perfil
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                id="busca"
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                placeholder="Digite o nome do perfil..."
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+              />
+            </div>
+          </div>
           </div>
         </div>
 
@@ -203,7 +221,7 @@ export const ListarPerfil = () => {
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               perfil.ativo
                                 ? 'bg-green-100 text-green-800'
-                                : 'bg-red-100 text-red-800'
+                                : 'bg-red-100 text-red-800' 
                             }`}
                           >
                             {perfil.ativo ? 'Ativo' : 'Inativo'}
@@ -266,7 +284,7 @@ export const ListarPerfil = () => {
                     <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {perfil.quantidadeUsuarios} usuários
+                          {perfil.quantidadeUsuarios}
                         </span>
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -279,15 +297,15 @@ export const ListarPerfil = () => {
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => navigate(`/admin/perfis/editar/${perfil.id}`)}
-                        className="text-blue-600 hover:text-blue-900 mr-4 cursor-pointer"
-                        title="Editar"
-                      >
-                        <svg className="w-5 h-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </button>
+                        <button
+                          onClick={() => navigate(`/admin/perfis/editar/${perfil.id}`)}
+                          className="text-blue-600 hover:text-blue-900 transition-colors cursor-pointer"
+                          title="Editar"
+                        >
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
                         {perfil.ativo ? (
                           <button
                             onClick={() => handleSuspender(perfil.id, perfil.nome)}

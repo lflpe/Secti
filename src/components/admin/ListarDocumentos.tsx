@@ -206,24 +206,19 @@ export const ListarDocumentos = ({
         {/* Mobile Cards */}
         <div className="md:hidden divide-y divide-gray-200">
           {documentos.map((documento) => (
-            <div key={documento.id} className="p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-start gap-3 flex-1">
+            <div key={documento.id} className="p-4 hover:bg-gray-50 transition-colors">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3 min-w-0 flex-1">
                   {getIconeTipo(documento.tipo)}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-gray-900 wrap-break-word">
-                      {documento.nome}
-                    </h3>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {documento.tipo.toUpperCase()}
-                    </p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-900 line-clamp-2">{documento.nome}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                      <span className="uppercase font-medium">{documento.tipo}</span>
+                      <span>•</span>
+                      <span>Ano: {documento.anoPublicacao}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                <p className="text-xs text-gray-500">
-                  Ano: {documento.anoPublicacao}
-                </p>
                 <div className="flex items-center gap-2">
                   {documento.caminhoArquivo && (
                     <button

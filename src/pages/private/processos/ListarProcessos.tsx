@@ -165,7 +165,7 @@ export const ListarProcessos = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Busca */}
-            <div>
+            <div className="md:col-span-2">
               <label htmlFor="busca" className="block text-sm font-medium text-gray-700 mb-2">
                 Buscar por Título
               </label>
@@ -223,18 +223,18 @@ export const ListarProcessos = () => {
             </div>
 
             {/* Botões de ação */}
-            <div className="flex items-end gap-2">
+            <div className="md:col-span-4 flex gap-2 flex-col sm:flex-row">
               <button
                 onClick={handleSearch}
                 disabled={isLoading}
-                className="flex-1 cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 {isLoading ? 'Buscando...' : 'Buscar'}
               </button>
               <button
                 onClick={handleClearSearch}
                 disabled={isLoading}
-                className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 sm:flex-auto px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Limpar
               </button>

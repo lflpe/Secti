@@ -144,7 +144,9 @@ export const ListarParcerias = ({
           <h3 className="text-lg font-medium text-gray-900">Parcerias Cadastradas</h3>
         </div>
       )}
-      <div className="overflow-x-auto">
+
+      {/* Desktop Table */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -223,6 +225,60 @@ export const ListarParcerias = ({
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden divide-y divide-gray-200">
+        {parcerias.map((parceria) => (
+          <div key={parceria.id} className="p-4 hover:bg-gray-50 transition-colors">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3 min-w-0 flex-1">
+                {getIconForType(parceria.tipo)}
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-gray-900 line-clamp-2">{parceria.nome}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {parceria.categoria}
+                    </span>
+                    <span className="uppercase font-medium">{parceria.tipo}</span>
+                    <span>•</span>
+                    <span>Ano: {parceria.anoPublicacao}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {parceria.caminhoArquivo && (
+                  <button
+                    onClick={() => handleDownload(parceria)}
+                    disabled={downloadingId === parceria.id}
+                    className="text-blue-600 hover:text-blue-900 transition-colors disabled:opacity-50 cursor-pointer"
+                    title="Download"
+                  >
+                    {downloadingId === parceria.id ? (
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                    )}
+                  </button>
+                )}
+                <button
+                  onClick={() => handleDelete(parceria.id, parceria.nome)}
+                  className="text-red-600 cursor-pointer hover:text-red-900 transition-colors"
+                  title="Excluir"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
       </div>
 

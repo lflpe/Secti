@@ -268,10 +268,15 @@ export const ListarDocumentosServidor = ({
       {/* Modal de confirmação de exclusão */}
       <DeleteModal
         isOpen={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setSelectedDocumento(null);
+        }}
         onConfirm={confirmDelete}
         title="Excluir Documento"
-        message={`Tem certeza que deseja excluir o documento "${selectedDocumento?.nome}"? Esta ação não pode ser desfeita.`}
+        message={`Tem certeza de que deseja excluir o documento "${selectedDocumento?.nome}"? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
       />
     </>
   );
