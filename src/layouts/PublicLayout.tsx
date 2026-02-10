@@ -167,6 +167,7 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
                           <Link to="/secti/servidor" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/secti/servidor') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Servidor</Link>
                           <Link to="/secti/parcerias" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/secti/parcerias') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Parcerias</Link>
                           <Link to="/secti/legislacao" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/secti/legislacao') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Legislação</Link>
+                          <Link to="/secti/relatorios" className={`block px-4 py-2 text-sm transition-colors ${isActiveLink('/secti/relatorios') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}>Relatórios</Link>
                         </div>
                       </div>
                     )}

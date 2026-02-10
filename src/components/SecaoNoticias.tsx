@@ -38,11 +38,11 @@ export const SecaoNoticias: React.FC<SecaoNoticiasProps> = ({ noticiaDestaque, n
             <a href={noticiaDestaque.link} className="block">
               <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-1 gap-0">
                 {/* Imagem à esquerda */}
-                <div className="h-64 md:h-full">
+                <div className="h-64 md:max-h-200">
                   <img
                       src={noticiaDestaque.imagem}
                       alt={noticiaDestaque.titulo}
-                      className="w-full h-full max-h-100 object-cover rounded-2xl"
+                      className="w-full h-full object-cover rounded-2xl"
                   />
                 </div>
 

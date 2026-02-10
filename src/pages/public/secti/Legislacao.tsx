@@ -1,29 +1,55 @@
 import { PublicLayout } from '../../../layouts/PublicLayout.tsx';
 import { HeroSection } from '../../../components/HeroSection.tsx';
-import { DocumentList } from '../../../components/DocumentList.tsx';
-import type { DocumentItem } from '../../../components/DocumentList.tsx';
-
-// Dados de exemplo - substituir por dados reais da API
-const documentosLegislacaoMock: DocumentItem[] = [
-  { id: 1, nome: 'Lei Estadual 18.139 - Sistema Estadual de C&T&I', tipo: 'pdf', tamanho: '850 KB', categoria: 'Legislação', url: '#', dataPublicacao: '18/01/2023' },
-  { id: 2, nome: 'Decreto Nº 54.321 - Regulamentação SECTI', tipo: 'pdf', tamanho: '1.2 MB', categoria: 'Legislação', url: '#', dataPublicacao: '25/02/2023' },
-  { id: 3, nome: 'Lei Complementar 142 - Incentivos Fiscais', tipo: 'pdf', tamanho: '2.1 MB', categoria: 'Legislação', url: '#', dataPublicacao: '15/03/2023' },
-  { id: 4, nome: 'Portaria SECTI Nº 045/2023', tipo: 'pdf', tamanho: '678 KB', categoria: 'Legislação', url: '#', dataPublicacao: '10/04/2023' },
-  { id: 5, nome: 'Resolução do Conselho Estadual de C&T', tipo: 'pdf', tamanho: '945 KB', categoria: 'Legislação', url: '#', dataPublicacao: '22/05/2023' },
-  { id: 6, nome: 'Lei Federal 10.973 - Lei de Inovação', tipo: 'pdf', tamanho: '1.5 MB', categoria: 'Legislação', url: '#', dataPublicacao: '02/12/2004' },
-  { id: 7, nome: 'Marco Legal da Ciência e Tecnologia', tipo: 'pdf', tamanho: '2.8 MB', categoria: 'Legislação', url: '#', dataPublicacao: '11/01/2016' },
-  { id: 8, nome: 'Instrução Normativa SECTI Nº 12/2024', tipo: 'pdf', tamanho: '1.1 MB', categoria: 'Legislação', url: '#', dataPublicacao: '08/06/2024' },
-  { id: 9, nome: 'Decreto Estadual de Parques Tecnológicos', tipo: 'pdf', tamanho: '1.7 MB', categoria: 'Legislação', url: '#', dataPublicacao: '14/08/2024' },
-  { id: 10, nome: 'Regulamento de Startups e Inovação', tipo: 'docx', tamanho: '890 KB', categoria: 'Legislação', url: '#', dataPublicacao: '30/09/2024' },
-  { id: 11, nome: 'Lei de Proteção à Propriedade Intelectual', tipo: 'pdf', tamanho: '1.9 MB', categoria: 'Legislação', url: '#', dataPublicacao: '12/11/2024' },
-];
+import { DocumentosParceriasPublicosList } from '../../../components/DocumentosParceriasPublicosList';
+import type { DocumentoParceriaPublicoItem } from '../../../components/DocumentosParceriasPublicosList';
+import { useState, useEffect } from 'react';
+import { legislacaoService } from '../../../services/legislacaoService';
+import { handleApiError } from '../../../utils/errorHandler';
 
 export const Legislacao = () => {
-  const emptyStateIcon = (
-    <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-    </svg>
-  );
+  const [documentos, setDocumentos] = useState<DocumentoParceriaPublicoItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [categorias, setCategorias] = useState<string[]>(['Todas']);
+
+  useEffect(() => {
+    const carregarLegislacao = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Buscar legislação pública do endpoint
+        const response = await legislacaoService.listarPublico({
+          ordenarPor: 'anopublicacao',
+          ordenarDescendente: true,
+          pagina: 1,
+          itensPorPagina: 100,
+        });
+
+        // Converter resposta para formato DocumentoParceriaPublicoItem
+        const documentosFormatados: DocumentoParceriaPublicoItem[] = response.legislacoes.map(doc => ({
+          id: doc.id,
+          nome: doc.titulo,
+          tipo: 'pdf' as const,
+          tamanho: 'Não disponível',
+          categoria: 'Legislação',
+          url: doc.caminhoArquivo,
+          dataPublicacao: `01/01/${doc.anoPublicacao}`,
+        }));
+
+        setDocumentos(documentosFormatados);
+        setCategorias(['Todas', 'Legislação']);
+      } catch (err) {
+        const mensagemErro = handleApiError(err);
+        setError(mensagemErro);
+        console.error('Erro ao carregar legislação:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    carregarLegislacao();
+  }, []);
 
   return (
     <PublicLayout>
@@ -44,15 +70,29 @@ export const Legislacao = () => {
             </p>
           </div>
 
-          <DocumentList
-            documents={documentosLegislacaoMock}
-            categories={['Legislação']}
-            showCategoryFilter={false}
-            emptyStateIcon={emptyStateIcon}
-            emptyStateTitle="Nenhum documento legislativo encontrado"
-            emptyStateDescription="Tente ajustar os filtros de busca"
-            getCategoryColor={() => 'bg-[#0C2856] text-white'}
-          />
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+              <p className="text-red-700 font-medium">Erro ao carregar legislação: {error}</p>
+            </div>
+          )}
+
+          {/* No Documents Message */}
+          {!isLoading && documentos.length === 0 && !error && (
+            <div className="text-center py-12">
+              <p className="text-gray-600 text-lg">Nenhuma legislação disponível no momento.</p>
+            </div>
+          )}
+
+          {/* Documents List */}
+          {documentos.length > 0 && (
+            <DocumentosParceriasPublicosList
+              documents={documentos}
+              categories={categorias}
+              showCategoryFilter={false}
+              isLoading={isLoading}
+            />
+          )}
         </div>
       </section>
     </PublicLayout>

@@ -22,6 +22,7 @@ import { Certificacoes } from './pages/public/secti/Certificacoes.tsx';
 import { Servidor } from './pages/public/secti/Servidor.tsx';
 import { Parcerias } from './pages/public/secti/Parcerias.tsx';
 import { Legislacao } from './pages/public/secti/Legislacao.tsx';
+import { Relatorios } from './pages/public/Relatorios.tsx';
 
 // Private Pages
 import { DashboardPage } from './pages/private/DashboardPage';
@@ -84,6 +85,7 @@ function App() {
           <Route path="/secti/servidor" element={<Servidor />} />
           <Route path="/secti/legislacao" element={<Legislacao/>}/>
           <Route path="/secti/parcerias" element={<Parcerias />} />
+          <Route path="/secti/relatorios" element={<Relatorios />} />
           <Route path="/ouvidoria/apresentacao" element={<ApresentacaoOuvidoria/>}/>
           <Route path="/ouvidoria/fale-com-ouvidoria" element={<FaleComOuvidoria/>}/>
           <Route path="/ouvidoria/processos-e-relatorios" element={<ProcessosERelatorios/>}/>

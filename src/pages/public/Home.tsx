@@ -6,8 +6,7 @@ import { SecaoNoticias } from '../../components/SecaoNoticias';
 import type { NoticiaItem } from '../../components/SecaoNoticias';
 import { SecaoProjetos } from '../../components/SecaoProjetos';
 import type { ProjetoItem } from '../../components/SecaoProjetos';
-import { SecaoDocumentos } from '../../components/SecaoDocumentos';
-import type { DocumentoItem } from '../../components/SecaoDocumentos';
+import { SecaoRelatorios } from '../../components/SecaoRelatorios';
 import { noticiasService } from '../../services/noticiasService';
 import { handleApiError } from '../../utils/errorHandler';
 import { LoadingScreen } from '../../components/LoadingScreen';
@@ -70,40 +69,6 @@ const projetos: ProjetoItem[] = [
     id: 6,
     nome: 'Startup Hub',
     marca: 'https://via.placeholder.com/100x100?text=Startup',
-  },
-];
-
-// Dados de exemplo para documentos
-const documentos: DocumentoItem[] = [
-  {
-    id: 1,
-    titulo: 'Relatório Anual de Inovação 2023',
-    capa: 'https://web.archive.org/web/20250709215742im_/http://www.secti.pe.gov.br/wp-content/uploads/2025/03/Relatorio-Anual-de-Gestao-2024-SECTI-1_page-0001.jpg',
-    arquivo: '#', // Substitua por URL real do arquivo
-  },
-  {
-    id: 2,
-    titulo: 'Guia de Projetos Tecnológicos',
-    capa: 'https://web.archive.org/web/20250709215742im_/http://www.secti.pe.gov.br/wp-content/uploads/2025/03/Relatorio-Anual-de-Gestao-2024-SECTI-1_page-0001.jpg',
-    arquivo: '#',
-  },
-  {
-    id: 3,
-    titulo: 'Estratégia de Desenvolvimento Sustentável',
-    capa: 'https://web.archive.org/web/20250709215742im_/http://www.secti.pe.gov.br/wp-content/uploads/2025/03/Relatorio-Anual-de-Gestao-2024-SECTI-1_page-0001.jpg',
-    arquivo: '#',
-  },
-  {
-    id: 4,
-    titulo: 'Análise de Mercado de Startups',
-    capa: 'https://web.archive.org/web/20250709215742im_/http://www.secti.pe.gov.br/wp-content/uploads/2025/03/Relatorio-Anual-de-Gestao-2024-SECTI-1_page-0001.jpg',
-    arquivo: '#',
-  },
-  {
-    id: 5,
-    titulo: 'Plano de Ação para Educação Digital',
-    capa: 'https://web.archive.org/web/20250709215742im_/http://www.secti.pe.gov.br/wp-content/uploads/2025/03/Relatorio-Anual-de-Gestao-2024-SECTI-1_page-0001.jpg',
-    arquivo: '#',
   },
 ];
 
@@ -186,7 +151,7 @@ export const Home = () => {
                 noticias={noticias}
               />
               <SecaoProjetos projetos={projetos} />
-              <SecaoDocumentos documentos={documentos} />
+              <SecaoRelatorios limit={6} />
             </>
           )}
         </PublicLayout>

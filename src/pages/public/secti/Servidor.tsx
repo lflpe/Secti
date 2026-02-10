@@ -35,7 +35,7 @@ export const Servidor = () => {
           tamanho: 'Não disponível',
           categoria: 'Documentos',
           url: doc.caminhoArquivo,
-          dataPublicacao: `${doc.anoPublicacao}`,
+          dataPublicacao: `01/01/${doc.anoPublicacao}`,
         }));
 
         setDocumentos(documentosFormatados);
