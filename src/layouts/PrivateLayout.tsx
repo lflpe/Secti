@@ -234,12 +234,12 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
 
       {/* Sidebar - Mobile */}
       <aside
-        className={`fixed inset-y-0 left-0 w-64 bg-[#0C2856] text-white transform transition-transform duration-300 ease-in-out z-50 lg:hidden ${
+        className={`fixed top-0 left-0 h-screen w-64 bg-[#0C2856] text-white transform transition-transform duration-300 ease-in-out z-50 lg:hidden flex flex-col ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Logo & Close Button */}
-        <div className="flex items-center justify-between h-20 px-4 border-b border-[#195CE3]/20">
+        <div className="flex items-center justify-between h-20 px-4 border-b border-[#195CE3]/20 shrink-0">
           <Link to="/dashboard" className="flex items-center" onClick={() => setSidebarOpen(false)}>
             <img src={MarcaCTISidebar} alt="SECTI" className="h-12 w-auto" />
           </Link>
@@ -255,13 +255,13 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-2">
+        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto min-h-0">
           {menuItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
               onClick={() => setSidebarOpen(false)}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 flex-shrink-0 ${
                 isActive(item.path)
                   ? 'bg-[#195CE3] text-white shadow-lg'
                   : 'text-gray-300 hover:bg-[#195CE3]/50 hover:text-white'
@@ -274,7 +274,7 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
         </nav>
 
         {/* Logout Button */}
-        <div className="px-4 py-6 border-t border-[#195CE3]/20">
+        <div className="px-4 py-6 border-t border-[#195CE3]/20 shrink-0">
           <button
             onClick={handleLogout}
             className="flex items-center space-x-3 w-full px-4 py-3 rounded-lg text-gray-300 hover:bg-red-600 hover:text-white transition-all duration-200"
