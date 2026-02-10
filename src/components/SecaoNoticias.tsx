@@ -42,7 +42,7 @@ export const SecaoNoticias: React.FC<SecaoNoticiasProps> = ({ noticiaDestaque, n
                   <img
                       src={noticiaDestaque.imagem}
                       alt={noticiaDestaque.titulo}
-                      className="w-full h-full object-cover rounded-2xl"
+                      className="w-full h-full max-h-100 object-cover rounded-2xl"
                   />
                 </div>
 

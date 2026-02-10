@@ -54,6 +54,7 @@ import {ProcessosERelatorios} from "./pages/public/ouvidoria/ProcessosERelatorio
 import {RedeOuvidorias} from "./pages/public/ouvidoria/RedeOuvidorias.tsx";
 import {PerguntasFrequentes} from "./pages/public/transparencia/PerguntasFrequentes.tsx";
 import {InformacoesInstitucionais} from "./pages/public/transparencia/InformacoesInstitucionais.tsx";
+import { Transparencia } from './pages/public/secti/Transparencia.tsx';
 import {ListarUsuarios} from "./pages/private/usuarios/ListarUsuarios.tsx";
 import {CriarUsuarios} from "./pages/private/usuarios/CriarUsuarios.tsx";
 import {EditarUsuarios} from "./pages/private/usuarios/EditarUsuarios.tsx";
@@ -87,6 +88,7 @@ function App() {
           <Route path="/ouvidoria/fale-com-ouvidoria" element={<FaleComOuvidoria/>}/>
           <Route path="/ouvidoria/processos-e-relatorios" element={<ProcessosERelatorios/>}/>
           <Route path="/ouvidoria/rede-ouvidorias" element={<RedeOuvidorias/>}/>
+          <Route path="/transparencia" element={<Transparencia/>}/>
           <Route path="/transparencia/perguntas-frequentes" element={<PerguntasFrequentes/>}/>
           <Route path="/transparencia/informacoes-institucionais" element={<InformacoesInstitucionais/>}/>
           <Route

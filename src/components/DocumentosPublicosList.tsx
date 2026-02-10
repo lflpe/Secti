@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
+import { downloadDocumento } from '../services/documentosService';
 
-export interface DocumentItem {
+export interface DocumentoPublicoItem {
   id: number;
   nome: string;
   tipo: 'pdf' | 'doc' | 'docx';
@@ -10,36 +11,31 @@ export interface DocumentItem {
   dataPublicacao: string;
 }
 
-interface DocumentListProps {
-  documents: DocumentItem[];
+interface DocumentosPublicosListProps {
+  documents: DocumentoPublicoItem[];
   categories: string[];
   showCategoryFilter?: boolean;
-  emptyStateIcon?: React.ReactNode;
-  emptyStateTitle?: string;
-  emptyStateDescription?: string;
-  getCategoryColor?: (category: string) => string;
+  isLoading?: boolean;
 }
 
-export const DocumentList = ({
+export const DocumentosPublicosList = ({
   documents,
   categories,
   showCategoryFilter = true,
-  emptyStateIcon,
-  emptyStateTitle = "Nenhum documento encontrado",
-  emptyStateDescription = "Tente ajustar os filtros de busca",
-  getCategoryColor
-}: DocumentListProps) => {
+  isLoading = false,
+}: DocumentosPublicosListProps) => {
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('');
   const [filtroAno, setFiltroAno] = useState('');
   const [paginaAtual, setPaginaAtual] = useState(1);
+  const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const documentosPorPagina = 10;
 
   // Extrair anos únicos
   const anos = useMemo(() => {
     const anosSet = documents.map(doc => {
       const data = doc.dataPublicacao.split('/');
-      return data[2]; // Retorna o ano
+      return data[2];
     });
     return ['Todos', ...Array.from(new Set(anosSet)).sort((a, b) => b.localeCompare(a))];
   }, [documents]);
@@ -57,7 +53,6 @@ export const DocumentList = ({
 
   // Resetar para página 1 quando filtros mudarem
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPaginaAtual(1);
   }, [filtroNome, filtroCategoria, filtroAno]);
 
@@ -76,6 +71,19 @@ export const DocumentList = ({
     if (pagina >= 1 && pagina <= totalPaginas) {
       setPaginaAtual(pagina);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Função para baixar documento
+  const handleDownload = async (docId: number, caminhoArquivo: string, nomeArquivo: string) => {
+    try {
+      setDownloadingId(docId);
+      await downloadDocumento(caminhoArquivo, nomeArquivo);
+    } catch (error) {
+      console.error('Erro ao baixar documento:', error);
+      alert('Erro ao baixar documento. Tente novamente.');
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -99,18 +107,19 @@ export const DocumentList = ({
     }
   };
 
-  const defaultGetCategoryColor = () => {
-    return 'bg-[#0C2856] text-white';
-  };
-
-
-  const categoryColorFn = getCategoryColor || (() => defaultGetCategoryColor());
-
-  const defaultEmptyIcon = (
-    <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-    </svg>
-  );
+  // Renderizar estado de carregamento
+  if (isLoading) {
+    return (
+      <div className="max-w-6xl mx-auto">
+        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+          <div className="flex justify-center mb-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0C2856]"></div>
+          </div>
+          <p className="text-lg text-gray-600 font-medium">Carregando documentos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -143,7 +152,7 @@ export const DocumentList = ({
                 id="filtroCategoria"
                 value={filtroCategoria}
                 onChange={(e) => setFiltroCategoria(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2856] focus:border-transparent outline-none"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2856] focus:border-transparent outline-none cursor-pointer"
               >
                 {categories.map(cat => (
                   <option key={cat} value={cat === 'Todas' ? '' : cat}>
@@ -163,7 +172,7 @@ export const DocumentList = ({
               id="filtroAno"
               value={filtroAno}
               onChange={(e) => setFiltroAno(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2856] focus:border-transparent outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2856] focus:border-transparent outline-none cursor-pointer"
             >
               {anos.map(ano => (
                 <option key={ano} value={ano === 'Todos' ? '' : ano}>
@@ -189,9 +198,11 @@ export const DocumentList = ({
       <div className="space-y-4">
         {documentosFiltrados.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-            {emptyStateIcon || defaultEmptyIcon}
-            <p className="text-xl text-gray-600">{emptyStateTitle}</p>
-            <p className="text-gray-500 mt-2">{emptyStateDescription}</p>
+            <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p className="text-xl text-gray-600">Nenhum documento encontrado</p>
+            <p className="text-gray-500 mt-2">Tente ajustar os filtros de busca</p>
           </div>
         ) : (
           <>
@@ -219,7 +230,7 @@ export const DocumentList = ({
                         </svg>
                         <strong>Publicado em:</strong> {doc.dataPublicacao}
                       </span>
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${categoryColorFn(doc.categoria)}`}>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#0C2856] text-white">
                         {doc.categoria}
                       </span>
                     </div>
@@ -227,16 +238,16 @@ export const DocumentList = ({
 
                   {/* Botão de Download */}
                   <div className="shrink-0">
-                    <a
-                      href={doc.url}
-                      download
-                      className="inline-flex items-center gap-2 bg-[#195CE3] text-white px-6 py-3 rounded-lg hover:bg-[#0C2856] transition duration-200 font-medium"
+                    <button
+                      onClick={() => handleDownload(doc.id, doc.url, doc.nome)}
+                      disabled={downloadingId === doc.id}
+                      className="inline-flex items-center gap-2 bg-[#195CE3] text-white px-6 py-3 rounded-lg hover:bg-[#0C2856] transition duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                       </svg>
-                      Baixar
-                    </a>
+                      {downloadingId === doc.id ? 'Baixando...' : 'Baixar'}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -244,8 +255,7 @@ export const DocumentList = ({
 
             {/* Paginação */}
             {totalPaginas > 1 && (
-              <div className="flex justify-center items-center gap-2 mt-8 pt-8">
-                {/* Botão Anterior */}
+              <div className="flex justify-center items-center gap-2 mt-8 pt-8 flex-wrap">
                 <button
                   onClick={() => irParaPagina(paginaAtual - 1)}
                   disabled={paginaAtual === 1}
@@ -258,39 +268,22 @@ export const DocumentList = ({
                   Anterior
                 </button>
 
-                {/* Números das páginas */}
                 <div className="flex gap-2">
-                  {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(numero => {
-                    // Mostrar apenas algumas páginas (lógica de ellipsis)
-                    if (
-                      numero === 1 ||
-                      numero === totalPaginas ||
-                      (numero >= paginaAtual - 1 && numero <= paginaAtual + 1)
-                    ) {
-                      return (
-                        <button
-                          key={numero}
-                          onClick={() => irParaPagina(numero)}
-                          className={`w-10 h-10 rounded-lg font-medium transition duration-200 ${
-                            paginaAtual === numero
-                              ? 'bg-[#0C2856] text-white'
-                              : 'bg-white cursor-pointer text-[#0C2856] border border-gray-300 hover:border-[#0C2856] hover:bg-gray-50'
-                          }`}
-                        >
-                          {numero}
-                        </button>
-                      );
-                    } else if (
-                      numero === paginaAtual - 2 ||
-                      numero === paginaAtual + 2
-                    ) {
-                      return <span key={numero} className="px-2 py-2 text-gray-500">...</span>;
-                    }
-                    return null;
-                  })}
+                  {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(numero => (
+                    <button
+                      key={numero}
+                      onClick={() => irParaPagina(numero)}
+                      className={`px-3 py-2 rounded-lg font-medium transition duration-200 ${
+                        numero === paginaAtual
+                          ? 'bg-[#0C2856] text-white'
+                          : 'bg-white cursor-pointer text-[#0C2856] border border-[#0C2856] hover:bg-[#0C2856] hover:text-white'
+                      }`}
+                    >
+                      {numero}
+                    </button>
+                  ))}
                 </div>
 
-                {/* Botão Próximo */}
                 <button
                   onClick={() => irParaPagina(paginaAtual + 1)}
                   disabled={paginaAtual === totalPaginas}
@@ -310,3 +303,4 @@ export const DocumentList = ({
     </div>
   );
 };
+

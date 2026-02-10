@@ -8,7 +8,7 @@ import MarcaCTI from "../assets/MarcaCTI.png";
 import MarcaGov from "../assets/MarcaGov.png";
 import MarcaCTINegativa from "../assets/MarcaCTINegativa.png";
 import MarcaCTIPositiva from "../assets/MarcaCTIPositiva.png";
-import { transparenciaService, type TransparenciaSubmenu } from "../services/transparenciaService.ts";
+import { transparenciaService, type TransparenciaSubmenuPublico } from "../services/transparenciaService.ts";
 
 interface PublicLayoutProps {
   children: ReactNode;
@@ -26,7 +26,7 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
   const [sectiMobileOpen, setSectiMobileOpen] = useState<boolean>(false);
   const [transparenciaMobileOpen, setTransparenciaMobileOpen] = useState<boolean>(false);
   const [ouvidoriaMobileOpen, setOuvidoriaMobileOpen] = useState<boolean>(false);
-  const [transparenciaMenus, setTransparenciaMenus] = useState<TransparenciaSubmenu[]>([]);
+  const [transparenciaMenus, setTransparenciaMenus] = useState<TransparenciaSubmenuPublico[]>([]);
   const [loadingMenus, setLoadingMenus] = useState<boolean>(true);
 
   // Helper function to check if a path is active
@@ -64,7 +64,8 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
       try {
         setLoadingMenus(true);
         const response = await transparenciaService.listar();
-        setTransparenciaMenus(response.submenus.filter(menu => menu.ativo));
+        // O endpoint público retorna apenas titulo e url
+        setTransparenciaMenus(response.submenus);
       } catch (error) {
         console.error('Erro ao carregar menus de transparência:', error);
         setTransparenciaMenus([]);
@@ -95,7 +96,6 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
     };
 
     if (mobileOpen) {
-      // Avoid layout shift when scrollbar disappears
       const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
       if (scrollBarWidth > 0) body.style.paddingRight = `${scrollBarWidth}px`;
       body.style.overflow = 'hidden';
@@ -200,13 +200,15 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
                             <div className="px-4 py-2 text-sm text-gray-500">Carregando...</div>
                           ) : (
                             transparenciaMenus.map((menu) => (
-                              <Link 
-                                key={menu.id} 
-                                to={menu.url} 
-                                className={`block px-4 py-2 text-sm transition-colors ${isActiveLink(menu.url) ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-100'}`}
+                              <a
+                                key={menu.titulo}
+                                href={menu.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`block px-4 py-2 text-sm transition-colors text-gray-700 hover:bg-gray-100`}
                               >
                                 {menu.titulo}
-                              </Link>
+                              </a>
                             ))
                           )}
                         </div>
@@ -407,14 +409,15 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
                         <div className="px-3 py-2 text-sm text-gray-500">Carregando...</div>
                       ) : (
                         transparenciaMenus.map((menu) => (
-                          <Link
-                            key={menu.id}
-                            to={menu.url}
-                            onClick={() => setMobileOpen(false)}
-                            className={`block px-3 py-2 rounded-md text-sm transition-colors ${isActiveLink(menu.url) ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}
+                          <a
+                            key={menu.titulo}
+                            href={menu.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`block px-3 py-2 rounded-md text-sm transition-colors text-gray-600 hover:bg-gray-100`}
                           >
                             {menu.titulo}
-                          </Link>
+                          </a>
                         ))
                       )}
                     </div>

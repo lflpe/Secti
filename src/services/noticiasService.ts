@@ -47,9 +47,32 @@ export interface NoticiaListagem {
   dataCriacao: string;
 }
 
+// Type para notícia na listagem pública (inclui slug e autor)
+export interface NoticiaListagemPublica {
+  id: number;
+  titulo: string;
+  slug: string;
+  resumo: string;
+  imagemCapaUrl: string;
+  autor: string;
+  publicada: boolean;
+  destaque: boolean;
+  dataPublicacao: string;
+  dataCriacao: string;
+  dataAtualizacao: string;
+}
+
 // Type para resposta de listagem paginada
 export interface NoticiaListResponse {
   itens: NoticiaListagem[];
+  total: number;
+  pagina: number;
+  itensPorPagina: number;
+}
+
+// Type para resposta de listagem pública paginada
+export interface NoticiaListPublicaResponse {
+  itens: NoticiaListagemPublica[];
   total: number;
   pagina: number;
   itensPorPagina: number;
@@ -156,6 +179,34 @@ export const noticiasService = {
   },
 
   /**
+   * Lista notícias publicadas (endpoint público, sem autenticação)
+   * Retorna apenas notícias com status Publicada, ordenadas por data de publicação (mais recentes primeiro)
+   */
+  listarPublico: async (filtros?: {
+    tituloFiltro?: string;
+    pagina?: number;
+    itensPorPagina?: number;
+  }): Promise<NoticiaListPublicaResponse> => {
+    const params = new URLSearchParams();
+
+    if (filtros?.tituloFiltro) {
+      params.append('TituloFiltro', filtros.tituloFiltro);
+    }
+    if (filtros?.pagina !== undefined) {
+      params.append('Pagina', filtros.pagina.toString());
+    }
+    if (filtros?.itensPorPagina !== undefined) {
+      params.append('ItensPorPagina', filtros.itensPorPagina.toString());
+    }
+
+    const queryString = params.toString();
+    const url = `/Noticia/listar-publico${queryString ? `?${queryString}` : ''}`;
+
+    const response = await apiClient.get<NoticiaListPublicaResponse>(url);
+    return response.data;
+  },
+
+  /**
    * Busca uma notícia por ID
    */
   buscarPorId: async (id: number): Promise<NoticiaDetalhada> => {
@@ -192,4 +243,3 @@ export const noticiasService = {
   },
 };
 
-export default noticiasService;

@@ -12,8 +12,20 @@ export interface TransparenciaSubmenu {
   dataCriacao: string;
 }
 
+// Interface para o endpoint público (sem id, ativo, etc)
+export interface TransparenciaSubmenuPublico {
+  titulo: string;
+  url: string;
+}
+
 export interface TransparenciaSubmenuListResponse {
   submenus: TransparenciaSubmenu[];
+  totalSubmenus: number;
+}
+
+// Interface para o endpoint público
+export interface TransparenciaSubmenuPublicoListResponse {
+  submenus: TransparenciaSubmenuPublico[];
   totalSubmenus: number;
 }
 
