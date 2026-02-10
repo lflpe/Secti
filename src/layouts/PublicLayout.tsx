@@ -8,7 +8,7 @@ import MarcaCTI from "../assets/MarcaCTI.png";
 import MarcaGov from "../assets/MarcaGov.png";
 import MarcaCTINegativa from "../assets/MarcaCTINegativa.png";
 import MarcaCTIPositiva from "../assets/MarcaCTIPositiva.png";
-import { fetchTransparenciaMenus, type TransparenciaMenuItem } from "../services/transparenciaService.ts";
+import { transparenciaService, type TransparenciaSubmenu } from "../services/transparenciaService.ts";
 
 interface PublicLayoutProps {
   children: ReactNode;
@@ -26,7 +26,7 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
   const [sectiMobileOpen, setSectiMobileOpen] = useState<boolean>(false);
   const [transparenciaMobileOpen, setTransparenciaMobileOpen] = useState<boolean>(false);
   const [ouvidoriaMobileOpen, setOuvidoriaMobileOpen] = useState<boolean>(false);
-  const [transparenciaMenus, setTransparenciaMenus] = useState<TransparenciaMenuItem[]>([]);
+  const [transparenciaMenus, setTransparenciaMenus] = useState<TransparenciaSubmenu[]>([]);
   const [loadingMenus, setLoadingMenus] = useState<boolean>(true);
 
   // Helper function to check if a path is active
@@ -63,8 +63,8 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
     const loadTransparenciaMenus = async () => {
       try {
         setLoadingMenus(true);
-        const menus = await fetchTransparenciaMenus();
-        setTransparenciaMenus(menus);
+        const response = await transparenciaService.listar();
+        setTransparenciaMenus(response.submenus.filter(menu => menu.ativo));
       } catch (error) {
         console.error('Erro ao carregar menus de transparência:', error);
         setTransparenciaMenus([]);

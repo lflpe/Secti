@@ -21,9 +21,10 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  // Mapeamento de menus para caminhos e ícones
-  const menuMapping: Record<string, { path: string; icon: React.JSX.Element }> = {
+  // Mapeamento de menus para caminhos, ícones e nomes de exibição
+  const menuMapping: Record<string, { displayName: string; path: string; icon: React.JSX.Element }> = {
     'Dashboard': {
+      displayName: 'Dashboard',
       path: '/admin/dashboard',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -32,7 +33,8 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
         </svg>
       ),
     },
-    'Notícias': {
+    'Noticias': {
+      displayName: 'Notícias',
       path: '/admin/noticias',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -40,7 +42,8 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
         </svg>
       ),
     },
-    'Transparência': {
+    'Transparencia': {
+      displayName: 'Transparência',
       path: '/admin/transparencia',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -49,6 +52,7 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
       ),
     },
     'Documentos': {
+      displayName: 'Documentos',
       path: '/admin/documentos',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -56,7 +60,8 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
         </svg>
       ),
     },
-    'Documentos do Servidor': {
+    'Documentos_do_Servidor': {
+      displayName: 'Documentos do Servidor',
       path: '/admin/documentos-servidor',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -65,6 +70,7 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
       ),
     },
     'Parcerias': {
+      displayName: 'Parcerias',
       path: '/admin/parcerias',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -73,6 +79,7 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
       ),
     },
     'Editais': {
+      displayName: 'Editais',
       path: '/admin/editais',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -80,7 +87,8 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
         </svg>
       ),
     },
-    'Aviso de Intenção de Contratar': {
+    'Aviso_de_Intencao_de_Contratar': {
+      displayName: 'Aviso de Intenção de Contratar',
       path: '/admin/avisosdeintencao',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -88,7 +96,8 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
         </svg>
       ),
     },
-    'Legislação': {
+    'Legislacao': {
+      displayName: 'Legislação',
       path: '/admin/legislacao',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -96,7 +105,8 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
         </svg>
       ),
     },
-    'Relatórios': {
+    'Relatorios': {
+      displayName: 'Relatórios',
       path: '/admin/relatorios',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -105,6 +115,7 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
       ),
     },
     'Processos': {
+      displayName: 'Processos',
       path: '/admin/processos',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -112,7 +123,8 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
         </svg>
       ),
     },
-    'Usuários': {
+    'Usuarios': {
+      displayName: 'Usuários',
       path: '/admin/usuarios',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -121,6 +133,7 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
       ),
     },
     'Categorias': {
+      displayName: 'Categorias',
       path: '/admin/categorias',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -129,6 +142,7 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
       ),
     },
     'Perfis': {
+      displayName: 'Perfis',
       path: '/admin/perfis',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -139,15 +153,18 @@ export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
   };
 
   // Gerar itens do menu baseados nos menus do usuário
-  const menuItems = authData?.menus?.map(menu => ({
-    name: menu.nome,
-    path: menuMapping[menu.nome]?.path || `/admin/${menu.nome.toLowerCase().replace(/\s+/g, '-')}`,
-    icon: menuMapping[menu.nome]?.icon || (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    ),
-  })) || [];
+  const menuItems = authData?.menus?.map(menu => {
+    const mapping = menuMapping[menu.nome];
+    return {
+      name: mapping?.displayName || menu.nome,
+      path: mapping?.path || `/admin/${menu.nome.toLowerCase().replace(/_/g, '-')}`,
+      icon: mapping?.icon || (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+    };
+  }) || [];
 
   // Adicionar Dashboard sempre no início se não estiver presente
   const hasDashboard = menuItems.some(item => item.name === 'Dashboard');
