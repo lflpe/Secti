@@ -23,6 +23,7 @@ import { Servidor } from './pages/public/secti/Servidor.tsx';
 import { Parcerias } from './pages/public/secti/Parcerias.tsx';
 import { Legislacao } from './pages/public/secti/Legislacao.tsx';
 import { Relatorios } from './pages/public/Relatorios.tsx';
+import { Projetos } from './pages/public/Projetos.tsx';
 
 // Private Pages
 import { DashboardPage } from './pages/private/DashboardPage';
@@ -65,6 +66,9 @@ import {EditarCategorias} from "./pages/private/categorias/EditarCategorias.tsx"
 import {ListarPerfil} from "./pages/private/perfis/ListarPerfil.tsx";
 import {CriarPerfil} from "./pages/private/perfis/CriarPerfil.tsx";
 import {EditarPerfil} from "./pages/private/perfis/EditarPerfil.tsx";
+import { ListaProjetos } from './pages/private/projetos/ListaProjetos.tsx';
+import { CriarProjeto } from './pages/private/projetos/CriarProjeto.tsx';
+import { EditarProjeto } from './pages/private/projetos/EditarProjeto.tsx';
 
 function App() {
   return (
@@ -76,6 +80,7 @@ function App() {
           <Route path="/noticias" element={<TodasNoticias />} />
           <Route path="/noticias/:slug" element={<VisualizarNoticia />} />
           <Route path="/editais" element={<Editais />} />
+          <Route path="/projetos/:id" element={<Projetos />} />
           <Route path="/secti/a-secretaria" element={<ASecretaria />} />
           <Route path="/secti/a-secretaria-cargo" element={<ASecretariaCargo />} />
           <Route path="/secti/historia" element={<Historia />} />
@@ -272,6 +277,32 @@ function App() {
             element={
               <PrivateRouteWithMenuAccess requiredMenu="Parcerias">
                 <CriarParcerias />
+              </PrivateRouteWithMenuAccess>
+            }
+          />
+
+          {/* Projetos - Admin */}
+          <Route
+            path="/admin/projetos"
+            element={
+              <PrivateRouteWithMenuAccess requiredMenu="Projetos">
+                <ListaProjetos />
+              </PrivateRouteWithMenuAccess>
+            }
+          />
+          <Route
+            path="/admin/projetos/criar"
+            element={
+              <PrivateRouteWithMenuAccess requiredMenu="Projetos">
+                <CriarProjeto />
+              </PrivateRouteWithMenuAccess>
+            }
+          />
+          <Route
+            path="/admin/projetos/editar/:id"
+            element={
+              <PrivateRouteWithMenuAccess requiredMenu="Projetos">
+                <EditarProjeto />
               </PrivateRouteWithMenuAccess>
             }
           />

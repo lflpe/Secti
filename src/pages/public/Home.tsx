@@ -5,7 +5,6 @@ import type { SlideItem } from '../../components/SecaoSlide';
 import { SecaoNoticias } from '../../components/SecaoNoticias';
 import type { NoticiaItem } from '../../components/SecaoNoticias';
 import { SecaoProjetos } from '../../components/SecaoProjetos';
-import type { ProjetoItem } from '../../components/SecaoProjetos';
 import { SecaoRelatorios } from '../../components/SecaoRelatorios';
 import { noticiasService } from '../../services/noticiasService';
 import { handleApiError } from '../../utils/errorHandler';
@@ -38,39 +37,6 @@ const slides: SlideItem[] = [
   },
 ];
 
-// ...existing code...
-const projetos: ProjetoItem[] = [
-  {
-    id: 1,
-    nome: 'Espaço Ciência',
-    marca: 'https://via.placeholder.com/100x100?text=Espaco+Ciencia',
-  },
-  {
-    id: 2,
-    nome: 'Parqtel',
-    marca: 'https://via.placeholder.com/100x100?text=Parqtel',
-  },
-  {
-    id: 3,
-    nome: 'Inovação Tecnológica',
-    marca: 'https://via.placeholder.com/100x100?text=Inovacao',
-  },
-  {
-    id: 4,
-    nome: 'Centro de Pesquisa',
-    marca: 'https://via.placeholder.com/100x100?text=Pesquisa',
-  },
-  {
-    id: 5,
-    nome: 'Educação Digital',
-    marca: 'https://via.placeholder.com/100x100?text=Educacao',
-  },
-  {
-    id: 6,
-    nome: 'Startup Hub',
-    marca: 'https://via.placeholder.com/100x100?text=Startup',
-  },
-];
 
 export const Home = () => {
   const [noticiaDestaque, setNoticiaDestaque] = useState<NoticiaItem | null>(null);
@@ -150,7 +116,7 @@ export const Home = () => {
                 noticiaDestaque={noticiaDestaque || defaultNoticiaDestaque}
                 noticias={noticias}
               />
-              <SecaoProjetos projetos={projetos} />
+              <SecaoProjetos />
               <SecaoRelatorios limit={6} />
             </>
           )}

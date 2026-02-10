@@ -1,0 +1,237 @@
+import { apiClient } from '../lib/apiClient';
+
+// Types para requisição de cadastro de projeto
+export interface CadastrarProjetoRequest {
+  titulo: string;
+  descricao?: string;
+  url?: string;
+  perguntasFrequentes?: string;
+  fotoCapa?: File;
+  logo?: File;
+}
+
+// Types para resposta de projeto cadastrado
+export interface ProjetoResponse {
+  id: number;
+  titulo: string;
+  descricao: string;
+  fotoCapaCaminho: string;
+  logoCaminho: string;
+  url: string;
+  perguntasFrequentes: string;
+  dataCriacao: string;
+}
+
+// Type para projeto detalhado
+export interface ProjetoDetalhado {
+  id: number;
+  titulo: string;
+  descricao: string;
+  fotoCapaCaminho: string;
+  logoCaminho: string;
+  url: string;
+  perguntasFrequentes: string;
+  ativo: boolean;
+  dataCriacao: string;
+}
+
+// Type para projeto na listagem
+export interface ProjetoListagem {
+  id: number;
+  titulo: string;
+  fotoCapaCaminho: string;
+  logoCaminho: string;
+  url: string;
+  ativo: boolean;
+  dataCriacao: string;
+}
+
+// Type para resposta de listagem paginada
+export interface ProjetoListResponse {
+  projetos: ProjetoListagem[];
+  totalItens: number;
+  paginaAtual: number;
+  totalPaginas: number;
+}
+
+// Type para edição de projeto
+export interface EditarProjetoRequest {
+  titulo?: string;
+  descricao?: string;
+  url?: string;
+  perguntasFrequentes?: string;
+  fotoCapa?: File;
+  logo?: File;
+}
+
+// Type para resposta de edição
+export interface EditarProjetoResponse {
+  id: number;
+  titulo: string;
+  descricao: string;
+  fotoCapaCaminho: string;
+  logoCaminho: string;
+  url: string;
+  perguntasFrequentes: string;
+  ativo: boolean;
+  dataCriacao: string;
+}
+
+// Type para filtros de listagem
+export interface ProjetoFiltros {
+  pagina?: number;
+  itensPorPagina?: number;
+  ordenarPor?: string;
+  ordenarDescendente?: boolean;
+  apenasAtivos?: boolean;
+}
+
+// Validações do frontend
+export const validarProjeto = (data: CadastrarProjetoRequest | EditarProjetoRequest): string[] => {
+  const erros: string[] = [];
+
+  // Título: obrigatório apenas para cadastro
+  if ('titulo' in data && data.titulo) {
+    if (data.titulo.trim().length === 0) {
+      erros.push('Título é obrigatório.');
+    }
+  }
+
+  // URL: opcional, mas se fornecida deve ser válida
+  if (data.url && data.url.trim() !== '') {
+    const urlPattern = /^https?:\/\/.+/i;
+    if (!urlPattern.test(data.url)) {
+      erros.push('A URL deve começar com http:// ou https://');
+    }
+  }
+
+  return erros;
+};
+
+// Service de Projetos
+export const projetosService = {
+  /**
+   * Cadastra um novo projeto no sistema
+   */
+  cadastrar: async (data: CadastrarProjetoRequest): Promise<ProjetoResponse> => {
+    // Validar dados antes de enviar
+    const errosValidacao = validarProjeto(data);
+    if (errosValidacao.length > 0) {
+      throw new Error(errosValidacao.join(' '));
+    }
+
+    const formData = new FormData();
+    formData.append('Titulo', data.titulo);
+    if (data.descricao) formData.append('Descricao', data.descricao);
+    if (data.url) formData.append('Url', data.url);
+    if (data.perguntasFrequentes) formData.append('PerguntasFrequentes', data.perguntasFrequentes);
+    if (data.fotoCapa) formData.append('FotoCapa', data.fotoCapa);
+    if (data.logo) formData.append('Logo', data.logo);
+
+    const response = await apiClient.post<ProjetoResponse>('/Projeto/cadastrar', formData);
+    return response.data;
+  },
+
+  /**
+   * Lista projetos com filtros e paginação
+   */
+  listar: async (filtros?: ProjetoFiltros): Promise<ProjetoListResponse> => {
+    const params = new URLSearchParams();
+
+    if (filtros?.pagina !== undefined) {
+      params.append('Pagina', filtros.pagina.toString());
+    }
+    if (filtros?.itensPorPagina !== undefined) {
+      params.append('ItensPorPagina', filtros.itensPorPagina.toString());
+    }
+    if (filtros?.ordenarPor !== undefined) {
+      params.append('OrdenarPor', filtros.ordenarPor);
+    }
+    if (filtros?.ordenarDescendente !== undefined) {
+      params.append('OrdenarDescendente', filtros.ordenarDescendente.toString());
+    }
+    if (filtros?.apenasAtivos !== undefined) {
+      params.append('ApenasAtivos', filtros.apenasAtivos.toString());
+    }
+
+    const queryString = params.toString();
+    const url = `/Projeto/listar${queryString ? `?${queryString}` : ''}`;
+
+    const response = await apiClient.get<ProjetoListResponse>(url);
+    return response.data;
+  },
+
+  /**
+   * Lista projetos públicos (apenas ativos, sem autenticação)
+   */
+  listarPublico: async (filtros?: {
+    pagina?: number;
+    itensPorPagina?: number;
+  }): Promise<{
+    projetos: ProjetoListagem[];
+    totalItens: number;
+    pagina: number;
+    itensPorPagina: number;
+    totalPaginas: number;
+  }> => {
+    const params = new URLSearchParams();
+
+    if (filtros?.pagina !== undefined) {
+      params.append('Pagina', filtros.pagina.toString());
+    }
+    if (filtros?.itensPorPagina !== undefined) {
+      params.append('ItensPorPagina', filtros.itensPorPagina.toString());
+    }
+
+    const queryString = params.toString();
+    const url = `/Projeto/listar-publico${queryString ? `?${queryString}` : ''}`;
+
+    const response = await apiClient.get(url);
+    return response.data;
+  },
+
+  /**
+   * Busca um projeto por ID
+   */
+  buscarPorId: async (id: number): Promise<ProjetoDetalhado> => {
+    const response = await apiClient.get<ProjetoDetalhado>(`/Projeto/${id}`);
+    return response.data;
+  },
+
+  /**
+   * Edita um projeto existente
+   */
+  editar: async (id: number, data: EditarProjetoRequest): Promise<EditarProjetoResponse> => {
+    // Validar dados antes de enviar
+    const errosValidacao = validarProjeto(data);
+    if (errosValidacao.length > 0) {
+      throw new Error(errosValidacao.join(' '));
+    }
+
+    const formData = new FormData();
+    if (data.titulo) formData.append('Titulo', data.titulo);
+    if (data.descricao) formData.append('Descricao', data.descricao);
+    if (data.url) formData.append('Url', data.url);
+    if (data.perguntasFrequentes) formData.append('PerguntasFrequentes', data.perguntasFrequentes);
+    if (data.fotoCapa) formData.append('FotoCapa', data.fotoCapa);
+    if (data.logo) formData.append('Logo', data.logo);
+
+    const response = await apiClient.put<EditarProjetoResponse>(`/Projeto/editar/${id}`, formData);
+    return response.data;
+  },
+
+  /**
+   * Inativa um projeto
+   */
+  inativar: async (id: number): Promise<void> => {
+    await apiClient.post(`/Projeto/inativar/${id}`);
+  },
+
+  /**
+   * Ativa um projeto
+   */
+  ativar: async (id: number): Promise<void> => {
+    await apiClient.post(`/Projeto/ativar/${id}`);
+  },
+};
+

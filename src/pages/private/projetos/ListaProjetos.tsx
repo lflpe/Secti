@@ -1,0 +1,270 @@
+import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { PrivateLayout } from '../../../layouts/PrivateLayout';
+import { TabelaProjetos, type ProjetoAdmin } from '../../../components/admin/TabelaProjetos';
+import { projetosService, type ProjetoListResponse, type ProjetoFiltros } from '../../../services/projetosService';
+import { handleApiError } from '../../../utils/errorHandler';
+
+export const ListaProjetos = () => {
+  const [projetos, setProjetos] = useState<ProjetoAdmin[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filtroStatus, setFiltroStatus] = useState<string>('Todos');
+  const [busca, setBusca] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage] = useState(10);
+
+  // Carregar projetos da API
+  const loadProjetos = useCallback(async (page = 1, tituloFiltro = '', apenasAtivos?: boolean) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const filtros: ProjetoFiltros = {
+        pagina: page,
+        itensPorPagina: itemsPerPage,
+      };
+
+      if (apenasAtivos !== undefined) {
+        filtros.apenasAtivos = apenasAtivos;
+      }
+
+      const response: ProjetoListResponse = await projetosService.listar(filtros);
+
+      // Converter dados da API para o formato esperado pelo componente
+      let projetosFormatted: ProjetoAdmin[] = response.projetos.map(item => ({
+        id: item.id,
+        titulo: item.titulo,
+        descricao: item.fotoCapaCaminho ? 'Com capa' : 'Sem capa',
+        fotoCapaCaminho: item.fotoCapaCaminho,
+        logoCaminho: item.logoCaminho,
+        url: item.url,
+        ativo: item.ativo,
+        dataCriacao: item.dataCriacao,
+      }));
+
+      // Aplicar filtros no cliente se necessário
+      if (tituloFiltro) {
+        projetosFormatted = projetosFormatted.filter(p =>
+          p.titulo.toLowerCase().includes(tituloFiltro.toLowerCase())
+        );
+      }
+
+      setTotalItems(projetosFormatted.length);
+      const start = (page - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      setProjetos(projetosFormatted.slice(start, end));
+      setCurrentPage(page);
+    } catch (err) {
+      const errorMessage = handleApiError(err);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [itemsPerPage]);
+
+  useEffect(() => {
+    loadProjetos();
+  }, [loadProjetos]);
+
+  // Função para excluir projeto (inativar)
+  const handleDelete = async (id: number) => {
+    try {
+      await projetosService.inativar(id);
+      // Recarregar lista após inativar mantendo os filtros atuais
+      const apenasAtivos = filtroStatus === 'Ativo' ? true :
+                           filtroStatus === 'Inativo' ? false : undefined;
+      await loadProjetos(currentPage, busca, apenasAtivos);
+    } catch (err) {
+      const errorMessage = handleApiError(err);
+      setError(errorMessage);
+    }
+  };
+
+  // Função para ativar projeto
+  const handleActivate = async (id: number) => {
+    try {
+      await projetosService.ativar(id);
+      // Recarregar lista após ativar mantendo os filtros atuais
+      const apenasAtivos = filtroStatus === 'Ativo' ? true :
+                           filtroStatus === 'Inativo' ? false : undefined;
+      await loadProjetos(currentPage, busca, apenasAtivos);
+    } catch (err) {
+      const errorMessage = handleApiError(err);
+      setError(errorMessage);
+    }
+  };
+
+  // Buscar projetos
+  const handleSearch = () => {
+    const apenasAtivos = filtroStatus === 'Ativo' ? true :
+                        filtroStatus === 'Inativo' ? false : undefined;
+    loadProjetos(1, busca, apenasAtivos);
+  };
+
+  // Limpar busca
+  const handleClearSearch = () => {
+    setBusca('');
+    setFiltroStatus('Todos');
+    loadProjetos(1);
+  };
+
+  return (
+    <PrivateLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Gerenciar Projetos</h1>
+            <p className="text-gray-600 mt-2">
+              {loading ? 'Carregando...' : `${totalItems} ${totalItems === 1 ? 'projeto encontrado' : 'projetos encontrados'}`}
+            </p>
+          </div>
+          <Link
+            to="/admin/projetos/criar"
+            className="inline-flex items-center justify-center gap-2 bg-[#0C2856] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#195CE3] transition-colors shadow-md hover:shadow-lg whitespace-nowrap"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Novo Projeto</span>
+          </Link>
+        </div>
+
+        {/* Mensagem de erro */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex">
+              <div className="shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Filtros */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Busca */}
+            <div className="md:col-span-2">
+              <label htmlFor="busca" className="block text-sm font-medium text-gray-700 mb-2">
+                Buscar
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  id="busca"
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+                  placeholder="Buscar por título..."
+                />
+              </div>
+            </div>
+
+            {/* Filtro Status */}
+            <div>
+              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+                Status
+              </label>
+              <select
+                id="status"
+                value={filtroStatus}
+                onChange={(e) => setFiltroStatus(e.target.value)}
+                className="block cursor-pointer w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+              >
+                <option value="Todos">Todos</option>
+                <option value="Ativo">Ativo</option>
+                <option value="Inativo">Inativo</option>
+              </select>
+            </div>
+
+            {/* Botões de ação */}
+            <div className="md:col-span-3 flex gap-2 flex-col sm:flex-row">
+              <button
+                onClick={handleSearch}
+                disabled={loading}
+                className="flex-1 cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                {loading ? 'Buscando...' : 'Buscar'}
+              </button>
+              <button
+                onClick={handleClearSearch}
+                disabled={loading}
+                className="flex-1 sm:flex-auto px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                Limpar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabela */}
+        {loading ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0C2856]"></div>
+              <span className="ml-2 text-gray-600">Carregando projetos...</span>
+            </div>
+          </div>
+        ) : (
+          <TabelaProjetos
+            projetos={projetos}
+            onDelete={handleDelete}
+            onActivate={handleActivate}
+            emptyMessage={busca || filtroStatus !== 'Todos' ? 'Não há nenhum projeto com esse filtro.' : undefined}
+          />
+        )}
+
+        {/* Paginação */}
+        {totalItems > itemsPerPage && (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
+            <div className="text-sm text-gray-700">
+              Mostrando <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> a <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> de <span className="font-medium">{totalItems}</span> resultados
+            </div>
+            <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-end">
+              <button
+                onClick={() => {
+                  const apenasAtivos = filtroStatus === 'Ativo' ? true :
+                                     filtroStatus === 'Inativo' ? false : undefined;
+                  loadProjetos(currentPage - 1, busca, apenasAtivos);
+                }}
+                disabled={currentPage === 1 || loading}
+                className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                Anterior
+              </button>
+              <span className="px-3 py-1 text-sm text-gray-700">
+                Página <span className="font-medium">{currentPage}</span> de <span className="font-medium">{Math.ceil(totalItems / itemsPerPage)}</span>
+              </span>
+              <button
+                onClick={() => {
+                  const apenasAtivos = filtroStatus === 'Ativo' ? true :
+                                     filtroStatus === 'Inativo' ? false : undefined;
+                  loadProjetos(currentPage + 1, busca, apenasAtivos);
+                }}
+                disabled={currentPage === Math.ceil(totalItems / itemsPerPage) || loading}
+                className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                Próxima
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </PrivateLayout>
+  );
+};
+
