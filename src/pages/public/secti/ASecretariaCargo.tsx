@@ -1,6 +1,6 @@
 import { PublicLayout } from '../../../layouts/PublicLayout.tsx';
 import { HeroSection } from '../../../components/HeroSection.tsx';
-import Mauricelia from "../../../../public/Mauricelia-Montenegro.jpg"
+import Mauricelia from "../../../assets/Mauricelia-Montenegro.jpg"
 
 export const ASecretariaCargo = () => {
   return (

@@ -190,7 +190,7 @@ const buildFormData = (data: CadastrarDocumentoServidorRequest | EditarDocumento
   formData.append('Titulo', data.titulo.trim());
   formData.append('Categoria', data.categoria.trim());
   const ano = data.dataPublicacao.split('/')[2];
-  formData.append('AnoPublicacao', ano);
+  formData.append('DataPublicacao', ano);
 
   if (data.caminho) {
     formData.append('Caminho', data.caminho.trim());
