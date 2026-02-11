@@ -26,7 +26,7 @@ export const downloadLegislacao = async (caminhoArquivo: string, nomeArquivo?: s
 export interface CadastrarLegislacaoRequest {
   titulo: string;
   categoria: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa
   caminho?: string;
   arquivo: File;
 }
@@ -37,7 +37,7 @@ export interface LegislacaoResponse {
   categoria: string;
   caminhoArquivo: string;
   nomeArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   dataCriacao: string;
   caminho?: string;
   usuarioCriacaoNome?: string;
@@ -49,7 +49,7 @@ export interface LegislacaoListItem {
   categoria: string;
   caminhoArquivo: string;
   nomeArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   dataCriacao: string;
   ativo: boolean;
   caminho?: string;
@@ -63,12 +63,13 @@ export interface LegislacaoListResponse {
   itensPorPagina: number;
   totalPaginas: number;
   caminhoFiltro?: string;
+  categoriaFiltro?: string;
 }
 
 export interface LegislacaoListFilters {
   caminho?: string;
   categoria?: string;
-  apenasAtivas?: boolean;
+  apenasAtivos?: boolean;
   ordenarPor?: string;
   ordenarDescendente?: boolean;
   pagina?: number;
@@ -79,7 +80,7 @@ export interface LegislacaoPublicoItem {
   id: number;
   titulo: string;
   caminhoArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
 }
 
 export interface LegislacaoPublicoListResponse {
@@ -104,7 +105,7 @@ export interface LegislacaoDetalhe {
   titulo: string;
   categoria: string;
   caminhoArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   ativo: boolean;
   dataCriacao: string;
   caminho?: string;
@@ -113,7 +114,7 @@ export interface LegislacaoDetalhe {
 export interface EditarLegislacaoRequest {
   titulo: string;
   categoria: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa
   caminho?: string;
   arquivo?: File;
 }
@@ -142,12 +143,15 @@ const validarCategoria = (categoria: string): string[] => {
   return erros;
 };
 
-const validarAnoPublicacao = (ano: number): string[] => {
+const validarDataPublicacao = (data: string): string[] => {
   const erros: string[] = [];
-  if (!ano) {
-    erros.push('O ano de publicação é obrigatório.');
-  } else if (ano < 1900 || ano > 3000) {
-    erros.push('O ano de publicação deve estar entre 1900 e 3000.');
+  if (!data) {
+    erros.push('A data de publicação é obrigatória.');
+  } else {
+    const dataObj = new Date(data);
+    if (isNaN(dataObj.getTime())) {
+      erros.push('Data de publicação inválida.');
+    }
   }
   return erros;
 };
@@ -184,7 +188,7 @@ const buildFormData = (data: CadastrarLegislacaoRequest | EditarLegislacaoReques
 
   formData.append('Titulo', data.titulo.trim());
   formData.append('Categoria', data.categoria.trim());
-  formData.append('AnoPublicacao', data.anoPublicacao.toString());
+  formData.append('DataPublicacao', data.dataPublicacao.trim());
 
   if (data.caminho) {
     formData.append('Caminho', data.caminho.trim());
@@ -206,7 +210,7 @@ export const legislacaoService = {
     const erros: string[] = [
       ...validarTitulo(data.titulo),
       ...validarCategoria(data.categoria),
-      ...validarAnoPublicacao(data.anoPublicacao),
+      ...validarDataPublicacao(data.dataPublicacao),
       ...validarArquivo(data.arquivo, true),
     ];
 
@@ -240,8 +244,8 @@ export const legislacaoService = {
     if (filtros?.categoria) {
       params.append('Categoria', filtros.categoria);
     }
-    if (filtros?.apenasAtivas !== undefined) {
-      params.append('ApenasAtivas', filtros.apenasAtivas.toString());
+    if (filtros?.apenasAtivos !== undefined) {
+      params.append('ApenasAtivas', filtros.apenasAtivos.toString());
     }
     if (filtros?.ordenarPor) {
       params.append('OrdenarPor', filtros.ordenarPor);
@@ -323,7 +327,7 @@ export const legislacaoService = {
     const erros: string[] = [
       ...validarTitulo(data.titulo),
       ...validarCategoria(data.categoria),
-      ...validarAnoPublicacao(data.anoPublicacao),
+      ...validarDataPublicacao(data.dataPublicacao),
       ...validarArquivo(data.arquivo, false), // Arquivo opcional na edição
     ];
 
@@ -367,4 +371,3 @@ export const legislacaoService = {
     }
   },
 };
-

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
 import { NoticiaForm } from '../../../components/admin/NoticiaForm';
-import { noticiasService, type NoticiaDetalhada } from '../../../services/noticiasService';
+import { noticiasService, type NoticiaDetalhada, type EditarNoticiaRequest } from '../../../services/noticiasService';
 import { handleApiError } from '../../../utils/errorHandler';
 
 interface NoticiaFormData {
@@ -88,18 +88,37 @@ export const EditarNoticia = () => {
     setError(null);
 
     try {
-      // Preparar dados para o endpoint
-      const imagemUrl = formData.imagemDestaque && !formData.imagemDestaque.startsWith('blob:')
-        ? formData.imagemDestaque
-        : undefined;
+      console.log('[EditarNoticia] Estado recebido do formulário:', {
+        titulo: formData.titulo,
+        autor: formData.autor,
+        imagemArquivo: formData.imagemArquivo ? `${formData.imagemArquivo.name} (${formData.imagemArquivo.size} bytes)` : 'null',
+        imagemDestaque: formData.imagemDestaque || 'vazio',
+      });
 
-      const dadosNoticia = {
+      // Preparar dados para o endpoint
+      const dadosNoticia: EditarNoticiaRequest = {
         titulo: formData.titulo,
         conteudo: formData.conteudo,
         resumo: formData.resumo || undefined,
-        imagemCapaUrl: imagemUrl,
+        autor: formData.autor || undefined,
         destaque: formData.destaque || false,
       };
+
+      // Se houver arquivo, enviar o arquivo
+      if (formData.imagemArquivo) {
+        dadosNoticia.imagemCapa = formData.imagemArquivo;
+        console.log('[EditarNoticia] Enviando arquivo:', formData.imagemArquivo.name);
+      }
+      // Senão, se houver URL (e não for blob), enviar a URL
+      else if (formData.imagemDestaque && !formData.imagemDestaque.startsWith('blob:')) {
+        dadosNoticia.imagemCapaUrl = formData.imagemDestaque;
+        console.log('[EditarNoticia] Enviando URL:', formData.imagemDestaque);
+      }
+
+      console.log('[EditarNoticia] Dados a enviar:', {
+        ...dadosNoticia,
+        imagemCapa: dadosNoticia.imagemCapa ? `File(${dadosNoticia.imagemCapa.name})` : undefined,
+      });
 
       // Chamar API
       await noticiasService.editar(noticiaId, dadosNoticia);

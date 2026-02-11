@@ -26,7 +26,7 @@ export const downloadAviso = async (caminhoArquivo: string, nomeArquivo?: string
 export interface CadastrarAvisoIntencaoContratarRequest {
   titulo: string;
   categoria: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   caminho?: string;
   arquivo: File;
 }
@@ -37,7 +37,7 @@ export interface AvisoIntencaoContratarResponse {
   categoria: string;
   caminhoArquivo: string;
   nomeArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   dataCriacao: string;
   caminho?: string;
   usuarioCriacaoNome?: string;
@@ -49,7 +49,7 @@ export interface AvisoIntencaoContratarListItem {
   categoria: string;
   caminhoArquivo: string;
   nomeArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   dataCriacao: string;
   ativo: boolean;
   caminho?: string;
@@ -79,7 +79,7 @@ export interface AvisoIntencaoContratarPublicoItem {
   id: number;
   titulo: string;
   caminhoArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
 }
 
 export interface AvisoIntencaoContratarPublicoListResponse {
@@ -104,7 +104,7 @@ export interface AvisoIntencaoContratarDetalhe {
   titulo: string;
   categoria: string;
   caminhoArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   ativo: boolean;
   dataCriacao: string;
   caminho?: string;
@@ -113,7 +113,7 @@ export interface AvisoIntencaoContratarDetalhe {
 export interface EditarAvisoIntencaoContratarRequest {
   titulo: string;
   categoria: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   caminho?: string;
   arquivo?: File;
 }

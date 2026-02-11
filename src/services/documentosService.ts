@@ -24,7 +24,7 @@ export const downloadDocumento = async (caminhoArquivo: string, nomeArquivo?: st
 export interface CadastrarDocumentoRequest {
   titulo: string;
   descricao?: string;
-  dataPublicacao: string; // dd-MM-yyyy
+  dataPublicacao: string; // Data completa
   pastaId?: number;
   arquivo: File;
 }
@@ -67,7 +67,7 @@ export interface DocumentoPublicoItem {
   id: number;
   titulo: string;
   caminhoArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
 }
 
 export interface DocumentoPublicoListResponse {
@@ -108,6 +108,7 @@ export interface DocumentoListFilters {
 export interface DocumentoPublicoFilters {
   pastaId?: number;
   categoria?: string;
+  titulo?: string;
   ordenarPor?: 'titulo' | 'anopublicacao';
   ordenarDescendente?: boolean;
   pagina?: number;
@@ -258,6 +259,9 @@ export const documentosService = {
     }
     if (filtros?.categoria) {
       params.append('Categoria', filtros.categoria);
+    }
+    if (filtros?.titulo) {
+      params.append('Titulo', filtros.titulo);
     }
     if (filtros?.ordenarPor) {
       params.append('OrdenarPor', filtros.ordenarPor);

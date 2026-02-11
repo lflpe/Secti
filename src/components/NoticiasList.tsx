@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { formatarDataBrasileira } from '../utils/dateUtils';
 
 export interface NoticiaItem {
   id: number;
@@ -124,12 +125,7 @@ export const NoticiasList = ({ noticias }: NoticiasListProps) => {
 
   // Função para formatar data
   const formatarData = (dataString: string) => {
-    const data = new Date(dataString);
-    return data.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+    return formatarDataBrasileira(dataString);
   };
 
   // Função para obter cor da categoria

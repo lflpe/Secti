@@ -80,16 +80,36 @@ export const NoticiaForm = ({ initialData, onSubmit, isSubmitting }: NoticiaForm
         return;
       }
 
+      console.log('[NoticiaForm] Arquivo selecionado:', file.name, file.size, 'bytes');
+
+      // Criar preview usando FileReader
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const preview = reader.result as string;
+        console.log('[NoticiaForm] Preview criado, tamanho:', preview.length);
+      };
+      reader.readAsDataURL(file);
+
+      // Atualizar estado imediatamente com o arquivo e preview
       setFormData(prev => ({
         ...prev,
         imagemArquivo: file,
         imagemDestaque: URL.createObjectURL(file),
       }));
+
+      console.log('[NoticiaForm] Estado atualizado com arquivo');
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log('[NoticiaForm] handleSubmit - Estado atual:', {
+      titulo: formData.titulo,
+      autor: formData.autor,
+      imagemArquivo: formData.imagemArquivo ? `${formData.imagemArquivo.name} (${formData.imagemArquivo.size} bytes)` : 'null',
+      imagemDestaque: formData.imagemDestaque || 'vazio',
+    });
 
     // Validações do frontend (espelham validações do backend)
     const erros: string[] = [];
@@ -119,6 +139,10 @@ export const NoticiaForm = ({ initialData, onSubmit, isSubmitting }: NoticiaForm
     }
 
     setErrosValidacao([]);
+    console.log('[NoticiaForm] Chamando onSubmit com dados:', {
+      ...formData,
+      imagemArquivo: formData.imagemArquivo ? `File(${formData.imagemArquivo.name})` : 'null',
+    });
     await onSubmit(formData);
   };
 

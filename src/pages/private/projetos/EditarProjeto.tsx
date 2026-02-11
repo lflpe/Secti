@@ -48,51 +48,14 @@ export const EditarProjeto = () => {
         });
 
         // Carregar perguntas frequentes
-        try {
-          if (projeto.perguntasFrequentes) {
-            console.log('Perguntas recebidas do backend:', projeto.perguntasFrequentes);
-            console.log('Tipo:', typeof projeto.perguntasFrequentes);
-            console.log('É array?', Array.isArray(projeto.perguntasFrequentes));
-
-            let perguntas: PerguntaFrequente[] = [];
-
-            if (Array.isArray(projeto.perguntasFrequentes)) {
-              // Se já for um array, mapear para o formato do frontend
-              console.log('Processando como array...');
-              perguntas = projeto.perguntasFrequentes.map((p, index) => ({
-                id: p.id?.toString() || `pf-${index}-${Date.now()}`,
-                pergunta: p.pergunta || '',
-                resposta: p.resposta || '',
-              }));
-            } else {
-              // Se não for array, deve ser string - fazer parse
-              console.log('Processando como string JSON...');
-              try {
-                const parsed = JSON.parse(projeto.perguntasFrequentes) as unknown;
-                console.log('JSON parseado:', parsed);
-
-                if (Array.isArray(parsed)) {
-                  perguntas = parsed.map((p: { id?: number; pergunta?: string; resposta?: string; ordem?: number }, index: number) => ({
-                    id: p.id?.toString() || `pf-${index}-${Date.now()}`,
-                    pergunta: p.pergunta || '',
-                    resposta: p.resposta || '',
-                  }));
-                } else {
-                  console.warn('JSON parseado não é um array:', parsed);
-                }
-              } catch (parseError) {
-                console.error('Erro ao fazer parse do JSON:', parseError);
-              }
-            }
-
-            console.log('Perguntas formatadas para o estado:', perguntas);
-            setPerguntasFrequentes(perguntas);
-          } else {
-            console.log('Nenhuma pergunta frequente encontrada');
-            setPerguntasFrequentes([]);
-          }
-        } catch (e) {
-          console.error('Erro ao processar perguntas frequentes:', e);
+        if (projeto.perguntasFrequentes && projeto.perguntasFrequentes.length > 0) {
+          const perguntas: PerguntaFrequente[] = projeto.perguntasFrequentes.map((p, index) => ({
+            id: p.id?.toString() || `pf-${index}-${Date.now()}`,
+            pergunta: p.pergunta || '',
+            resposta: p.resposta || '',
+          }));
+          setPerguntasFrequentes(perguntas);
+        } else {
           setPerguntasFrequentes([]);
         }
 
@@ -165,12 +128,25 @@ export const EditarProjeto = () => {
     try {
       setSaving(true);
 
+      const perguntasPayload = perguntasFrequentes.map((p, index) => ({
+        pergunta: p.pergunta,
+        resposta: p.resposta,
+        ordem: index,
+      }));
+
+      console.log('[EditarProjeto] Estado dos arquivos:', {
+        fotoCapaFile: fotoCapaFile ? `${fotoCapaFile.name} (${fotoCapaFile.size} bytes)` : 'null',
+        logoFile: logoFile ? `${logoFile.name} (${logoFile.size} bytes)` : 'null',
+        fotoCapaUrl,
+        logoUrl,
+      });
+
       // Validar dados
       const errosValidacao = validarProjeto({
         titulo: formData.titulo,
         descricao: formData.descricao,
         url: formData.url,
-        perguntasFrequentes: JSON.stringify(perguntasFrequentes),
+        perguntasFrequentes: perguntasPayload,
         fotoCapa: fotoCapaFile || undefined,
         logo: logoFile || undefined,
       });
@@ -187,12 +163,18 @@ export const EditarProjeto = () => {
         return;
       }
 
+      console.log('[EditarProjeto] Enviando para o service:', {
+        titulo: formData.titulo,
+        fotoCapa: fotoCapaFile || undefined,
+        logo: logoFile || undefined,
+      });
+
       // Enviar dados
       await projetosService.editar(parseInt(id), {
         titulo: formData.titulo,
         descricao: formData.descricao,
         url: formData.url,
-        perguntasFrequentes: JSON.stringify(perguntasFrequentes),
+        perguntasFrequentes: perguntasPayload,
         fotoCapa: fotoCapaFile || undefined,
         logo: logoFile || undefined,
       });
@@ -310,13 +292,16 @@ export const EditarProjeto = () => {
             onUrlChange={(value) => handleImageUrlChange(value, 'fotoCapa')}
             onFileChange={(file) => {
               if (file) {
+                setFotoCapaFile(file);
+                setFotoCapaUrl('');
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                  setFotoCapaFile(file);
-                  setFotoCapaUrl('');
                   setFotoCapaPreview(reader.result as string);
                 };
                 reader.readAsDataURL(file);
+              } else {
+                setFotoCapaFile(null);
+                setFotoCapaPreview(null);
               }
             }}
             onRemove={() => handleRemoveImage('fotoCapa')}
@@ -334,13 +319,16 @@ export const EditarProjeto = () => {
             onUrlChange={(value) => handleImageUrlChange(value, 'logo')}
             onFileChange={(file) => {
               if (file) {
+                setLogoFile(file);
+                setLogoUrl('');
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                  setLogoFile(file);
-                  setLogoUrl('');
                   setLogoPreview(reader.result as string);
                 };
                 reader.readAsDataURL(file);
+              } else {
+                setLogoFile(null);
+                setLogoPreview(null);
               }
             }}
             onRemove={() => handleRemoveImage('logo')}

@@ -34,7 +34,7 @@ export const Parcerias = () => {
           tamanho: 'Não disponível',
           categoria: 'Parcerias',
           url: doc.caminhoArquivo,
-          dataPublicacao: `01/01/${doc.anoPublicacao}`,
+          dataPublicacao: doc.dataPublicacao,
         }));
 
         setDocumentos(documentosFormatados);

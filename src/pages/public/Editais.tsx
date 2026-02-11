@@ -26,18 +26,18 @@ export const Editais = () => {
           itensPorPagina: 100,
         });
 
-        // Converter resposta para formato DocumentoParceriaPublicoItem
-        const documentosFormatados: DocumentoParceriaPublicoItem[] = response.editais.map(doc => ({
-          id: doc.id,
-          nome: doc.titulo,
+        // Converter resposta para formato DocumentoPublicoItem
+        const editaisFormatados: DocumentoParceriaPublicoItem[] = response.editais.map(edital => ({
+          id: edital.id,
+          nome: edital.titulo,
           tipo: 'pdf' as const,
           tamanho: 'Não disponível',
-          categoria: 'Edital',
-          url: doc.caminhoArquivo,
-          dataPublicacao: `01/01/${doc.anoPublicacao}`,
+          categoria: 'Editais',
+          url: edital.caminhoArquivo,
+          dataPublicacao: edital.dataPublicacao,
         }));
 
-        setDocumentos(documentosFormatados);
+        setDocumentos(editaisFormatados);
         setCategorias(['Todas', 'Edital']);
       } catch (err) {
         const mensagemErro = handleApiError(err);

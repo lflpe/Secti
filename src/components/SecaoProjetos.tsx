@@ -10,6 +10,7 @@ export type ProjetoItem = {
     logoCaminho?: string;
     marca?: string; // URL da imagem da marca
     link?: string; // Link opcional para o projeto
+    urlProjeto?: string;
 };
 
 type SecaoProjetosProps = {
@@ -35,19 +36,23 @@ export const SecaoProjetos: React.FC<SecaoProjetosProps> = ({ projetos: projetos
                     nome: projeto.titulo,
                     logoCaminho: projeto.logoCaminho,
                     marca: projeto.logoCaminho,
-                    link: `/projetos/${projeto.id}`,
+                    link: `/projetos/${projeto.urlProjeto}`,
+                    urlProjeto: projeto.urlProjeto,
                 }));
 
                 setProjetos(projetosFormatados);
             } catch (error) {
                 console.error('Erro ao carregar projetos:', handleApiError(error));
                 // Manter projetos iniciais em caso de erro
-                setProjetos(projetosInicial);
+                if (projetosInicial.length > 0) {
+                    setProjetos(projetosInicial);
+                }
             }
         };
 
         carregarProjetos();
-    }, [projetosInicial]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Função para normalizar strings removendo acentos
     const normalizeString = (str: string) => {
@@ -89,7 +94,7 @@ export const SecaoProjetos: React.FC<SecaoProjetosProps> = ({ projetos: projetos
                         {filteredProjetos.map((projeto) => (
                             <a
                                 key={projeto.id ?? projeto.nome}
-                                href={projeto.link || `/projetos/${projeto.id}`}
+                                href={projeto.link || `/projetos/${projeto.urlProjeto || projeto.id}`}
                                 className="bg-white rounded-2xl transition duration-200 hover:scale-105 shadow-md overflow-hidden hover:shadow-lg p-6 text-center block"
                             >
                                 {projeto.marca ? (

@@ -26,7 +26,7 @@ export const downloadRelatorio = async (caminhoArquivo: string, nomeArquivo?: st
 export interface CadastrarRelatorioRequest {
   titulo: string;
   categoria: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa
   caminho?: string;
   arquivo: File;
 }
@@ -37,7 +37,7 @@ export interface RelatorioResponse {
   categoria: string;
   caminhoArquivo: string;
   nomeArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   dataCriacao: string;
   caminho?: string;
   usuarioCriacaoNome?: string;
@@ -49,7 +49,7 @@ export interface RelatorioListItem {
   categoria: string;
   caminhoArquivo: string;
   nomeArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   dataCriacao: string;
   ativo: boolean;
   caminho?: string;
@@ -79,7 +79,7 @@ export interface RelatorioPublicoItem {
   id: number;
   titulo: string;
   caminhoArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
 }
 
 export interface RelatorioPublicoListResponse {
@@ -104,7 +104,7 @@ export interface RelatorioDetalhe {
   titulo: string;
   categoria: string;
   caminhoArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   ativo: boolean;
   dataCriacao: string;
   caminho?: string;
@@ -113,7 +113,7 @@ export interface RelatorioDetalhe {
 export interface EditarRelatorioRequest {
   titulo: string;
   categoria: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa
   caminho?: string;
   arquivo?: File;
 }
@@ -142,12 +142,15 @@ const validarCategoria = (categoria: string): string[] => {
   return erros;
 };
 
-const validarAnoPublicacao = (ano: number): string[] => {
+const validarDataPublicacao = (data: string): string[] => {
   const erros: string[] = [];
-  if (!ano) {
-    erros.push('O ano de publicação é obrigatório.');
-  } else if (ano < 1900 || ano > 3000) {
-    erros.push('O ano de publicação deve estar entre 1900 e 3000.');
+  if (!data) {
+    erros.push('A data de publicação é obrigatória.');
+  } else {
+    const dataObj = new Date(data);
+    if (dataObj.getFullYear() < 1900 || dataObj.getFullYear() > 3000) {
+      erros.push('A data de publicação deve estar entre 1900 e 3000.');
+    }
   }
   return erros;
 };
@@ -184,7 +187,7 @@ const buildFormData = (data: CadastrarRelatorioRequest | EditarRelatorioRequest)
 
   formData.append('Titulo', data.titulo.trim());
   formData.append('Categoria', data.categoria.trim());
-  formData.append('AnoPublicacao', data.anoPublicacao.toString());
+  formData.append('DataPublicacao', data.dataPublicacao.trim());
 
   if (data.caminho) {
     formData.append('Caminho', data.caminho.trim());
@@ -206,7 +209,7 @@ export const relatoriosService = {
     const erros: string[] = [
       ...validarTitulo(data.titulo),
       ...validarCategoria(data.categoria),
-      ...validarAnoPublicacao(data.anoPublicacao),
+      ...validarDataPublicacao(data.dataPublicacao),
       ...validarArquivo(data.arquivo, true),
     ];
 
@@ -323,7 +326,7 @@ export const relatoriosService = {
     const erros: string[] = [
       ...validarTitulo(data.titulo),
       ...validarCategoria(data.categoria),
-      ...validarAnoPublicacao(data.anoPublicacao),
+      ...validarDataPublicacao(data.dataPublicacao),
       ...validarArquivo(data.arquivo, false), // Arquivo opcional na edição
     ];
 
@@ -367,4 +370,3 @@ export const relatoriosService = {
     }
   },
 };
-

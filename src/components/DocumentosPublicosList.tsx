@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { downloadDocumento } from '../services/documentosService';
+import { formatarDataBrasileira, extrairAno } from '../utils/dateUtils';
 
 export interface DocumentoPublicoItem {
   id: number;
@@ -16,6 +17,7 @@ interface DocumentosPublicosListProps {
   categories: string[];
   showCategoryFilter?: boolean;
   isLoading?: boolean;
+  itemsPerPage?: number;
 }
 
 export const DocumentosPublicosList = ({
@@ -23,20 +25,20 @@ export const DocumentosPublicosList = ({
   categories,
   showCategoryFilter = true,
   isLoading = false,
+  itemsPerPage = 20,
 }: DocumentosPublicosListProps) => {
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('');
   const [filtroAno, setFiltroAno] = useState('');
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
-  const documentosPorPagina = 10;
+
+  // Use prop for items per page
+  const documentosPorPagina = itemsPerPage;
 
   // Extrair anos únicos
   const anos = useMemo(() => {
-    const anosSet = documents.map(doc => {
-      const data = doc.dataPublicacao.split('/');
-      return data[2];
-    });
+    const anosSet = documents.map(doc => extrairAno(doc.dataPublicacao).toString());
     return ['Todos', ...Array.from(new Set(anosSet)).sort((a, b) => b.localeCompare(a))];
   }, [documents]);
 
@@ -45,7 +47,7 @@ export const DocumentosPublicosList = ({
     return documents.filter(doc => {
       const matchNome = doc.nome.toLowerCase().includes(filtroNome.toLowerCase());
       const matchCategoria = filtroCategoria === '' || filtroCategoria === 'Todas' || doc.categoria === filtroCategoria;
-      const anoDoc = doc.dataPublicacao.split('/')[2];
+      const anoDoc = extrairAno(doc.dataPublicacao).toString();
       const matchAno = filtroAno === '' || filtroAno === 'Todos' || anoDoc === filtroAno;
       return matchNome && matchCategoria && matchAno;
     });
@@ -64,7 +66,7 @@ export const DocumentosPublicosList = ({
     const inicio = (paginaAtual - 1) * documentosPorPagina;
     const fim = inicio + documentosPorPagina;
     return documentosFiltrados.slice(inicio, fim);
-  }, [documentosFiltrados, paginaAtual]);
+  }, [documentosFiltrados, paginaAtual, documentosPorPagina]);
 
   // Função para mudar de página
   const irParaPagina = (pagina: number) => {
@@ -228,7 +230,7 @@ export const DocumentosPublicosList = ({
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        <strong>Publicado em:</strong> {doc.dataPublicacao}
+                        <strong>Publicado em:</strong> {formatarDataBrasileira(doc.dataPublicacao)}
                       </span>
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#0C2856] text-white">
                         {doc.categoria}
@@ -287,7 +289,7 @@ export const DocumentosPublicosList = ({
                 <button
                   onClick={() => irParaPagina(paginaAtual + 1)}
                   disabled={paginaAtual === totalPaginas}
-                  className={`px-4 py-2 rounded-lg font-medium transition duration-200 ${
+                  className={`px-4 py-2 cursor-pointer rounded-lg font-medium transition duration-200 ${
                     paginaAtual === totalPaginas
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       : 'bg-white cursor-pointer text-[#0C2856] border border-[#0C2856] hover:bg-[#0C2856] hover:text-white'

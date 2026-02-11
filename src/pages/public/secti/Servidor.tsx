@@ -2,7 +2,7 @@ import { PublicLayout } from '../../../layouts/PublicLayout.tsx';
 import { HeroSection } from '../../../components/HeroSection.tsx';
 import { DocumentosServidorPublicosList } from '../../../components/DocumentosServidorPublicosList';
 import type { DocumentoServidorPublicoItem } from '../../../components/DocumentosServidorPublicosList';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { documentosServidorService } from '../../../services/documentosServidorService';
 import { handleApiError } from '../../../utils/errorHandler';
 
@@ -10,49 +10,64 @@ import { handleApiError } from '../../../utils/errorHandler';
 export const Servidor = () => {
   const [documentos, setDocumentos] = useState<DocumentoServidorPublicoItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categorias, setCategorias] = useState<string[]>(['Todas']);
+  const [pagina, setPagina] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+
+  const carregarDocumentos = useCallback(async (paginaAtual: number) => {
+    try {
+      if (paginaAtual === 1) {
+        setIsLoading(true);
+      } else {
+        setIsLoadingMore(true);
+      }
+      setError(null);
+
+      // Buscar documentos do servidor públicos do endpoint
+      const response = await documentosServidorService.listarPublico({
+        ordenarPor: 'anopublicacao',
+        ordenarDescendente: true,
+        pagina: paginaAtual,
+        itensPorPagina: 20,
+      });
+
+      // Converter resposta para formato DocumentoServidorPublicoItem
+      const documentosFormatados: DocumentoServidorPublicoItem[] = response.documentos.map(doc => ({
+        id: doc.id,
+        nome: doc.titulo,
+        tipo: 'pdf' as const,
+        tamanho: 'Não disponível',
+        categoria: 'Documentos',
+        url: doc.caminhoArquivo,
+        dataPublicacao: doc.dataPublicacao,
+      }));
+
+      setDocumentos(prev => paginaAtual === 1 ? documentosFormatados : [...prev, ...documentosFormatados]);
+      setHasMore(paginaAtual < response.totalPaginas);
+
+      // Extrair categorias únicas (por enquanto, apenas uma categoria padrão)
+      setCategorias(['Todas', 'Documentos']);
+    } catch (err) {
+      const mensagemErro = handleApiError(err);
+      setError(mensagemErro);
+      console.error('Erro ao carregar documentos do servidor:', err);
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const carregarDocumentos = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+    carregarDocumentos(1);
+  }, [carregarDocumentos]);
 
-        // Buscar documentos do servidor públicos do endpoint
-        const response = await documentosServidorService.listarPublico({
-          ordenarPor: 'anopublicacao',
-          ordenarDescendente: true,
-          pagina: 1,
-          itensPorPagina: 100,
-        });
-
-        // Converter resposta para formato DocumentoServidorPublicoItem
-        const documentosFormatados: DocumentoServidorPublicoItem[] = response.documentos.map(doc => ({
-          id: doc.id,
-          nome: doc.titulo,
-          tipo: 'pdf' as const,
-          tamanho: 'Não disponível',
-          categoria: 'Documentos',
-          url: doc.caminhoArquivo,
-          dataPublicacao: `01/01/${doc.anoPublicacao}`,
-        }));
-
-        setDocumentos(documentosFormatados);
-
-        // Extrair categorias únicas (por enquanto, apenas uma categoria padrão)
-        setCategorias(['Todas', 'Documentos']);
-      } catch (err) {
-        const mensagemErro = handleApiError(err);
-        setError(mensagemErro);
-        console.error('Erro ao carregar documentos do servidor:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    carregarDocumentos();
-  }, []);
+  const handleCarregarMais = () => {
+    const proximaPagina = pagina + 1;
+    setPagina(proximaPagina);
+    carregarDocumentos(proximaPagina);
+  };
 
   return (
     <PublicLayout>
@@ -94,6 +109,8 @@ export const Servidor = () => {
                 categories={categorias}
                 showCategoryFilter={true}
                 isLoading={isLoading}
+                onLoadMore={hasMore ? handleCarregarMais : undefined}
+                isLoadingMore={isLoadingMore}
               />
             )}
           </div>

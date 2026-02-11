@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { formatarDataBrasileira } from '../utils/dateUtils';
 
 export interface ProjetoItem {
   id: number;
@@ -10,6 +11,7 @@ export interface ProjetoItem {
   ativo: boolean;
   dataCriacao: string;
   link?: string;
+  urlProjeto?: string;
 }
 
 interface ProjetosListProps {
@@ -117,11 +119,19 @@ export const ProjetosList = ({ projetos, isLoading = false, error = null }: Proj
                 <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                {new Date(projeto.dataCriacao).toLocaleDateString('pt-BR')}
+                {formatarDataBrasileira(projeto.dataCriacao)}
               </div>
 
               {/* Botões */}
               <div className="flex gap-2 mt-auto">
+                {projeto.urlProjeto && (
+                  <a
+                    href={projeto.link || `/projetos/${projeto.urlProjeto}`}
+                    className="flex-1 inline-flex items-center justify-center gap-2 border border-[#0C2856] text-[#0C2856] px-4 py-2 rounded-lg font-semibold hover:bg-[#0C2856] hover:text-white transition-colors text-sm"
+                  >
+                    <span>Detalhes</span>
+                  </a>
+                )}
                 {projeto.url && (
                   <a
                     href={projeto.url}
@@ -183,4 +193,3 @@ export const ProjetosList = ({ projetos, isLoading = false, error = null }: Proj
     </div>
   );
 };
-

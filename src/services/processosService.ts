@@ -26,7 +26,7 @@ export const downloadProcesso = async (caminhoArquivo: string, nomeArquivo?: str
 export interface CadastrarProcessoRequest {
   titulo: string;
   categoria: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa
   caminho?: string;
   arquivo: File;
 }
@@ -37,7 +37,7 @@ export interface ProcessoResponse {
   categoria: string;
   caminhoArquivo: string;
   nomeArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   dataCriacao: string;
   caminho?: string;
   usuarioCriacaoNome?: string;
@@ -49,7 +49,7 @@ export interface ProcessoListItem {
   categoria: string;
   caminhoArquivo: string;
   nomeArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   dataCriacao: string;
   ativo: boolean;
   caminho?: string;
@@ -63,6 +63,7 @@ export interface ProcessoListResponse {
   itensPorPagina: number;
   totalPaginas: number;
   caminhoFiltro?: string;
+  categoriaFiltro?: string;
 }
 
 export interface ProcessoListFilters {
@@ -75,12 +76,36 @@ export interface ProcessoListFilters {
   itensPorPagina?: number;
 }
 
+export interface ProcessoPublicoItem {
+  id: number;
+  titulo: string;
+  caminhoArquivo: string;
+  dataPublicacao: string; // Data completa do backend
+}
+
+export interface ProcessoPublicoListResponse {
+  processos: ProcessoPublicoItem[];
+  totalItens: number;
+  pagina: number;
+  itensPorPagina: number;
+  totalPaginas: number;
+}
+
+export interface ProcessoPublicoFilters {
+  caminho?: string;
+  categoria?: string;
+  ordenarPor?: string;
+  ordenarDescendente?: boolean;
+  pagina?: number;
+  itensPorPagina?: number;
+}
+
 export interface ProcessoDetalhe {
   id: number;
   titulo: string;
   categoria: string;
   caminhoArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   ativo: boolean;
   dataCriacao: string;
   caminho?: string;
@@ -89,7 +114,7 @@ export interface ProcessoDetalhe {
 export interface EditarProcessoRequest {
   titulo: string;
   categoria: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa
   caminho?: string;
   arquivo?: File;
 }
@@ -114,16 +139,6 @@ const validarCategoria = (categoria: string): string[] => {
     erros.push('A categoria é obrigatória.');
   } else if (categoria.trim().length > 100) {
     erros.push('A categoria deve ter no máximo 100 caracteres.');
-  }
-  return erros;
-};
-
-const validarAnoPublicacao = (ano: number): string[] => {
-  const erros: string[] = [];
-  if (!ano) {
-    erros.push('O ano de publicação é obrigatório.');
-  } else if (ano < 1900 || ano > 3000) {
-    erros.push('O ano de publicação deve estar entre 1900 e 3000.');
   }
   return erros;
 };
@@ -153,6 +168,19 @@ const validarArquivo = (arquivo: File | null | undefined, obrigatorio = true): s
   return erros;
 };
 
+const validarDataPublicacao = (data: string): string[] => {
+  const erros: string[] = [];
+  if (!data) {
+    erros.push('A data de publicação é obrigatória.');
+  } else {
+    const dataObj = new Date(data);
+    if (dataObj.getFullYear() < 1900 || dataObj.getFullYear() > 3000) {
+      erros.push('A data de publicação deve estar entre 1900 e 3000.');
+    }
+  }
+  return erros;
+};
+
 // ==================== SERVICE ====================
 
 const buildFormData = (data: CadastrarProcessoRequest | EditarProcessoRequest): FormData => {
@@ -160,7 +188,7 @@ const buildFormData = (data: CadastrarProcessoRequest | EditarProcessoRequest): 
 
   formData.append('Titulo', data.titulo.trim());
   formData.append('Categoria', data.categoria.trim());
-  formData.append('AnoPublicacao', data.anoPublicacao.toString());
+  formData.append('DataPublicacao', data.dataPublicacao.trim());
 
   if (data.caminho) {
     formData.append('Caminho', data.caminho.trim());
@@ -182,7 +210,7 @@ export const processosService = {
     const erros: string[] = [
       ...validarTitulo(data.titulo),
       ...validarCategoria(data.categoria),
-      ...validarAnoPublicacao(data.anoPublicacao),
+      ...validarDataPublicacao(data.dataPublicacao),
       ...validarArquivo(data.arquivo, true),
     ];
 
@@ -263,7 +291,7 @@ export const processosService = {
     const erros: string[] = [
       ...validarTitulo(data.titulo),
       ...validarCategoria(data.categoria),
-      ...validarAnoPublicacao(data.anoPublicacao),
+      ...validarDataPublicacao(data.dataPublicacao),
       ...validarArquivo(data.arquivo, false), // Arquivo opcional na edição
     ];
 
@@ -307,4 +335,3 @@ export const processosService = {
     }
   },
 };
-

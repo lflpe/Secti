@@ -1,27 +1,5 @@
 import { apiClient } from '../lib/apiClient';
 
-// Types para requisição de cadastro de projeto
-export interface CadastrarProjetoRequest {
-  titulo: string;
-  descricao?: string;
-  url?: string;
-  perguntasFrequentes?: string;
-  fotoCapa?: File;
-  logo?: File;
-}
-
-// Types para resposta de projeto cadastrado
-export interface ProjetoResponse {
-  id: number;
-  titulo: string;
-  descricao: string;
-  fotoCapaCaminho: string;
-  logoCaminho: string;
-  url: string;
-  perguntasFrequentes: string;
-  dataCriacao: string;
-}
-
 // Type para pergunta frequente
 export interface PerguntaFrequenteAPI {
   id: number;
@@ -30,15 +8,46 @@ export interface PerguntaFrequenteAPI {
   ordem: number;
 }
 
-// Type para projeto detalhado
-export interface ProjetoDetalhado {
+// Payload para envio de perguntas frequentes
+export interface PerguntaFrequentePayload {
+  pergunta: string;
+  resposta: string;
+  ordem: number;
+}
+
+// Types para requisição de cadastro de projeto
+export interface CadastrarProjetoRequest {
+  titulo: string;
+  descricao?: string;
+  url?: string;
+  perguntasFrequentes?: PerguntaFrequentePayload[];
+  fotoCapa?: File;
+  logo?: File;
+}
+
+// Types para resposta de projeto cadastrado
+export interface ProjetoResponse {
   id: number;
   titulo: string;
+  urlProjeto: string;
   descricao: string;
   fotoCapaCaminho: string;
   logoCaminho: string;
   url: string;
-  perguntasFrequentes: PerguntaFrequenteAPI[] | string;
+  perguntasFrequentes: PerguntaFrequenteAPI[];
+  dataCriacao: string;
+}
+
+// Type para projeto detalhado
+export interface ProjetoDetalhado {
+  id: number;
+  titulo: string;
+  urlProjeto: string;
+  descricao: string;
+  fotoCapaCaminho: string;
+  logoCaminho: string;
+  url: string;
+  perguntasFrequentes: PerguntaFrequenteAPI[];
   ativo: boolean;
   dataCriacao: string;
 }
@@ -47,9 +56,11 @@ export interface ProjetoDetalhado {
 export interface ProjetoListagem {
   id: number;
   titulo: string;
+  urlProjeto: string;
   fotoCapaCaminho: string;
   logoCaminho: string;
   url: string;
+  perguntasFrequentes: PerguntaFrequenteAPI[];
   ativo: boolean;
   dataCriacao: string;
 }
@@ -64,10 +75,10 @@ export interface ProjetoListResponse {
 
 // Type para edição de projeto
 export interface EditarProjetoRequest {
-  titulo?: string;
+  titulo: string;
   descricao?: string;
   url?: string;
-  perguntasFrequentes?: string;
+  perguntasFrequentes?: PerguntaFrequentePayload[];
   fotoCapa?: File;
   logo?: File;
 }
@@ -76,11 +87,12 @@ export interface EditarProjetoRequest {
 export interface EditarProjetoResponse {
   id: number;
   titulo: string;
+  urlProjeto: string;
   descricao: string;
   fotoCapaCaminho: string;
   logoCaminho: string;
   url: string;
-  perguntasFrequentes: string;
+  perguntasFrequentes: PerguntaFrequenteAPI[];
   ativo: boolean;
   dataCriacao: string;
 }
@@ -98,11 +110,9 @@ export interface ProjetoFiltros {
 export const validarProjeto = (data: CadastrarProjetoRequest | EditarProjetoRequest): string[] => {
   const erros: string[] = [];
 
-  // Título: obrigatório apenas para cadastro
-  if ('titulo' in data && data.titulo) {
-    if (data.titulo.trim().length === 0) {
-      erros.push('Título é obrigatório.');
-    }
+  // Título: obrigatório
+  if (!data.titulo || data.titulo.trim().length === 0) {
+    erros.push('Título é obrigatório.');
   }
 
   // URL: opcional, mas se fornecida deve ser válida
@@ -128,13 +138,36 @@ export const projetosService = {
       throw new Error(errosValidacao.join(' '));
     }
 
+    console.log('[ProjetosService] Dados recebidos:', {
+      titulo: data.titulo,
+      fotoCapa: data.fotoCapa ? `File: ${data.fotoCapa.name} (${data.fotoCapa.size} bytes)` : 'não fornecida',
+      logo: data.logo ? `File: ${data.logo.name} (${data.logo.size} bytes)` : 'não fornecida',
+    });
+
     const formData = new FormData();
     formData.append('Titulo', data.titulo);
     if (data.descricao) formData.append('Descricao', data.descricao);
     if (data.url) formData.append('Url', data.url);
-    if (data.perguntasFrequentes) formData.append('PerguntasFrequentes', data.perguntasFrequentes);
-    if (data.fotoCapa) formData.append('FotoCapa', data.fotoCapa);
-    if (data.logo) formData.append('Logo', data.logo);
+    if (data.perguntasFrequentes && data.perguntasFrequentes.length > 0) {
+      formData.append('PerguntasFrequentes', JSON.stringify(data.perguntasFrequentes));
+    }
+    if (data.fotoCapa) {
+      console.log('[ProjetosService] Anexando FotoCapa:', data.fotoCapa.name);
+      formData.append('FotoCapa', data.fotoCapa);
+    }
+    if (data.logo) {
+      console.log('[ProjetosService] Anexando Logo:', data.logo.name);
+      formData.append('Logo', data.logo);
+    }
+
+    console.log('[ProjetosService] FormData entries:');
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+      } else {
+        console.log(`  ${key}:`, value);
+      }
+    }
 
     const response = await apiClient.post<ProjetoResponse>('/Projeto/cadastrar', formData);
     return response.data;
@@ -207,6 +240,14 @@ export const projetosService = {
   },
 
   /**
+   * Busca um projeto ativo por UrlProjeto (slug) - endpoint público
+   */
+  buscarPublicoPorSlug: async (slug: string): Promise<ProjetoDetalhado> => {
+    const response = await apiClient.get<ProjetoDetalhado>(`/Projeto/${slug}`);
+    return response.data;
+  },
+
+  /**
    * Edita um projeto existente
    */
   editar: async (id: number, data: EditarProjetoRequest): Promise<EditarProjetoResponse> => {
@@ -216,13 +257,36 @@ export const projetosService = {
       throw new Error(errosValidacao.join(' '));
     }
 
+    console.log('[ProjetosService] Editar - Dados recebidos:', {
+      titulo: data.titulo,
+      fotoCapa: data.fotoCapa ? `File: ${data.fotoCapa.name} (${data.fotoCapa.size} bytes)` : 'não fornecida',
+      logo: data.logo ? `File: ${data.logo.name} (${data.logo.size} bytes)` : 'não fornecida',
+    });
+
     const formData = new FormData();
-    if (data.titulo) formData.append('Titulo', data.titulo);
+    formData.append('Titulo', data.titulo);
     if (data.descricao) formData.append('Descricao', data.descricao);
     if (data.url) formData.append('Url', data.url);
-    if (data.perguntasFrequentes) formData.append('PerguntasFrequentes', data.perguntasFrequentes);
-    if (data.fotoCapa) formData.append('FotoCapa', data.fotoCapa);
-    if (data.logo) formData.append('Logo', data.logo);
+    if (data.perguntasFrequentes && data.perguntasFrequentes.length > 0) {
+      formData.append('PerguntasFrequentes', JSON.stringify(data.perguntasFrequentes));
+    }
+    if (data.fotoCapa) {
+      console.log('[ProjetosService] Editar - Anexando FotoCapa:', data.fotoCapa.name);
+      formData.append('FotoCapa', data.fotoCapa);
+    }
+    if (data.logo) {
+      console.log('[ProjetosService] Editar - Anexando Logo:', data.logo.name);
+      formData.append('Logo', data.logo);
+    }
+
+    console.log('[ProjetosService] Editar - FormData entries:');
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+      } else {
+        console.log(`  ${key}:`, value);
+      }
+    }
 
     // PUT é o método correto para edição, o interceptor do apiClient já remove o Content-Type
     // para que o navegador defina automaticamente o boundary correto para multipart/form-data
@@ -244,4 +308,3 @@ export const projetosService = {
     await apiClient.post(`/Projeto/ativar/${id}`);
   },
 };
-

@@ -7,6 +7,7 @@ import { noticiasService } from '../../services/noticiasService';
 import { handleApiError } from '../../utils/errorHandler';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import SectiPredio from "../../assets/SECTIPredio.jpg"
+import { formatarDataBrasileira } from '../../utils/dateUtils';
 
 
 export const TodasNoticias = () => {
@@ -34,10 +35,10 @@ export const TodasNoticias = () => {
           titulo: noticia.titulo,
           categoria: 'Notícia',
           autor: noticia.autor,
-          dataPublicacao: new Date(noticia.dataPublicacao).toLocaleDateString('pt-BR'),
+          dataPublicacao: formatarDataBrasileira(noticia.dataPublicacao),
           resumo: noticia.resumo,
           imagem: noticia.imagemCapaUrl || SectiPredio,
-          link: `/noticias/${noticia.id}`,
+          link: `/noticias/${noticia.slug}`,
         }));
 
         setNoticias(noticiasFormatadas);

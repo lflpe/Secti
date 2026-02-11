@@ -26,7 +26,7 @@ export const downloadParceria = async (caminhoArquivo: string, nomeArquivo?: str
 export interface CadastrarParceriaRequest {
   titulo: string;
   categoria: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa
   caminho?: string;
   arquivo: File;
 }
@@ -37,7 +37,7 @@ export interface ParceriaResponse {
   categoria: string;
   caminhoArquivo: string;
   nomeArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   dataCriacao: string;
   caminho?: string;
   usuarioCriacaoNome?: string;
@@ -49,7 +49,7 @@ export interface ParceriaListItem {
   categoria: string;
   caminhoArquivo: string;
   nomeArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   dataCriacao: string;
   ativo: boolean;
   caminho?: string;
@@ -69,7 +69,7 @@ export interface ParceriaPublicoItem {
   id: number;
   titulo: string;
   caminhoArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
 }
 
 export interface ParceriaPublicoListResponse {
@@ -85,7 +85,7 @@ export interface ParceriaDetalhe {
   titulo: string;
   categoria: string;
   caminhoArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa do backend
   ativo: boolean;
   dataCriacao: string;
   caminho?: string;
@@ -94,7 +94,7 @@ export interface ParceriaDetalhe {
 export interface EditarParceriaRequest {
   titulo: string;
   categoria: string;
-  anoPublicacao: number;
+  dataPublicacao: string; // Data completa
   caminho?: string;
   arquivo?: File;
 }
@@ -142,12 +142,15 @@ const validarCategoria = (categoria: string): string[] => {
   return erros;
 };
 
-const validarAnoPublicacao = (ano: number): string[] => {
+const validarDataPublicacao = (data: string): string[] => {
   const erros: string[] = [];
-  if (!ano) {
-    erros.push('O ano de publicação é obrigatório.');
-  } else if (ano < 1900 || ano > 3000) {
-    erros.push('O ano de publicação deve estar entre 1900 e 3000.');
+  if (!data) {
+    erros.push('A data de publicação é obrigatória.');
+  } else {
+    const ano = new Date(data).getFullYear();
+    if (ano < 1900 || ano > 3000) {
+      erros.push('O ano de publicação deve estar entre 1900 e 3000.');
+    }
   }
   return erros;
 };
@@ -199,7 +202,7 @@ const validarParceria = (data: CadastrarParceriaRequest | EditarParceriaRequest)
 
   erros.push(...validarTitulo(data.titulo));
   erros.push(...validarCategoria(data.categoria));
-  erros.push(...validarAnoPublicacao(data.anoPublicacao));
+  erros.push(...validarDataPublicacao(data.dataPublicacao));
   erros.push(...validarCaminho(data.caminho));
 
   if ('arquivo' in data && data.arquivo) {
@@ -216,7 +219,7 @@ const buildFormData = (data: CadastrarParceriaRequest | EditarParceriaRequest): 
   const formData = new FormData();
   formData.append('Titulo', data.titulo);
   formData.append('Categoria', data.categoria);
-  formData.append('AnoPublicacao', data.anoPublicacao.toString());
+  formData.append('DataPublicacao', data.dataPublicacao);
 
   if (data.caminho) {
     formData.append('Caminho', data.caminho);
@@ -342,7 +345,7 @@ export const parceriasService = {
     const erros: string[] = [];
     erros.push(...validarTitulo(data.titulo));
     erros.push(...validarCategoria(data.categoria));
-    erros.push(...validarAnoPublicacao(data.anoPublicacao));
+    erros.push(...validarDataPublicacao(data.dataPublicacao));
     erros.push(...validarCaminho(data.caminho));
 
     if (data.arquivo) {

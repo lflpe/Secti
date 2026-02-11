@@ -1,5 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { downloadDocumentoServidor } from '../services/documentosServidorService';
+import { formatarDataBrasileira, extrairAno } from '../utils/dateUtils';
 
 export interface DocumentoServidorPublicoItem {
   id: number;
@@ -16,6 +17,8 @@ interface DocumentosServidorPublicosListProps {
   categories: string[];
   showCategoryFilter?: boolean;
   isLoading?: boolean;
+  onLoadMore?: () => void;
+  isLoadingMore?: boolean;
 }
 
 export const DocumentosServidorPublicosList = ({
@@ -23,20 +26,17 @@ export const DocumentosServidorPublicosList = ({
   categories,
   showCategoryFilter = true,
   isLoading = false,
+  onLoadMore,
+  isLoadingMore = false,
 }: DocumentosServidorPublicosListProps) => {
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('');
   const [filtroAno, setFiltroAno] = useState('');
-  const [paginaAtual, setPaginaAtual] = useState(1);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
-  const documentosPorPagina = 10;
 
   // Extrair anos únicos
   const anos = useMemo(() => {
-    const anosSet = documents.map(doc => {
-      const data = doc.dataPublicacao.split('/');
-      return data[2];
-    });
+    const anosSet = documents.map(doc => extrairAno(doc.dataPublicacao).toString());
     return ['Todos', ...Array.from(new Set(anosSet)).sort((a, b) => b.localeCompare(a))];
   }, [documents]);
 
@@ -45,34 +45,11 @@ export const DocumentosServidorPublicosList = ({
     return documents.filter(doc => {
       const matchNome = doc.nome.toLowerCase().includes(filtroNome.toLowerCase());
       const matchCategoria = filtroCategoria === '' || filtroCategoria === 'Todas' || doc.categoria === filtroCategoria;
-      const anoDoc = doc.dataPublicacao.split('/')[2];
+      const anoDoc = extrairAno(doc.dataPublicacao).toString();
       const matchAno = filtroAno === '' || filtroAno === 'Todos' || anoDoc === filtroAno;
       return matchNome && matchCategoria && matchAno;
     });
   }, [filtroNome, filtroCategoria, filtroAno, documents]);
-
-  // Resetar para página 1 quando filtros mudarem
-  useEffect(() => {
-    setPaginaAtual(1);
-  }, [filtroNome, filtroCategoria, filtroAno]);
-
-  // Calcular total de páginas
-  const totalPaginas = Math.ceil(documentosFiltrados.length / documentosPorPagina);
-
-  // Documentos da página atual
-  const documentosPaginados = useMemo(() => {
-    const inicio = (paginaAtual - 1) * documentosPorPagina;
-    const fim = inicio + documentosPorPagina;
-    return documentosFiltrados.slice(inicio, fim);
-  }, [documentosFiltrados, paginaAtual]);
-
-  // Função para mudar de página
-  const irParaPagina = (pagina: number) => {
-    if (pagina >= 1 && pagina <= totalPaginas) {
-      setPaginaAtual(pagina);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
 
   // Função para baixar documento
   const handleDownload = async (docId: number, caminhoArquivo: string, nomeArquivo: string) => {
@@ -186,11 +163,6 @@ export const DocumentosServidorPublicosList = ({
         {/* Contador de resultados */}
         <div className="mt-4 text-sm text-gray-600">
           {documentosFiltrados.length} {documentosFiltrados.length === 1 ? 'documento encontrado' : 'documentos encontrados'}
-          {totalPaginas > 1 && (
-            <span className="ml-2">
-              - Página {paginaAtual} de {totalPaginas}
-            </span>
-          )}
         </div>
       </div>
 
@@ -206,7 +178,7 @@ export const DocumentosServidorPublicosList = ({
           </div>
         ) : (
           <>
-            {documentosPaginados.map(doc => (
+            {documentosFiltrados.map(doc => (
               <div key={doc.id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                   {/* Ícone do tipo de arquivo */}
@@ -228,7 +200,7 @@ export const DocumentosServidorPublicosList = ({
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        <strong>Publicado em:</strong> {doc.dataPublicacao}
+                        <strong>Publicado em:</strong> {formatarDataBrasileira(doc.dataPublicacao)}
                       </span>
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#0C2856] text-white">
                         {doc.categoria}
@@ -253,47 +225,22 @@ export const DocumentosServidorPublicosList = ({
               </div>
             ))}
 
-            {/* Paginação */}
-            {totalPaginas > 1 && (
-              <div className="flex justify-center items-center gap-2 mt-8 pt-8 flex-wrap">
+            {/* Botão Carregar Mais */}
+            {onLoadMore && (
+              <div className="flex justify-center mt-8">
                 <button
-                  onClick={() => irParaPagina(paginaAtual - 1)}
-                  disabled={paginaAtual === 1}
-                  className={`px-4 py-2 rounded-lg font-medium transition duration-200 ${
-                    paginaAtual === 1
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white cursor-pointer text-[#0C2856] border border-[#0C2856] hover:bg-[#0C2856] hover:text-white'
-                  }`}
+                  onClick={onLoadMore}
+                  disabled={isLoadingMore}
+                  className="px-6 cursor-pointer py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  Anterior
-                </button>
-
-                <div className="flex gap-2">
-                  {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(numero => (
-                    <button
-                      key={numero}
-                      onClick={() => irParaPagina(numero)}
-                      className={`px-3 py-2 rounded-lg font-medium transition duration-200 ${
-                        numero === paginaAtual
-                          ? 'bg-[#0C2856] text-white'
-                          : 'bg-white cursor-pointer text-[#0C2856] border border-[#0C2856] hover:bg-[#0C2856] hover:text-white'
-                      }`}
-                    >
-                      {numero}
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  onClick={() => irParaPagina(paginaAtual + 1)}
-                  disabled={paginaAtual === totalPaginas}
-                  className={`px-4 py-2 rounded-lg font-medium transition duration-200 ${
-                    paginaAtual === totalPaginas
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white cursor-pointer text-[#0C2856] border border-[#0C2856] hover:bg-[#0C2856] hover:text-white'
-                  }`}
-                >
-                  Próximo
+                  {isLoadingMore ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      Carregando...
+                    </>
+                  ) : (
+                    'Carregar Mais'
+                  )}
                 </button>
               </div>
             )}
@@ -303,4 +250,3 @@ export const DocumentosServidorPublicosList = ({
     </div>
   );
 };
-

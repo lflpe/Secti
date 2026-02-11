@@ -66,12 +66,25 @@ export const CriarProjeto = () => {
     try {
       setLoading(true);
 
+      const perguntasPayload = perguntasFrequentes.map((p, index) => ({
+        pergunta: p.pergunta,
+        resposta: p.resposta,
+        ordem: index,
+      }));
+
+      console.log('[CriarProjeto] Estado dos arquivos:', {
+        fotoCapaFile: fotoCapaFile ? `${fotoCapaFile.name} (${fotoCapaFile.size} bytes)` : 'null',
+        logoFile: logoFile ? `${logoFile.name} (${logoFile.size} bytes)` : 'null',
+        fotoCapaUrl,
+        logoUrl,
+      });
+
       // Validar dados
       const errosValidacao = validarProjeto({
         titulo: formData.titulo,
         descricao: formData.descricao,
         url: formData.url,
-        perguntasFrequentes: JSON.stringify(perguntasFrequentes),
+        perguntasFrequentes: perguntasPayload,
         fotoCapa: fotoCapaFile || undefined,
         logo: logoFile || undefined,
       });
@@ -82,12 +95,18 @@ export const CriarProjeto = () => {
         return;
       }
 
+      console.log('[CriarProjeto] Enviando para o service:', {
+        titulo: formData.titulo,
+        fotoCapa: fotoCapaFile || undefined,
+        logo: logoFile || undefined,
+      });
+
       // Enviar dados
       await projetosService.cadastrar({
         titulo: formData.titulo,
         descricao: formData.descricao,
         url: formData.url,
-        perguntasFrequentes: JSON.stringify(perguntasFrequentes),
+        perguntasFrequentes: perguntasPayload,
         fotoCapa: fotoCapaFile || undefined,
         logo: logoFile || undefined,
       });
@@ -194,13 +213,16 @@ export const CriarProjeto = () => {
             onUrlChange={(value) => handleImageUrlChange(value, 'fotoCapa')}
             onFileChange={(file) => {
               if (file) {
+                setFotoCapaFile(file);
+                setFotoCapaUrl('');
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                  setFotoCapaFile(file);
-                  setFotoCapaUrl('');
                   setFotoCapaPreview(reader.result as string);
                 };
                 reader.readAsDataURL(file);
+              } else {
+                setFotoCapaFile(null);
+                setFotoCapaPreview(null);
               }
             }}
             onRemove={() => handleRemoveImage('fotoCapa')}
@@ -218,13 +240,16 @@ export const CriarProjeto = () => {
             onUrlChange={(value) => handleImageUrlChange(value, 'logo')}
             onFileChange={(file) => {
               if (file) {
+                setLogoFile(file);
+                setLogoUrl('');
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                  setLogoFile(file);
-                  setLogoUrl('');
                   setLogoPreview(reader.result as string);
                 };
                 reader.readAsDataURL(file);
+              } else {
+                setLogoFile(null);
+                setLogoPreview(null);
               }
             }}
             onRemove={() => handleRemoveImage('logo')}

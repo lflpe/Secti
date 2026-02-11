@@ -6,6 +6,8 @@ export interface CadastrarNoticiaRequest {
   conteudo: string;
   resumo?: string;
   imagemCapaUrl?: string;
+  imagemCapa?: File;
+  autor?: string;
   destaque?: boolean;
 }
 
@@ -13,10 +15,13 @@ export interface CadastrarNoticiaRequest {
 export interface NoticiaResponse {
   id: number;
   titulo: string;
+  slug: string;
   resumo: string;
   imagemCapaUrl: string;
+  autor: string;
   dataPublicacao: string;
   dataCriacao: string;
+  dataAtualizacao: string;
   publicada: boolean;
   destaque: boolean;
   usuarioCriacaoNome: string;
@@ -26,9 +31,11 @@ export interface NoticiaResponse {
 export interface NoticiaDetalhada {
   id: number;
   titulo: string;
+  slug: string;
   conteudo: string;
   resumo: string;
   imagemCapaUrl: string;
+  autor: string;
   publicada: boolean;
   destaque: boolean;
   dataPublicacao: string;
@@ -40,11 +47,15 @@ export interface NoticiaDetalhada {
 export interface NoticiaListagem {
   id: number;
   titulo: string;
+  slug: string;
   resumo: string;
+  imagemCapaUrl: string;
+  autor: string;
   publicada: boolean;
   destaque: boolean;
   dataPublicacao: string;
   dataCriacao: string;
+  dataAtualizacao: string;
 }
 
 // Type para notícia na listagem pública (inclui slug e autor)
@@ -84,6 +95,8 @@ export interface EditarNoticiaRequest {
   conteudo: string;
   resumo?: string;
   imagemCapaUrl?: string;
+  imagemCapa?: File;
+  autor?: string;
   destaque?: boolean;
 }
 
@@ -148,7 +161,49 @@ export const noticiasService = {
       throw new Error(errosValidacao.join(' '));
     }
 
-    const response = await apiClient.post<NoticiaResponse>('/Noticia/cadastrar', data);
+    console.log('[NoticiasService] Dados recebidos:', {
+      titulo: data.titulo,
+      autor: data.autor || 'não fornecido',
+      imagemCapa: data.imagemCapa ? `File: ${data.imagemCapa.name} (${data.imagemCapa.size} bytes)` : 'não fornecida',
+      imagemCapaUrl: data.imagemCapaUrl || 'não fornecida',
+    });
+
+    // Se houver arquivo de imagem, usar FormData
+    if (data.imagemCapa) {
+      const formData = new FormData();
+      formData.append('Titulo', data.titulo);
+      formData.append('Conteudo', data.conteudo);
+      if (data.resumo) formData.append('Resumo', data.resumo);
+      if (data.autor) formData.append('Autor', data.autor);
+      if (data.destaque !== undefined) formData.append('Destaque', data.destaque.toString());
+      formData.append('ImagemCapa', data.imagemCapa);
+
+      console.log('[NoticiasService] Enviando com FormData');
+      console.log('[NoticiasService] FormData entries:');
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+        } else {
+          console.log(`  ${key}:`, value);
+        }
+      }
+
+      const response = await apiClient.post<NoticiaResponse>('/Noticia/cadastrar', formData);
+      return response.data;
+    }
+
+    // Caso contrário, usar JSON
+    console.log('[NoticiasService] Enviando com JSON');
+    const payload = {
+      titulo: data.titulo,
+      conteudo: data.conteudo,
+      resumo: data.resumo,
+      imagemCapaUrl: data.imagemCapaUrl,
+      autor: data.autor,
+      destaque: data.destaque,
+    };
+
+    const response = await apiClient.post<NoticiaResponse>('/Noticia/cadastrar', payload);
     return response.data;
   },
 
@@ -215,6 +270,15 @@ export const noticiasService = {
   },
 
   /**
+   * Busca uma notícia publicada por slug - endpoint público, sem autenticação
+   * Retorna 404 se o slug não existir ou a notícia não estiver publicada
+   */
+  buscarPublicoPorSlug: async (slug: string): Promise<NoticiaDetalhada> => {
+    const response = await apiClient.get<NoticiaDetalhada>(`/Noticia/${slug}`);
+    return response.data;
+  },
+
+  /**
    * Edita uma notícia existente
    */
   editar: async (id: number, data: EditarNoticiaRequest): Promise<EditarNoticiaResponse> => {
@@ -224,7 +288,49 @@ export const noticiasService = {
       throw new Error(errosValidacao.join(' '));
     }
 
-    const response = await apiClient.put<EditarNoticiaResponse>(`/Noticia/editar/${id}`, data);
+    console.log('[NoticiasService] Editar - Dados recebidos:', {
+      titulo: data.titulo,
+      autor: data.autor || 'não fornecido',
+      imagemCapa: data.imagemCapa ? `File: ${data.imagemCapa.name} (${data.imagemCapa.size} bytes)` : 'não fornecida',
+      imagemCapaUrl: data.imagemCapaUrl || 'não fornecida',
+    });
+
+    // Se houver arquivo de imagem, usar FormData
+    if (data.imagemCapa) {
+      const formData = new FormData();
+      formData.append('Titulo', data.titulo);
+      formData.append('Conteudo', data.conteudo);
+      if (data.resumo) formData.append('Resumo', data.resumo);
+      if (data.autor) formData.append('Autor', data.autor);
+      if (data.destaque !== undefined) formData.append('Destaque', data.destaque.toString());
+      formData.append('ImagemCapa', data.imagemCapa);
+
+      console.log('[NoticiasService] Editar - Enviando com FormData');
+      console.log('[NoticiasService] Editar - FormData entries:');
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+        } else {
+          console.log(`  ${key}:`, value);
+        }
+      }
+
+      const response = await apiClient.put<EditarNoticiaResponse>(`/Noticia/editar/${id}`, formData);
+      return response.data;
+    }
+
+    // Caso contrário, usar JSON
+    console.log('[NoticiasService] Editar - Enviando com JSON');
+    const payload = {
+      titulo: data.titulo,
+      conteudo: data.conteudo,
+      resumo: data.resumo,
+      imagemCapaUrl: data.imagemCapaUrl,
+      autor: data.autor,
+      destaque: data.destaque,
+    };
+
+    const response = await apiClient.put<EditarNoticiaResponse>(`/Noticia/editar/${id}`, payload);
     return response.data;
   },
 

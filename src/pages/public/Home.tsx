@@ -5,13 +5,21 @@ import type { SlideItem } from '../../components/SecaoSlide';
 import { SecaoNoticias } from '../../components/SecaoNoticias';
 import type { NoticiaItem } from '../../components/SecaoNoticias';
 import { SecaoProjetos } from '../../components/SecaoProjetos';
-import { SecaoRelatorios } from '../../components/SecaoRelatorios';
+import { SecaoInstituicoes } from '../../components/SecaoInstituicoes';
+import type { InstituicaoItem } from '../../components/SecaoInstituicoes';
 import { noticiasService } from '../../services/noticiasService';
 import { handleApiError } from '../../utils/errorHandler';
 import { LoadingScreen } from '../../components/LoadingScreen';
-import SectiPredio from "../../assets/SECTIPredio.jpg"
-import ArcoEC from "../../assets/ArcoEC.jpg"
-import EntradaParqtel from "../../assets/EntradaParqtel.jpg"
+import { formatarDataBrasileira } from '../../utils/dateUtils';
+import SectiPredio from "../../assets/SECTIPredio.jpg";
+import ArcoEC from "../../assets/ArcoEC.jpg";
+import EntradaParqtel from "../../assets/EntradaParqtel.jpg";
+import ECBanner from "../../assets/ECBANNER.jpg";
+import FacepeBanner from "../../assets/FACEPEBANNER.jpg";
+import ITEPBanner from "../../assets/ITEPE.png";
+import PARQTELBanner from "../../assets/PARQTELBANNER.jpg";
+import PortoDigitalBanner from "../../assets/PD.png";
+import UPEBanner from "../../assets/UPEBANNER.jpg";
 
 const slides: SlideItem[] = [
   {
@@ -37,6 +45,57 @@ const slides: SlideItem[] = [
   },
 ];
 
+// Instituições Vinculadas
+const instituicoesVinculadas: InstituicaoItem[] = [
+  {
+    id: 1,
+    nome: 'PARQTEL',
+    logo: PARQTELBanner,
+    url: 'https://parqtel.pe.gov.br/',
+    descricao: 'PARQTEL'
+  },
+  {
+    id: 2,
+    nome: 'FACEPE',
+    logo: FacepeBanner,
+    url: 'https://www.facepe.br/',
+    descricao: 'Fundação de Amparo à Ciência e Tecnologia do Estado de Pernambuco'
+  },
+  {
+    id: 3,
+    nome: 'Espaço Ciência',
+    logo: ECBanner,
+    url: 'https://www.espacociencia.pe.gov.br/',
+    descricao: 'Espaço Ciência'
+  },
+  {
+    id: 4,
+    nome: 'UPE',
+    logo: UPEBanner,
+    url: 'https://www.upe.br/',
+    descricao: 'UPE',
+  },
+];
+
+// Instituições com Contrato de Gestão
+const instituicoesContratoGestao: InstituicaoItem[] = [
+  {
+    id: 1,
+    nome: 'Porto Digital',
+    logo: PortoDigitalBanner,
+    url: 'https://www.portodigital.org/',
+    descricao: 'Parque Tecnológico de Pernambuco'
+  },
+  {
+    id: 4,
+    nome: 'ITEP',
+    logo: ITEPBanner,
+    url: 'https://www.itep.br/',
+    descricao: 'Instituto de Tecnologia de Pernambuco'
+  },
+];
+
+
 
 export const Home = () => {
   const [noticiaDestaque, setNoticiaDestaque] = useState<NoticiaItem | null>(null);
@@ -61,10 +120,10 @@ export const Home = () => {
             titulo: primeiraNoticia.titulo,
             categoria: 'Notícia',
             autor: primeiraNoticia.autor,
-            data: new Date(primeiraNoticia.dataPublicacao).toLocaleDateString('pt-BR'),
+            data: formatarDataBrasileira(primeiraNoticia.dataPublicacao),
             resumo: primeiraNoticia.resumo,
             imagem: primeiraNoticia.imagemCapaUrl || SectiPredio,
-            link: `/noticias/${primeiraNoticia.id}`,
+            link: `/noticias/${primeiraNoticia.slug}`,
           });
 
           // Converter restante em NoticiaItem para a lista
@@ -73,9 +132,9 @@ export const Home = () => {
             slug: noticia.slug,
             titulo: noticia.titulo,
             categoria: 'Notícia',
-            data: new Date(noticia.dataPublicacao).toLocaleDateString('pt-BR'),
+            data: formatarDataBrasileira(noticia.dataPublicacao),
             imagem: noticia.imagemCapaUrl || SectiPredio,
-            link: `/noticias/${noticia.id}`,
+            link: `/noticias/${noticia.slug}`,
           }));
 
           setNoticias(noticiasList);
@@ -98,7 +157,7 @@ export const Home = () => {
     titulo: 'Bem-vindo à SECTI',
     categoria: 'Notícia',
     autor: 'Redação SECTI',
-    data: new Date().toLocaleDateString('pt-BR'),
+    data: formatarDataBrasileira(new Date()),
     resumo: 'Acompanhe as últimas notícias sobre inovação e tecnologia em Pernambuco.',
     imagem: SectiPredio,
     link: '#',
@@ -117,7 +176,10 @@ export const Home = () => {
                 noticias={noticias}
               />
               <SecaoProjetos />
-              <SecaoRelatorios limit={6} />
+              <SecaoInstituicoes
+                  instituicoesVinculadas={instituicoesVinculadas}
+                  instituicoesContratoGestao={instituicoesContratoGestao}
+              />
             </>
           )}
         </PublicLayout>

@@ -52,7 +52,6 @@ import { ListarRelatorios } from './pages/private/relatorios/ListarRelatorios.ts
 import { CriarRelatorios } from './pages/private/relatorios/CriarRelatorios.tsx';
 import {ApresentacaoOuvidoria} from "./pages/public/ouvidoria/ApresentacaoOuvidoria.tsx";
 import {FaleComOuvidoria} from "./pages/public/ouvidoria/FaleComOuvidoria.tsx";
-import {ProcessosERelatorios} from "./pages/public/ouvidoria/ProcessosERelatorios.tsx";
 import {RedeOuvidorias} from "./pages/public/ouvidoria/RedeOuvidorias.tsx";
 import {PerguntasFrequentes} from "./pages/public/transparencia/PerguntasFrequentes.tsx";
 import {InformacoesInstitucionais} from "./pages/public/transparencia/InformacoesInstitucionais.tsx";
@@ -80,7 +79,8 @@ function App() {
           <Route path="/noticias" element={<TodasNoticias />} />
           <Route path="/noticias/:slug" element={<VisualizarNoticia />} />
           <Route path="/editais" element={<Editais />} />
-          <Route path="/projetos/:id" element={<Projetos />} />
+          <Route path="/projetos/:slug" element={<Projetos/>}/>
+          <Route path="/projetos/" element={<Projetos />} />
           <Route path="/secti/a-secretaria" element={<ASecretaria />} />
           <Route path="/secti/a-secretaria-cargo" element={<ASecretariaCargo />} />
           <Route path="/secti/historia" element={<Historia />} />
@@ -93,7 +93,6 @@ function App() {
           <Route path="/secti/relatorios" element={<Relatorios />} />
           <Route path="/ouvidoria/apresentacao" element={<ApresentacaoOuvidoria/>}/>
           <Route path="/ouvidoria/fale-com-ouvidoria" element={<FaleComOuvidoria/>}/>
-          <Route path="/ouvidoria/processos-e-relatorios" element={<ProcessosERelatorios/>}/>
           <Route path="/ouvidoria/rede-ouvidorias" element={<RedeOuvidorias/>}/>
           <Route path="/transparencia" element={<Transparencia/>}/>
           <Route path="/transparencia/perguntas-frequentes" element={<PerguntasFrequentes/>}/>

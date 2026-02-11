@@ -69,7 +69,7 @@ export const DocumentList = ({
     const inicio = (paginaAtual - 1) * documentosPorPagina;
     const fim = inicio + documentosPorPagina;
     return documentosFiltrados.slice(inicio, fim);
-  }, [documentosFiltrados, paginaAtual]);
+  }, [documentosFiltrados, paginaAtual, documentosPorPagina]);
 
   // Função para mudar de página
   const irParaPagina = (pagina: number) => {
