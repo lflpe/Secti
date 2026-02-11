@@ -58,7 +58,7 @@ export const ListarRelatorios = () => {
         nome: relatorio.titulo,
         tipo: getTipoFromNome(relatorio.nomeArquivo, relatorio.caminhoArquivo),
         categoria: relatorio.categoria,
-        anoPublicacao: relatorio.anoPublicacao,
+        dataPublicacao: relatorio.dataPublicacao,
         caminhoArquivo: relatorio.caminhoArquivo,
         nomeArquivo: relatorio.nomeArquivo,
       }));

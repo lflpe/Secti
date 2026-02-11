@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { DeleteModal } from './DeleteModal';
 import { downloadDocumentoServidor } from '../../services/documentosServidorService';
+import { formatarDataBrasileira } from '../../utils/dateUtils';
 
 export interface DocumentoServidor {
   id: number;
   nome: string;
   tipo: 'pdf' | 'xls' | 'xlsx' | 'csv' | 'outro';
   categoria: string;
-  anoPublicacao: number;
+  dataPublicacao: string;
   caminhoArquivo?: string;
   nomeArquivo?: string;
 }
@@ -170,7 +171,7 @@ export const ListarDocumentosServidor = ({
                     <div className="text-sm text-gray-500 uppercase">{documento.tipo}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{documento.anoPublicacao}</div>
+                    <div className="text-sm text-gray-500">{formatarDataBrasileira(documento.dataPublicacao)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
@@ -225,7 +226,7 @@ export const ListarDocumentosServidor = ({
                       </span>
                       <span className="uppercase">{documento.tipo}</span>
                       <span>•</span>
-                      <span>{documento.anoPublicacao}</span>
+                      <span>{formatarDataBrasileira(documento.dataPublicacao)}</span>
                     </div>
                   </div>
                 </div>

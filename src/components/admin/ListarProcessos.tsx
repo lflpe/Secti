@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { DeleteModal } from './DeleteModal';
 import { downloadProcesso } from '../../services/processosService';
+import { formatarDataBrasileira } from '../../utils/dateUtils';
 
 export interface Processo {
   id: number;
   nome: string;
   tipo: 'pdf' | 'xls' | 'xlsx' | 'csv' | 'outro';
   categoria: string;
-  anoPublicacao: number;
+  dataPublicacao: string;
   caminhoArquivo?: string;
   nomeArquivo?: string;
 }
@@ -184,7 +185,7 @@ export const ListarProcessos = ({
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {processo.anoPublicacao}
+                    {formatarDataBrasileira(processo.dataPublicacao)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-xs font-medium text-gray-500 uppercase">{processo.tipo}</span>
@@ -242,7 +243,7 @@ export const ListarProcessos = ({
                       </span>
                       <span className="uppercase font-medium">{processo.tipo}</span>
                       <span>•</span>
-                      <span>Ano: {processo.anoPublicacao}</span>
+                      <span>{formatarDataBrasileira(processo.dataPublicacao)}</span>
                     </div>
                   </div>
                 </div>

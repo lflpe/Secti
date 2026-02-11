@@ -58,7 +58,7 @@ export const ListarProcessos = () => {
         nome: processo.titulo,
         tipo: getTipoFromNome(processo.nomeArquivo, processo.caminhoArquivo),
         categoria: processo.categoria,
-        anoPublicacao: processo.anoPublicacao,
+        dataPublicacao: processo.dataPublicacao,
         caminhoArquivo: processo.caminhoArquivo,
         nomeArquivo: processo.nomeArquivo,
       }));

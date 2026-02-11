@@ -11,10 +11,16 @@ export const CriarDocumentosServidor = () => {
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState<string | null>(null);
 
+  const formatDateForApi = (dateValue: string): string => {
+    if (!dateValue) return '';
+    const [year, month, day] = dateValue.split('-');
+    return `${day}-${month}-${year}`;
+  };
+
   const [formData, setFormData] = useState({
     titulo: '',
     categoria: '',
-    anoPublicacao: new Date().getFullYear(),
+    dataPublicacao: new Date().toISOString().split('T')[0], // YYYY-MM-DD
     caminho: '',
     arquivo: null as File | null,
   });
@@ -103,8 +109,16 @@ export const CriarDocumentosServidor = () => {
       return;
     }
 
-    if (!formData.anoPublicacao || formData.anoPublicacao < 1900 || formData.anoPublicacao > 3000) {
-      setErro('O ano de publicação é obrigatório e deve estar entre 1900 e 3000');
+    if (!formData.dataPublicacao) {
+      setErro('A data de publicação é obrigatória');
+      return;
+    }
+
+    // Extrair ano da data (formato YYYY-MM-DD vindo do input type="date")
+    const anoStr = formData.dataPublicacao.split('-')[0];
+    const ano = parseInt(anoStr, 10);
+    if (isNaN(ano) || ano < 1900 || ano > 3000) {
+      setErro('A data de publicação deve estar entre 1900 e 3000');
       return;
     }
 
@@ -119,7 +133,7 @@ export const CriarDocumentosServidor = () => {
       await documentosServidorService.cadastrar({
         titulo: formData.titulo.trim(),
         categoria: formData.categoria.trim(),
-        anoPublicacao: formData.anoPublicacao,
+        dataPublicacao: formatDateForApi(formData.dataPublicacao),
         caminho: formData.caminho?.trim() || undefined,
         arquivo: formData.arquivo,
       });
@@ -243,21 +257,21 @@ export const CriarDocumentosServidor = () => {
             />
           </div>
 
-          {/* Ano de Publicação */}
+          {/* Data de Publicação */}
           <div>
-            <label htmlFor="anoPublicacao" className="block text-sm font-medium text-gray-700 mb-2">
-              Ano de Publicação <span className="text-red-500">*</span>
+            <label htmlFor="dataPublicacao" className="block text-sm font-medium text-gray-700 mb-2">
+              Data de Publicação <span className="text-red-500">*</span>
             </label>
             <input
-              type="number"
-              id="anoPublicacao"
-              value={formData.anoPublicacao}
-              onChange={(e) => setFormData(prev => ({ ...prev, anoPublicacao: Number(e.target.value) }))}
-              min={1900}
-              max={3000}
+              type="date"
+              id="dataPublicacao"
+              value={formData.dataPublicacao}
+              onChange={(e) => setFormData(prev => ({ ...prev, dataPublicacao: e.target.value }))}
+              min="1900-01-01"
+              max="3000-12-31"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#195CE3] focus:border-transparent outline-none transition-colors"
             />
-            <p className="text-xs text-gray-500 mt-1">Entre 1900 e 3000</p>
+            <p className="text-xs text-gray-500 mt-1">Data entre 1900 e 3000</p>
           </div>
 
           {/* Caminho (opcional) */}
@@ -303,7 +317,7 @@ export const CriarDocumentosServidor = () => {
                 />
               </div>
             ) : (
-              <div className="bg-gray-50 border border-gray-300 rounded-lg p-4">
+              <div className="bg-gray-50 break-all border border-gray-300 rounded-lg p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
                     {getIconeTipo(previewArquivo.tipo)}

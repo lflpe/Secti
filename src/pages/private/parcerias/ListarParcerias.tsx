@@ -2,12 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
 import { ListarParcerias as ListarParceriasComponent, type Parceria } from '../../../components/admin/ListarParcerias';
-import { parceriasService, type ParceriaListFilters } from '../../../services/parceriasService';
+import { parceriasService, type ParceriaListFilters, type ParceriaListResponse } from '../../../services/parceriasService';
 import { handleApiError } from '../../../utils/errorHandler';
 
 export const ListarParcerias = () => {
   const [parcerias, setParcerias] = useState<Parceria[]>([]);
-  const [filtroTipo, setFiltroTipo] = useState<string>('Todos');
   const [filtroCategoria, setFiltroCategoria] = useState<string>('');
   const [busca, setBusca] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -27,67 +26,37 @@ export const ListarParcerias = () => {
     return 'outro';
   };
 
-  const carregarParcerias = useCallback(async (
-    page = 1,
-    categoria?: string,
-    tituloFiltro = '',
-    tipoFiltro = 'Todos'
-  ) => {
+  // Carregar parcerias com paginação servidor
+  const carregarParcerias = useCallback(async (page = 1, categoriaFiltro?: string) => {
     setIsLoading(true);
     setErro(null);
     try {
-      // Se há filtros locais (título ou tipo), busca todos para filtrar no cliente
-      const precisaFiltroLocal = tituloFiltro || tipoFiltro !== 'Todos';
-
       const filtros: ParceriaListFilters = {
         ordenarPor: 'titulo',
         ordenarDescendente: false,
         apenasAtivas: true,
-        pagina: precisaFiltroLocal ? 1 : page,
-        itensPorPagina: precisaFiltroLocal ? 10000 : itemsPerPage,
+        pagina: page,
+        itensPorPagina: itemsPerPage,
       };
 
-      if (categoria) {
-        filtros.categoria = categoria;
+      if (categoriaFiltro) {
+        filtros.categoria = categoriaFiltro;
       }
 
-      const response = await parceriasService.listar(filtros);
+      const response: ParceriaListResponse = await parceriasService.listar(filtros);
 
-      let parceriasFormatadas: Parceria[] = response.parcerias.map((parceria) => ({
+      const parceriasFormatadas: Parceria[] = response.parcerias.map((parceria) => ({
         id: parceria.id,
         nome: parceria.titulo,
         tipo: getTipoFromNome(parceria.nomeArquivo, parceria.caminhoArquivo),
         categoria: parceria.categoria,
-        anoPublicacao: parceria.anoPublicacao,
+        dataPublicacao: parceria.dataPublicacao,
         caminhoArquivo: parceria.caminhoArquivo,
         nomeArquivo: parceria.nomeArquivo,
       }));
 
-      // Filtro por título no cliente (API não tem filtro por título)
-      if (tituloFiltro) {
-        parceriasFormatadas = parceriasFormatadas.filter(p =>
-          p.nome.toLowerCase().includes(tituloFiltro.toLowerCase())
-        );
-      }
-
-      // Filtro por tipo no cliente (API não tem filtro por tipo de arquivo)
-      if (tipoFiltro && tipoFiltro !== 'Todos') {
-        parceriasFormatadas = parceriasFormatadas.filter(p =>
-          p.tipo === tipoFiltro
-        );
-      }
-
-      // Paginação no cliente quando há filtros locais
-      if (precisaFiltroLocal) {
-        setTotalItens(parceriasFormatadas.length);
-        const start = (page - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        setParcerias(parceriasFormatadas.slice(start, end));
-      } else {
-        setParcerias(parceriasFormatadas);
-        setTotalItens(response.totalItens);
-      }
-
+      setParcerias(parceriasFormatadas);
+      setTotalItens(response.totalItens);
       setCurrentPage(page);
     } catch (error) {
       const mensagemErro = handleApiError(error);
@@ -103,22 +72,21 @@ export const ListarParcerias = () => {
 
   // Buscar parcerias via endpoint
   const handleSearch = () => {
-    carregarParcerias(1, filtroCategoria || undefined, busca, filtroTipo);
+    carregarParcerias(1, filtroCategoria || undefined);
   };
 
   // Limpar filtros
   const handleClearSearch = () => {
     setBusca('');
-    setFiltroTipo('Todos');
     setFiltroCategoria('');
-    carregarParcerias(1, undefined, '', 'Todos');
+    carregarParcerias(1, undefined);
   };
 
   const handleDelete = async (id: number) => {
     try {
       await parceriasService.inativar(id);
       // Recarregar lista mantendo filtros
-      await carregarParcerias(currentPage, filtroCategoria || undefined, busca, filtroTipo);
+      await carregarParcerias(currentPage, filtroCategoria || undefined);
     } catch (error) {
       const mensagemErro = handleApiError(error);
       setErro(mensagemErro);
@@ -163,9 +131,9 @@ export const ListarParcerias = () => {
 
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Busca */}
-            <div className="md:col-span-2">
+            <div>
               <label htmlFor="busca" className="block text-sm font-medium text-gray-700 mb-2">
                 Buscar por Nome
               </label>
@@ -180,7 +148,6 @@ export const ListarParcerias = () => {
                   id="busca"
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
                   placeholder="Digite o nome da parceria..."
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
                 />
@@ -197,33 +164,13 @@ export const ListarParcerias = () => {
                 id="categoria"
                 value={filtroCategoria}
                 onChange={(e) => setFiltroCategoria(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
                 placeholder="Ex: Nacional, Internacional"
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
               />
             </div>
 
-            {/* Filtro por Tipo */}
-            <div>
-              <label htmlFor="tipo" className="block text-sm font-medium text-gray-700 mb-2">
-                Tipo de Arquivo
-              </label>
-              <select
-                id="tipo"
-                value={filtroTipo}
-                onChange={(e) => setFiltroTipo(e.target.value)}
-                className="block w-full cursor-pointer px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
-              >
-                <option value="Todos">Todos</option>
-                <option value="pdf">PDF</option>
-                <option value="xls">XLS</option>
-                <option value="xlsx">XLSX</option>
-                <option value="csv">CSV</option>
-              </select>
-            </div>
-
             {/* Botões de ação */}
-            <div className="md:col-span-4 flex gap-2 flex-col sm:flex-row">
+            <div className="md:col-span-2 flex gap-2">
               <button
                 onClick={handleSearch}
                 disabled={isLoading}
@@ -234,7 +181,7 @@ export const ListarParcerias = () => {
               <button
                 onClick={handleClearSearch}
                 disabled={isLoading}
-                className="flex-1 sm:flex-auto px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Limpar
               </button>
@@ -247,13 +194,43 @@ export const ListarParcerias = () => {
             <p className="text-sm text-gray-500">Carregando parcerias...</p>
           </div>
         ) : (
-          <ListarParceriasComponent
-            parcerias={parcerias}
-            onDelete={handleDelete}
-            emptyStateTitle="Nenhuma parceria encontrada"
-            emptyStateDescription="Crie uma nova parceria para começar"
-            showHeader={false}
-          />
+          <>
+            <ListarParceriasComponent
+              parcerias={parcerias}
+              onDelete={handleDelete}
+              emptyStateTitle="Nenhuma parceria encontrada"
+              emptyStateDescription="Crie uma nova parceria para começar"
+              showHeader={false}
+            />
+
+            {/* Paginação */}
+            {totalItens > itemsPerPage && (
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
+                <div className="text-sm text-gray-700">
+                  Mostrando <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> a <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItens)}</span> de <span className="font-medium">{totalItens}</span> resultados
+                </div>
+                <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-end">
+                  <button
+                    onClick={() => carregarParcerias(currentPage - 1, filtroCategoria || undefined)}
+                    disabled={currentPage === 1 || isLoading}
+                    className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  >
+                    Anterior
+                  </button>
+                  <span className="px-3 py-1 text-sm text-gray-700">
+                    Página <span className="font-medium">{currentPage}</span> de <span className="font-medium">{Math.ceil(totalItens / itemsPerPage)}</span>
+                  </span>
+                  <button
+                    onClick={() => carregarParcerias(currentPage + 1, filtroCategoria || undefined)}
+                    disabled={currentPage === Math.ceil(totalItens / itemsPerPage) || isLoading}
+                    className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  >
+                    Próxima
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </PrivateLayout>

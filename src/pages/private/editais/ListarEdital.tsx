@@ -2,13 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
 import { ListarEditais, type Edital } from '../../../components/admin/ListarEditais';
-import { editaisService, type EditalListFilters } from '../../../services/editaisService';
+import { editaisService, type EditalListFilters, type EditalListResponse } from '../../../services/editaisService';
 import { handleApiError } from '../../../utils/errorHandler';
 
 export const ListarEdital = () => {
   const [editais, setEditais] = useState<Edital[]>([]);
-  const [filtroTipo, setFiltroTipo] = useState<string>('Todos');
-  const [filtroAno, setFiltroAno] = useState<string>('');
   const [filtroCategoria, setFiltroCategoria] = useState<string>('');
   const [busca, setBusca] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -28,82 +26,37 @@ export const ListarEdital = () => {
     return 'outro';
   };
 
-  const carregarEditais = useCallback(async (
-    page = 1,
-    ano?: number,
-    categoria?: string,
-    tituloFiltro = '',
-    tipoFiltro = 'Todos'
-  ) => {
+  // Carregar editais com paginação servidor
+  const carregarEditais = useCallback(async (page = 1, categoriaFiltro?: string) => {
     setIsLoading(true);
     setErro(null);
     try {
-      // Se há filtros locais (título ou tipo), busca todos para filtrar no cliente
-      const precisaFiltroLocal = tituloFiltro || tipoFiltro !== 'Todos';
-
       const filtros: EditalListFilters = {
         ordenarPor: 'titulo',
         ordenarDescendente: false,
         apenasAtivos: true,
-        pagina: precisaFiltroLocal ? 1 : page,
-        itensPorPagina: precisaFiltroLocal ? 10000 : itemsPerPage,
+        pagina: page,
+        itensPorPagina: itemsPerPage,
       };
 
-      if (ano) {
-        // Para editais, o filtro por ano é baseado em anoPublicacao
-        // Como a API não tem filtro direto por ano, vamos buscar todos e filtrar no cliente
-        filtros.pagina = 1;
-        filtros.itensPorPagina = 10000;
-      }
-      if (categoria) {
-        filtros.categoria = categoria;
+      if (categoriaFiltro) {
+        filtros.categoria = categoriaFiltro;
       }
 
-      const response = await editaisService.listar(filtros);
+      const response: EditalListResponse = await editaisService.listar(filtros);
 
-      // Filtrar apenas editais ativos (backup caso apenasAtivos não funcione)
-      const editaisAtivos = response.editais.filter((edital) => edital.ativo);
-
-      let editaisFormatados: Edital[] = editaisAtivos.map((edital) => ({
+      const editaisFormatados: Edital[] = response.editais.map((edital) => ({
         id: edital.id,
         nome: edital.titulo,
         tipo: getTipoFromNome(edital.nomeArquivo, edital.caminhoArquivo),
         categoria: edital.categoria,
-        anoPublicacao: edital.anoPublicacao,
+        dataPublicacao: edital.dataPublicacao,
         caminhoArquivo: edital.caminhoArquivo,
         nomeArquivo: edital.nomeArquivo,
       }));
 
-      // Filtro por ano no cliente (se especificado)
-      if (ano) {
-        editaisFormatados = editaisFormatados.filter(e => e.anoPublicacao === ano);
-      }
-
-      // Filtro por título no cliente (API não tem filtro por título)
-      if (tituloFiltro) {
-        editaisFormatados = editaisFormatados.filter(e =>
-          e.nome.toLowerCase().includes(tituloFiltro.toLowerCase())
-        );
-      }
-
-      // Filtro por tipo no cliente (API não tem filtro por tipo de arquivo)
-      if (tipoFiltro && tipoFiltro !== 'Todos') {
-        editaisFormatados = editaisFormatados.filter(e =>
-          e.tipo === tipoFiltro
-        );
-      }
-
-      // Paginação no cliente quando há filtros locais
-      if (precisaFiltroLocal || ano) {
-        setTotalItens(editaisFormatados.length);
-        const start = (page - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        setEditais(editaisFormatados.slice(start, end));
-      } else {
-        setEditais(editaisFormatados);
-        setTotalItens(response.totalItens);
-      }
-
+      setEditais(editaisFormatados);
+      setTotalItens(response.totalItens);
       setCurrentPage(page);
     } catch (error) {
       const mensagemErro = handleApiError(error);
@@ -119,25 +72,21 @@ export const ListarEdital = () => {
 
   // Buscar editais via endpoint
   const handleSearch = () => {
-    const ano = filtroAno ? Number(filtroAno) : undefined;
-    carregarEditais(1, ano, filtroCategoria || undefined, busca, filtroTipo);
+    carregarEditais(1, filtroCategoria || undefined);
   };
 
   // Limpar filtros
   const handleClearSearch = () => {
     setBusca('');
-    setFiltroTipo('Todos');
-    setFiltroAno('');
     setFiltroCategoria('');
-    carregarEditais(1, undefined, undefined, '', 'Todos');
+    carregarEditais(1, undefined);
   };
 
   const handleDelete = async (id: number) => {
     try {
       await editaisService.inativar(id);
       // Recarregar lista mantendo filtros
-      const ano = filtroAno ? Number(filtroAno) : undefined;
-      await carregarEditais(currentPage, ano, filtroCategoria || undefined, busca, filtroTipo);
+      await carregarEditais(currentPage, filtroCategoria || undefined);
     } catch (error) {
       const mensagemErro = handleApiError(error);
       setErro(mensagemErro);
@@ -182,7 +131,7 @@ export const ListarEdital = () => {
 
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Busca */}
             <div>
               <label htmlFor="busca" className="block text-sm font-medium text-gray-700 mb-2">
@@ -199,7 +148,6 @@ export const ListarEdital = () => {
                   id="busca"
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
                   placeholder="Digite o nome..."
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
                 />
@@ -216,55 +164,17 @@ export const ListarEdital = () => {
                 id="categoria"
                 value={filtroCategoria}
                 onChange={(e) => setFiltroCategoria(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
                 placeholder="Ex: Licitações"
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
               />
             </div>
 
-            {/* Filtro por Ano */}
-            <div>
-              <label htmlFor="ano" className="block text-sm font-medium text-gray-700 mb-2">
-                Ano de Publicação
-              </label>
-              <input
-                type="number"
-                id="ano"
-                value={filtroAno}
-                onChange={(e) => setFiltroAno(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-                placeholder="Ex: 2024"
-                min={1900}
-                max={3000}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
-              />
-            </div>
-
-            {/* Filtro por Tipo */}
-            <div>
-              <label htmlFor="tipo" className="block text-sm font-medium text-gray-700 mb-2">
-                Tipo de Arquivo
-              </label>
-              <select
-                id="tipo"
-                value={filtroTipo}
-                onChange={(e) => setFiltroTipo(e.target.value)}
-                className="block w-full cursor-pointer px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
-              >
-                <option value="Todos">Todos</option>
-                <option value="pdf">PDF</option>
-                <option value="xls">XLS</option>
-                <option value="xlsx">XLSX</option>
-                <option value="csv">CSV</option>
-              </select>
-            </div>
-
             {/* Botões de ação */}
-            <div className="flex items-end gap-2">
+            <div className="md:col-span-2 flex gap-2">
               <button
                 onClick={handleSearch}
                 disabled={isLoading}
-                className="flex-1 cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 {isLoading ? 'Buscando...' : 'Buscar'}
               </button>
@@ -284,13 +194,43 @@ export const ListarEdital = () => {
             <p className="text-sm text-gray-500">Carregando editais...</p>
           </div>
         ) : (
-          <ListarEditais
-            editais={editais}
-            onDelete={handleDelete}
-            emptyStateTitle="Nenhum edital encontrado"
-            emptyStateDescription="Crie um novo edital para começar"
-            showHeader={false}
-          />
+          <>
+            <ListarEditais
+              editais={editais}
+              onDelete={handleDelete}
+              emptyStateTitle="Nenhum edital encontrado"
+              emptyStateDescription="Crie um novo edital para começar"
+              showHeader={false}
+            />
+
+            {/* Paginação */}
+            {totalItens > itemsPerPage && (
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
+                <div className="text-sm text-gray-700">
+                  Mostrando <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> a <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItens)}</span> de <span className="font-medium">{totalItens}</span> resultados
+                </div>
+                <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-end">
+                  <button
+                    onClick={() => carregarEditais(currentPage - 1, filtroCategoria || undefined)}
+                    disabled={currentPage === 1 || isLoading}
+                    className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  >
+                    Anterior
+                  </button>
+                  <span className="px-3 py-1 text-sm text-gray-700">
+                    Página <span className="font-medium">{currentPage}</span> de <span className="font-medium">{Math.ceil(totalItens / itemsPerPage)}</span>
+                  </span>
+                  <button
+                    onClick={() => carregarEditais(currentPage + 1, filtroCategoria || undefined)}
+                    disabled={currentPage === Math.ceil(totalItens / itemsPerPage) || isLoading}
+                    className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  >
+                    Próxima
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </PrivateLayout>

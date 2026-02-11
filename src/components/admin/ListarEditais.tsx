@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { DeleteModal } from './DeleteModal';
 import { downloadEdital } from '../../services/editaisService';
+import { formatarDataBrasileira } from '../../utils/dateUtils';
 
 export interface Edital {
   id: number;
   nome: string;
   tipo: 'pdf' | 'xls' | 'xlsx' | 'csv' | 'outro';
   categoria: string;
-  anoPublicacao: number;
+  dataPublicacao: string;
   caminhoArquivo?: string;
   nomeArquivo?: string;
 }
@@ -170,7 +171,7 @@ export const ListarEditais = ({
                     <div className="text-sm text-gray-500 uppercase">{edital.tipo}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{edital.anoPublicacao}</div>
+                    <div className="text-sm text-gray-500">{formatarDataBrasileira(edital.dataPublicacao)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
@@ -225,7 +226,7 @@ export const ListarEditais = ({
                       </span>
                       <span className="uppercase">{edital.tipo}</span>
                       <span>•</span>
-                      <span>{edital.anoPublicacao}</span>
+                      <span>{formatarDataBrasileira(edital.dataPublicacao)}</span>
                     </div>
                   </div>
                 </div>

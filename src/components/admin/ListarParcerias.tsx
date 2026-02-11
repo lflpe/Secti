@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { DeleteModal } from './DeleteModal';
 import { downloadParceria } from '../../services/parceriasService';
+import { formatarDataBrasileira } from '../../utils/dateUtils';
 
 export interface Parceria {
   id: number;
   nome: string;
   tipo: 'pdf' | 'xls' | 'xlsx' | 'csv' | 'outro';
   categoria: string;
-  anoPublicacao: number;
+  dataPublicacao: string;
   caminhoArquivo?: string;
   nomeArquivo?: string;
 }
@@ -184,7 +185,7 @@ export const ListarParcerias = ({
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {parceria.anoPublicacao}
+                  {formatarDataBrasileira(parceria.dataPublicacao)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className="text-xs font-medium text-gray-500 uppercase">{parceria.tipo}</span>
@@ -242,7 +243,7 @@ export const ListarParcerias = ({
                     </span>
                     <span className="uppercase font-medium">{parceria.tipo}</span>
                     <span>•</span>
-                    <span>Ano: {parceria.anoPublicacao}</span>
+                    <span>{formatarDataBrasileira(parceria.dataPublicacao)}</span>
                   </div>
                 </div>
               </div>

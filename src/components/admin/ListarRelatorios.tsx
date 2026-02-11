@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { DeleteModal } from './DeleteModal';
 import { downloadRelatorio } from '../../services/relatoriosService';
+import { formatarDataBrasileira } from '../../utils/dateUtils';
 
 export interface Relatorio {
   id: number;
   nome: string;
   tipo: 'pdf' | 'xls' | 'xlsx' | 'csv' | 'outro';
   categoria: string;
-  anoPublicacao: number;
+  dataPublicacao: string;
   caminhoArquivo?: string;
   nomeArquivo?: string;
 }
@@ -184,7 +185,7 @@ export const ListarRelatorios = ({
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {relatorio.anoPublicacao}
+                    {formatarDataBrasileira(relatorio.dataPublicacao)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-xs font-medium text-gray-500 uppercase">{relatorio.tipo}</span>
@@ -242,7 +243,7 @@ export const ListarRelatorios = ({
                       </span>
                       <span className="uppercase font-medium">{relatorio.tipo}</span>
                       <span>•</span>
-                      <span>Ano: {relatorio.anoPublicacao}</span>
+                      <span>{formatarDataBrasileira(relatorio.dataPublicacao)}</span>
                     </div>
                   </div>
                 </div>

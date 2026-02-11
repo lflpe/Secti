@@ -149,8 +149,33 @@ const validarDataPublicacao = (data: string): string[] => {
   if (!data) {
     erros.push('A data de publicação é obrigatória.');
   } else {
-    const dataObj = new Date(data);
-    if (dataObj.getFullYear() < 1900 || dataObj.getFullYear() > 3000) {
+    // Extrair ano - formato esperado: DD-MM-YYYY
+    let ano: number;
+    if (data.includes('/')) {
+      // Formato DD/MM/YYYY
+      ano = parseInt(data.split('/')[2], 10);
+    } else if (data.includes('-')) {
+      // Pode ser YYYY-MM-DD ou DD-MM-YYYY
+      const parts = data.split('-');
+      if (parts.length === 3) {
+        // Se começa com um número de 4 dígitos, é YYYY
+        if (parts[0].length === 4) {
+          ano = parseInt(parts[0], 10);
+        } else {
+          // Caso contrário, é DD-MM-YYYY
+          ano = parseInt(parts[2], 10);
+        }
+      } else {
+        ano = NaN;
+      }
+    } else if (data.includes('T')) {
+      // Formato ISO: YYYY-MM-DDTHH:MM:SS.sssZ
+      ano = parseInt(data.split('T')[0].split('-')[0], 10);
+    } else {
+      ano = NaN;
+    }
+
+    if (isNaN(ano) || ano < 1900 || ano > 3000) {
       erros.push('A data de publicação deve estar entre 1900 e 3000.');
     }
   }
@@ -189,8 +214,7 @@ const buildFormData = (data: CadastrarDocumentoServidorRequest | EditarDocumento
 
   formData.append('Titulo', data.titulo.trim());
   formData.append('Categoria', data.categoria.trim());
-  const ano = data.dataPublicacao.split('/')[2];
-  formData.append('DataPublicacao', ano);
+  formData.append('DataPublicacao', data.dataPublicacao);
 
   if (data.caminho) {
     formData.append('Caminho', data.caminho.trim());

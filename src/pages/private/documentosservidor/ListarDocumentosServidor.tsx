@@ -2,12 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
 import { ListarDocumentosServidor as ListarDocumentosServidorComponent, type DocumentoServidor } from '../../../components/admin/ListarDocumentosServidor';
-import { documentosServidorService, type DocumentoServidorListFilters } from '../../../services/documentosServidorService';
+import { documentosServidorService, type DocumentoServidorListFilters, type DocumentoServidorListResponse } from '../../../services/documentosServidorService';
 import { handleApiError } from '../../../utils/errorHandler';
 
 export const ListarDocumentosServidor = () => {
   const [documentos, setDocumentos] = useState<DocumentoServidor[]>([]);
-  const [filtroTipo, setFiltroTipo] = useState<string>('Todos');
   const [filtroAno, setFiltroAno] = useState<string>('');
   const [filtroCategoria, setFiltroCategoria] = useState<string>('');
   const [busca, setBusca] = useState<string>('');
@@ -28,74 +27,40 @@ export const ListarDocumentosServidor = () => {
     return 'outro';
   };
 
-  const carregarDocumentos = useCallback(async (
-    page = 1,
-    ano?: number,
-    categoria?: string,
-    tituloFiltro = '',
-    tipoFiltro = 'Todos'
-  ) => {
+  // Carregar documentos com paginação servidor
+  const carregarDocumentos = useCallback(async (page = 1, anoFiltro?: number, categoriaFiltro?: string) => {
     setIsLoading(true);
     setErro(null);
     try {
-      // Se há filtros locais (título ou tipo), busca todos para filtrar no cliente
-      const precisaFiltroLocal = tituloFiltro || tipoFiltro !== 'Todos';
-
       const filtros: DocumentoServidorListFilters = {
-        ordenarPor: 'dataCriacao',
+        ordenarPor: 'dataPublicacao',
         ordenarDescendente: true,
         apenasAtivos: true,
-        pagina: precisaFiltroLocal ? 1 : page,
-        itensPorPagina: precisaFiltroLocal ? 10000 : itemsPerPage,
+        pagina: page,
+        itensPorPagina: itemsPerPage,
       };
 
-      if (ano) {
-        filtros.ano = ano;
+      if (anoFiltro) {
+        filtros.ano = anoFiltro;
       }
-      if (categoria) {
-        filtros.categoria = categoria;
+      if (categoriaFiltro && categoriaFiltro !== 'Todas') {
+        filtros.categoria = categoriaFiltro;
       }
 
-      const response = await documentosServidorService.listar(filtros);
+      const response: DocumentoServidorListResponse = await documentosServidorService.listar(filtros);
 
-      // Filtrar apenas documentos ativos (backup caso apenasAtivos não funcione)
-      const documentosAtivos = response.documentos.filter((doc) => doc.ativo);
-
-      let documentosFormatados: DocumentoServidor[] = documentosAtivos.map((doc) => ({
+      const documentosFormatados: DocumentoServidor[] = response.documentos.map((doc) => ({
         id: doc.id,
         nome: doc.titulo,
         tipo: getTipoFromNome(doc.nomeArquivo, doc.caminhoArquivo),
         categoria: doc.categoria,
-        anoPublicacao: doc.anoPublicacao,
+        dataPublicacao: doc.dataPublicacao,
         caminhoArquivo: doc.caminhoArquivo,
         nomeArquivo: doc.nomeArquivo,
       }));
 
-      // Filtro por título no cliente (API não tem filtro por título)
-      if (tituloFiltro) {
-        documentosFormatados = documentosFormatados.filter(d =>
-          d.nome.toLowerCase().includes(tituloFiltro.toLowerCase())
-        );
-      }
-
-      // Filtro por tipo no cliente (API não tem filtro por tipo de arquivo)
-      if (tipoFiltro && tipoFiltro !== 'Todos') {
-        documentosFormatados = documentosFormatados.filter(d =>
-          d.tipo === tipoFiltro
-        );
-      }
-
-      // Paginação no cliente quando há filtros locais
-      if (precisaFiltroLocal) {
-        setTotalItens(documentosFormatados.length);
-        const start = (page - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        setDocumentos(documentosFormatados.slice(start, end));
-      } else {
-        setDocumentos(documentosFormatados);
-        setTotalItens(response.totalItens);
-      }
-
+      setDocumentos(documentosFormatados);
+      setTotalItens(response.totalItens);
       setCurrentPage(page);
     } catch (error) {
       const mensagemErro = handleApiError(error);
@@ -112,16 +77,15 @@ export const ListarDocumentosServidor = () => {
   // Buscar documentos via endpoint
   const handleSearch = () => {
     const ano = filtroAno ? Number(filtroAno) : undefined;
-    carregarDocumentos(1, ano, filtroCategoria || undefined, busca, filtroTipo);
+    carregarDocumentos(1, ano, filtroCategoria || undefined);
   };
 
   // Limpar filtros
   const handleClearSearch = () => {
     setBusca('');
-    setFiltroTipo('Todos');
     setFiltroAno('');
     setFiltroCategoria('');
-    carregarDocumentos(1, undefined, undefined, '', 'Todos');
+    carregarDocumentos(1, undefined, undefined);
   };
 
   const handleDelete = async (id: number) => {
@@ -129,7 +93,7 @@ export const ListarDocumentosServidor = () => {
       await documentosServidorService.inativar(id);
       // Recarregar lista mantendo filtros
       const ano = filtroAno ? Number(filtroAno) : undefined;
-      await carregarDocumentos(currentPage, ano, filtroCategoria || undefined, busca, filtroTipo);
+      await carregarDocumentos(currentPage, ano, filtroCategoria || undefined);
     } catch (error) {
       const mensagemErro = handleApiError(error);
       setErro(mensagemErro);
@@ -174,7 +138,7 @@ export const ListarDocumentosServidor = () => {
 
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Busca */}
             <div>
               <label htmlFor="busca" className="block text-sm font-medium text-gray-700 mb-2">
@@ -191,7 +155,6 @@ export const ListarDocumentosServidor = () => {
                   id="busca"
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
                   placeholder="Digite o nome..."
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
                 />
@@ -208,7 +171,6 @@ export const ListarDocumentosServidor = () => {
                 id="categoria"
                 value={filtroCategoria}
                 onChange={(e) => setFiltroCategoria(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
                 placeholder="Ex: Regulamentos"
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
               />
@@ -224,7 +186,6 @@ export const ListarDocumentosServidor = () => {
                 id="ano"
                 value={filtroAno}
                 onChange={(e) => setFiltroAno(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
                 placeholder="Ex: 2024"
                 min={1900}
                 max={3000}
@@ -232,38 +193,19 @@ export const ListarDocumentosServidor = () => {
               />
             </div>
 
-            {/* Filtro por Tipo */}
-            <div>
-              <label htmlFor="tipo" className="block text-sm font-medium text-gray-700 mb-2">
-                Tipo de Arquivo
-              </label>
-              <select
-                id="tipo"
-                value={filtroTipo}
-                onChange={(e) => setFiltroTipo(e.target.value)}
-                className="block w-full cursor-pointer px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
-              >
-                <option value="Todos">Todos</option>
-                <option value="pdf">PDF</option>
-                <option value="xls">XLS</option>
-                <option value="xlsx">XLSX</option>
-                <option value="csv">CSV</option>
-              </select>
-            </div>
-
             {/* Botões de ação */}
-            <div className="flex items-end gap-2">
+            <div className="md:col-span-3 flex gap-2">
               <button
                 onClick={handleSearch}
                 disabled={isLoading}
-                className="flex-1 cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 {isLoading ? 'Buscando...' : 'Buscar'}
               </button>
               <button
                 onClick={handleClearSearch}
                 disabled={isLoading}
-                className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Limpar
               </button>
@@ -276,13 +218,49 @@ export const ListarDocumentosServidor = () => {
             <p className="text-sm text-gray-500">Carregando documentos...</p>
           </div>
         ) : (
-          <ListarDocumentosServidorComponent
-            documentos={documentos}
-            onDelete={handleDelete}
-            emptyStateTitle="Nenhum documento do servidor encontrado"
-            emptyStateDescription="Crie um novo documento para começar"
-            showHeader={false}
-          />
+          <>
+            <ListarDocumentosServidorComponent
+              documentos={documentos}
+              onDelete={handleDelete}
+              emptyStateTitle="Nenhum documento do servidor encontrado"
+              emptyStateDescription="Crie um novo documento para começar"
+              showHeader={false}
+            />
+
+            {/* Paginação */}
+            {totalItens > itemsPerPage && (
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
+                <div className="text-sm text-gray-700">
+                  Mostrando <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> a <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItens)}</span> de <span className="font-medium">{totalItens}</span> resultados
+                </div>
+                <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-end">
+                  <button
+                    onClick={() => {
+                      const ano = filtroAno ? Number(filtroAno) : undefined;
+                      carregarDocumentos(currentPage - 1, ano, filtroCategoria || undefined);
+                    }}
+                    disabled={currentPage === 1 || isLoading}
+                    className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  >
+                    Anterior
+                  </button>
+                  <span className="px-3 py-1 text-sm text-gray-700">
+                    Página <span className="font-medium">{currentPage}</span> de <span className="font-medium">{Math.ceil(totalItens / itemsPerPage)}</span>
+                  </span>
+                  <button
+                    onClick={() => {
+                      const ano = filtroAno ? Number(filtroAno) : undefined;
+                      carregarDocumentos(currentPage + 1, ano, filtroCategoria || undefined);
+                    }}
+                    disabled={currentPage === Math.ceil(totalItens / itemsPerPage) || isLoading}
+                    className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  >
+                    Próxima
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </PrivateLayout>
