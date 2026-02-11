@@ -47,11 +47,12 @@ export interface DocumentoListItem {
   descricao?: string;
   caminhoArquivo: string;
   nomeArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string;
   dataCriacao: string;
   ativo: boolean;
   caminho?: string;
   usuarioCriacaoNome?: string;
+  anoPublicacao?: number;
 }
 
 export interface DocumentoListResponse {

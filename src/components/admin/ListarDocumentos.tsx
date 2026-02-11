@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { DeleteModal } from './DeleteModal';
 import { downloadDocumento } from '../../services/documentosService';
+import { formatarDataBrasileira } from '../../utils/dateUtils';
 
 export interface Documento {
   id: number;
   nome: string;
   tipo: 'pdf' | 'xls' | 'xlsx' | 'csv' | 'outro';
-  anoPublicacao: number;
+  dataPublicacao: string;
   caminhoArquivo?: string;
   nomeArquivo?: string;
 }
@@ -141,7 +142,7 @@ export const ListarDocumentos = ({
                   Tipo
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ano Publicação
+                  Data Publicação
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
@@ -163,7 +164,7 @@ export const ListarDocumentos = ({
                     <div className="text-sm text-gray-500 uppercase">{documento.tipo}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{documento.anoPublicacao}</div>
+                    <div className="text-sm text-gray-500">{formatarDataBrasileira(documento.dataPublicacao)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
@@ -215,7 +216,7 @@ export const ListarDocumentos = ({
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
                       <span className="uppercase font-medium">{documento.tipo}</span>
                       <span>•</span>
-                      <span>Ano: {documento.anoPublicacao}</span>
+                      <span>Publicado em: {formatarDataBrasileira(documento.dataPublicacao)}</span>
                     </div>
                   </div>
                 </div>

@@ -23,11 +23,19 @@ export interface TransparenciaSubmenuListResponse {
   totalSubmenus: number;
 }
 
-// Interface para o endpoint público
-export interface TransparenciaSubmenuPublicoListResponse {
-  submenus: TransparenciaSubmenuPublico[];
+export interface TransparenciaSubmenuListPagedResponse {
+  itens: TransparenciaSubmenu[];
+  total: number;
+  pagina: number;
+  itensPorPagina: number;
+}
+
+// Response da API (antes do mapeamento)
+interface TransparenciaSubmenuListApiResponse {
+  submenus: TransparenciaSubmenu[];
   totalSubmenus: number;
 }
+
 
 export interface CadastrarTransparenciaRequest {
   titulo: string;
@@ -129,14 +137,23 @@ export const transparenciaService = {
   },
 
   /**
-   * Listar submenus de transparência (admin)
+   * Listar submenus de transparência (admin) com paginação cliente
+   * NOTA: A API retorna todos os itens, paginação é feita no cliente
    */
-  listarAdmin: async (): Promise<TransparenciaSubmenuListResponse> => {
+  listarAdmin: async (): Promise<TransparenciaSubmenuListPagedResponse> => {
     try {
-      const response = await apiClient.get<TransparenciaSubmenuListResponse>(
+      const response = await apiClient.get<TransparenciaSubmenuListApiResponse>(
         '/Menu/submenu/transparencia/admin/listar'
       );
-      return response.data;
+
+      // Mapear resposta da API para o formato esperado
+      // NOTA: A API não suporta paginação, retorna todos os itens
+      return {
+        itens: response.data.submenus || [],
+        total: response.data.totalSubmenus || 0,
+        pagina: 1,
+        itensPorPagina: 10,
+      };
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -189,8 +206,9 @@ export const transparenciaService = {
    * Obter detalhes de um submenu específico
    */
   obterPorId: async (id: number): Promise<TransparenciaSubmenu> => {
+    // Carregar todos os itens para encontrar o submenu
     const response = await transparenciaService.listarAdmin();
-    const submenu = response.submenus.find(s => s.id === id);
+    const submenu = response.itens.find(s => s.id === id);
     if (!submenu) {
       throw new Error('Submenu não encontrado');
     }

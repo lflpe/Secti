@@ -5,42 +5,84 @@ import { transparenciaService, type TransparenciaSubmenu } from '../../../servic
 import { handleApiError } from '../../../utils/errorHandler';
 
 export const ListarTransparencia = () => {
+  const [transparenciasTotal, setTransparenciasTotal] = useState<TransparenciaSubmenu[]>([]);
   const [transparencias, setTransparencias] = useState<TransparenciaSubmenu[]>([]);
   const [busca, setBusca] = useState<string>('');
   const [filtroStatus, setFiltroStatus] = useState<string>('Todos');
   const [isLoading, setIsLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage] = useState(10);
 
+  // Carregar transparências da API (uma única vez)
   const carregarTransparencias = useCallback(async () => {
     setIsLoading(true);
     setErro(null);
     try {
       const response = await transparenciaService.listarAdmin();
-      setTransparencias(response.submenus || []);
+
+      // Validar resposta e garantir que itens é sempre um array
+      const itensResposta = Array.isArray(response.itens) ? response.itens : [];
+      setTransparenciasTotal(itensResposta);
+      setTotalItems(itensResposta.length);
+      setCurrentPage(1);
     } catch (error) {
       const mensagemErro = handleApiError(error);
       setErro(mensagemErro);
+      setTransparenciasTotal([]);
+      setTransparencias([]);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  // Aplicar filtros e paginação
+  useEffect(() => {
+    // Filtrar por busca e status
+    const itemsFiltrados = transparenciasTotal.filter((item) => {
+      const matchBusca = item.titulo.toLowerCase().includes(busca.toLowerCase()) ||
+                         item.url.toLowerCase().includes(busca.toLowerCase()) ||
+                         (item.descricao && item.descricao.toLowerCase().includes(busca.toLowerCase()));
+
+      const matchStatus = filtroStatus === 'Todos' ||
+                          (filtroStatus === 'Ativos' && item.ativo) ||
+                          (filtroStatus === 'Inativos' && !item.ativo);
+
+      return matchBusca && matchStatus;
+    });
+
+    setTotalItems(itemsFiltrados.length);
+    setCurrentPage(1);
+
+    // Paginar
+    const inicio = (1 - 1) * itemsPerPage;
+    const fim = inicio + itemsPerPage;
+    setTransparencias(itemsFiltrados.slice(inicio, fim));
+  }, [busca, filtroStatus, transparenciasTotal, itemsPerPage]);
+
+  // Atualizar paginação quando página muda
+  useEffect(() => {
+    const itemsFiltrados = transparenciasTotal.filter((item) => {
+      const matchBusca = item.titulo.toLowerCase().includes(busca.toLowerCase()) ||
+                         item.url.toLowerCase().includes(busca.toLowerCase()) ||
+                         (item.descricao && item.descricao.toLowerCase().includes(busca.toLowerCase()));
+
+      const matchStatus = filtroStatus === 'Todos' ||
+                          (filtroStatus === 'Ativos' && item.ativo) ||
+                          (filtroStatus === 'Inativos' && !item.ativo);
+
+      return matchBusca && matchStatus;
+    });
+
+    const inicio = (currentPage - 1) * itemsPerPage;
+    const fim = inicio + itemsPerPage;
+    setTransparencias(itemsFiltrados.slice(inicio, fim));
+  }, [currentPage, busca, filtroStatus, transparenciasTotal, itemsPerPage]);
+
   useEffect(() => {
     carregarTransparencias();
   }, [carregarTransparencias]);
-
-  // Filtrar transparências
-  const transparenciasFiltradas = transparencias.filter((item) => {
-    const matchBusca = item.titulo.toLowerCase().includes(busca.toLowerCase()) ||
-                       item.url.toLowerCase().includes(busca.toLowerCase()) ||
-                       (item.descricao && item.descricao.toLowerCase().includes(busca.toLowerCase()));
-
-    const matchStatus = filtroStatus === 'Todos' ||
-                        (filtroStatus === 'Ativos' && item.ativo) ||
-                        (filtroStatus === 'Inativos' && !item.ativo);
-
-    return matchBusca && matchStatus;
-  });
 
   const handleToggleStatus = async (id: number, ativo: boolean) => {
     try {
@@ -49,6 +91,7 @@ export const ListarTransparencia = () => {
       } else {
         await transparenciaService.habilitar(id);
       }
+      // Recarregar dados
       await carregarTransparencias();
     } catch (error) {
       const mensagemErro = handleApiError(error);
@@ -64,7 +107,7 @@ export const ListarTransparencia = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Gerenciar Transparência</h1>
             <p className="text-gray-600 mt-2">
-              {isLoading ? 'Carregando...' : `${transparenciasFiltradas.length} ${transparenciasFiltradas.length === 1 ? 'item encontrado' : 'itens encontrados'}`}
+              {isLoading ? 'Carregando...' : `${totalItems} ${totalItems === 1 ? 'item encontrado' : 'itens encontrados'}`}
             </p>
           </div>
           <Link
@@ -141,6 +184,7 @@ export const ListarTransparencia = () => {
               onClick={() => {
                 setBusca('');
                 setFiltroStatus('Todos');
+                setCurrentPage(1);
               }}
               className="cursor-pointer px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
             >
@@ -153,7 +197,7 @@ export const ListarTransparencia = () => {
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-12 text-center">
             <p className="text-sm text-gray-500">Carregando itens...</p>
           </div>
-        ) : transparenciasFiltradas.length === 0 ? (
+        ) : transparencias.length === 0 ? (
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-12 text-center">
             <svg
               className="mx-auto h-12 w-12 text-gray-400"
@@ -170,7 +214,7 @@ export const ListarTransparencia = () => {
             </svg>
             <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhum item encontrado</h3>
             <p className="mt-1 text-sm text-gray-500">
-              {busca || filtroStatus !== 'Todos' ? 'Tente ajustar os filtros' : 'Crie um novo item para começar'}
+              {busca ? 'Tente ajustar os filtros de busca' : 'Crie um novo item para começar'}
             </p>
           </div>
         ) : (
@@ -201,7 +245,7 @@ export const ListarTransparencia = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {transparenciasFiltradas.map((item) => (
+                  {transparencias.map((item) => (
                     <tr key={item.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {item.ordem}
@@ -274,7 +318,7 @@ export const ListarTransparencia = () => {
 
             {/* Cards Mobile */}
             <div className="md:hidden space-y-4">
-              {transparenciasFiltradas.map((item) => (
+              {transparencias.map((item) => (
                 <div key={item.id} className="bg-white shadow-sm rounded-lg border border-gray-200 p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
@@ -356,6 +400,34 @@ export const ListarTransparencia = () => {
                 </div>
               ))}
             </div>
+
+            {/* Paginação */}
+            {totalItems > itemsPerPage && (
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
+                <div className="text-sm text-gray-700">
+                  Mostrando <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> a <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> de <span className="font-medium">{totalItems}</span> resultados
+                </div>
+                <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-end">
+                  <button
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1 || isLoading}
+                    className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  >
+                    Anterior
+                  </button>
+                  <span className="px-3 py-1 text-sm text-gray-700">
+                    Página <span className="font-medium">{currentPage}</span> de <span className="font-medium">{Math.ceil(totalItems / itemsPerPage)}</span>
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage === Math.ceil(totalItems / itemsPerPage) || isLoading}
+                    className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  >
+                    Próxima
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
