@@ -6,6 +6,7 @@ import { noticiasService, type NoticiaDetalhada, type EditarNoticiaRequest } fro
 import { handleApiError } from '../../../utils/errorHandler';
 
 interface NoticiaFormData {
+  id?: number;
   titulo: string;
   slug: string;
   categoria: string;
@@ -30,28 +31,20 @@ export const EditarNoticia = () => {
     const carregarNoticia = async () => {
       if (!slug) return;
 
-      // Extrair ID do slug (formato: noticia-{id})
-      const idMatch = slug.match(/^noticia-(\d+)$/);
-      if (!idMatch) {
-        setError('Slug inválido');
-        setIsLoading(false);
-        return;
-      }
-
-      const noticiaId = parseInt(idMatch[1], 10);
-
       try {
         setIsLoading(true);
         setError(null);
 
-        const noticia: NoticiaDetalhada = await noticiasService.buscarPorId(noticiaId);
+        // Buscar notícia pelo slug real da API
+        const noticia: NoticiaDetalhada = await noticiasService.buscarPublicoPorSlug(slug);
 
         // Converter dados da API para o formato do formulário
         const formData: NoticiaFormData = {
+          id: noticia.id,
           titulo: noticia.titulo,
-          slug: slug,
-          categoria: 'Notícias', // Categoria padrão
-          autor: 'SECTI', // Autor padrão
+          slug: noticia.slug,
+          categoria: 'Notícias',
+          autor: noticia.autor,
           resumo: noticia.resumo,
           conteudo: noticia.conteudo,
           imagemDestaque: noticia.imagemCapaUrl,
@@ -73,16 +66,7 @@ export const EditarNoticia = () => {
   }, [slug]);
 
   const handleSubmit = async (formData: NoticiaFormData) => {
-    if (!slug) return;
-
-    // Extrair ID do slug
-    const idMatch = slug.match(/^noticia-(\d+)$/);
-    if (!idMatch) {
-      setError('Slug inválido');
-      return;
-    }
-
-    const noticiaId = parseInt(idMatch[1], 10);
+    if (!initialData) return;
 
     setIsSubmitting(true);
     setError(null);
@@ -120,8 +104,8 @@ export const EditarNoticia = () => {
         imagemCapa: dadosNoticia.imagemCapa ? `File(${dadosNoticia.imagemCapa.name})` : undefined,
       });
 
-      // Chamar API
-      await noticiasService.editar(noticiaId, dadosNoticia);
+      // Chamar API usando o ID da notícia inicial
+      await noticiasService.editar(initialData.id || 0, dadosNoticia);
 
       // Redirecionar para a lista
       navigate('/admin/noticias');

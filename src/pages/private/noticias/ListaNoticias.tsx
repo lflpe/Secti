@@ -15,48 +15,35 @@ export const ListaNoticias = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage] = useState(10);
 
-  // Carregar notícias da API
+  // Carregar notícias da API com paginação servidor
   const loadNoticias = useCallback(async (page = 1, tituloFiltro = '', apenasPublicadas?: boolean) => {
     try {
       setLoading(true);
       setError(null);
 
-      const loadAll = tituloFiltro || apenasPublicadas !== undefined;
+      // Enviar filtros corretamente para a API
       const filtros: NoticiaFiltros = {
-        pagina: loadAll ? 1 : page,
-        itensPorPagina: loadAll ? 10000 : itemsPerPage,
+        pagina: page,
+        itensPorPagina: itemsPerPage,
         tituloFiltro: tituloFiltro || undefined,
+        apenasPublicadas: apenasPublicadas,
       };
 
       const response: NoticiaListResponse = await noticiasService.listar(filtros);
 
       // Converter dados da API para o formato esperado pelo componente
-      let noticiasFormatted: NoticiaAdmin[] = response.itens.map(item => ({
+      const noticiasFormatted: NoticiaAdmin[] = response.itens.map(item => ({
         id: item.id,
-        slug: `noticia-${item.id}`, // Gerar slug baseado no ID
+        slug: item.slug,
         titulo: item.titulo,
-        categoria: 'Notícias', // Categoria padrão
-        autor: 'SECTI', // Autor padrão, pois a API não retorna
+        categoria: 'Notícias',
+        autor: item.autor,
         dataPublicacao: new Date(item.dataPublicacao).toLocaleDateString('pt-BR'),
         status: item.publicada ? 'Publicada' : 'Rascunho',
       }));
 
-      // Aplicar filtros no cliente se necessário
-      if (tituloFiltro) {
-        noticiasFormatted = noticiasFormatted.filter(n =>
-          n.titulo.toLowerCase().includes(tituloFiltro.toLowerCase())
-        );
-      }
-      if (apenasPublicadas === true) {
-        noticiasFormatted = noticiasFormatted.filter(n => n.status === 'Publicada');
-      } else if (apenasPublicadas === false) {
-        noticiasFormatted = noticiasFormatted.filter(n => n.status === 'Rascunho');
-      }
-
-      setTotalItems(noticiasFormatted.length);
-      const start = loadAll ? (page - 1) * itemsPerPage : 0;
-      const end = start + itemsPerPage;
-      setNoticias(noticiasFormatted.slice(start, end));
+      setNoticias(noticiasFormatted);
+      setTotalItems(response.total);
       setCurrentPage(page);
     } catch (err) {
       const errorMessage = handleApiError(err);
@@ -100,6 +87,8 @@ export const ListaNoticias = () => {
 
   // Buscar notícias
   const handleSearch = () => {
+    // Quando busca muda, resetar para página 1
+    setCurrentPage(1);
     const apenasPublicadas = filtroStatus === 'Publicada' ? true :
                            filtroStatus === 'Rascunho' ? false : undefined;
     loadNoticias(1, busca, apenasPublicadas);
@@ -244,7 +233,7 @@ export const ListaNoticias = () => {
                   loadNoticias(currentPage - 1, busca, apenasPublicadas);
                 }}
                 disabled={currentPage === 1 || loading}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Anterior
               </button>
@@ -258,7 +247,7 @@ export const ListaNoticias = () => {
                   loadNoticias(currentPage + 1, busca, apenasPublicadas);
                 }}
                 disabled={currentPage === Math.ceil(totalItems / itemsPerPage) || loading}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Próxima
               </button>

@@ -33,29 +33,20 @@ export const VisualizarNoticiaAdmin = () => {
     const carregarNoticia = async () => {
       if (!slug) return;
 
-      // Extrair ID do slug (formato: noticia-{id})
-      const idMatch = slug.match(/^noticia-(\d+)$/);
-      if (!idMatch) {
-        setError('Slug inválido');
-        setIsLoading(false);
-        return;
-      }
-
-      const noticiaId = parseInt(idMatch[1], 10);
-
       try {
         setIsLoading(true);
         setError(null);
 
-        const noticiaData: NoticiaDetalhada = await noticiasService.buscarPorId(noticiaId);
+        // Buscar notícia pelo slug real da API
+        const noticiaData: NoticiaDetalhada = await noticiasService.buscarPublicoPorSlug(slug);
 
         // Converter dados da API para o formato do componente
         const noticiaFormatted: NoticiaData = {
           id: noticiaData.id,
-          slug: slug,
+          slug: noticiaData.slug,
           titulo: noticiaData.titulo,
-          categoria: 'Notícias', // Categoria padrão
-          autor: 'SECTI', // Autor padrão
+          categoria: 'Notícias',
+          autor: noticiaData.autor,
           dataPublicacao: new Date(noticiaData.dataPublicacao).toLocaleDateString('pt-BR', {
             day: '2-digit',
             month: 'long',
