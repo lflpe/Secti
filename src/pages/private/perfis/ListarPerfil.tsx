@@ -22,20 +22,20 @@ export const ListarPerfil = () => {
     totalItens: 0,
   });
 
-  const carregarPerfis = useCallback(async (pagina: number = 1) => {
+  const carregarPerfis = useCallback(async (pagina: number = 1, filtro: string = '') => {
     try {
       setIsLoading(true);
       setErro(null);
 
       const response = await perfilService.listar({
-        nomeFiltro: busca || undefined,
-        pagina: pagina - 1,
-        itensPorPagina: paginacao.itensPorPagina,
+        nomeFiltro: filtro || undefined,
+        pagina: pagina,
+        itensPorPagina: 10,
       });
 
       setPerfis(response.perfis);
       setPaginacao({
-        paginaAtual: response.paginaAtual + 1,
+        paginaAtual: response.paginaAtual,
         totalPaginas: response.totalPaginas,
         itensPorPagina: response.itensPorPagina,
         totalItens: response.totalItens,
@@ -46,11 +46,11 @@ export const ListarPerfil = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [busca, paginacao.itensPorPagina]);
+  }, []);
 
   useEffect(() => {
-    carregarPerfis(1);
-  }, [carregarPerfis]);
+    carregarPerfis(1, busca);
+  }, [busca, carregarPerfis]);
 
   const handleSuspender = async (id: number, nome: string) => {
     setPerfilToDelete({ id, nome });
@@ -63,7 +63,7 @@ export const ListarPerfil = () => {
     try {
       await perfilService.suspender(perfilToDelete.id, true);
       setSucesso(`Perfil "${perfilToDelete.nome}" suspenso com sucesso!`);
-      carregarPerfis(paginacao.paginaAtual);
+      carregarPerfis(paginacao.paginaAtual, busca);
       setTimeout(() => setSucesso(null), 3000);
     } catch (error) {
       const mensagem = handleApiError(error);
@@ -78,7 +78,7 @@ export const ListarPerfil = () => {
     try {
       await perfilService.habilitar(id);
       setSucesso(`Perfil "${nome}" habilitado com sucesso!`);
-      carregarPerfis(paginacao.paginaAtual);
+      carregarPerfis(paginacao.paginaAtual, busca);
       setTimeout(() => setSucesso(null), 3000);
     } catch (error) {
       const mensagem = handleApiError(error);
@@ -332,37 +332,37 @@ export const ListarPerfil = () => {
                   </div>
                 ))}
               </div>
-
-              {/* Paginação - só exibe se houver mais de uma página */}
-              {paginacao.totalPaginas > 1 && (
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
-                  <div className="text-sm text-gray-700">
-                    Mostrando <span className="font-medium">{(paginacao.paginaAtual - 1) * paginacao.itensPorPagina + 1}</span> a <span className="font-medium">{Math.min(paginacao.paginaAtual * paginacao.itensPorPagina, paginacao.totalItens)}</span> de <span className="font-medium">{paginacao.totalItens}</span> resultados
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-end">
-                    <button
-                      onClick={() => carregarPerfis(paginacao.paginaAtual - 1)}
-                      disabled={paginacao.paginaAtual === 1}
-                      className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                    >
-                      Anterior
-                    </button>
-                    <span className="px-3 py-1 text-sm text-gray-700">
-                      Página <span className="font-medium">{paginacao.paginaAtual}</span> de <span className="font-medium">{paginacao.totalPaginas}</span>
-                    </span>
-                    <button
-                      onClick={() => carregarPerfis(paginacao.paginaAtual + 1)}
-                      disabled={paginacao.paginaAtual === paginacao.totalPaginas}
-                      className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                    >
-                      Próximo
-                    </button>
-                  </div>
-                </div>
-              )}
             </>
           )}
         </div>
+
+        {/* Paginação - só exibe se houver mais de uma página */}
+        {paginacao.totalPaginas > 1 && (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
+            <div className="text-sm text-gray-700">
+              Mostrando <span className="font-medium">{(paginacao.paginaAtual - 1) * paginacao.itensPorPagina + 1}</span> a <span className="font-medium">{Math.min(paginacao.paginaAtual * paginacao.itensPorPagina, paginacao.totalItens)}</span> de <span className="font-medium">{paginacao.totalItens}</span> resultados
+            </div>
+            <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-end">
+              <button
+                onClick={() => carregarPerfis(paginacao.paginaAtual - 1, busca)}
+                disabled={paginacao.paginaAtual === 1}
+                className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                Anterior
+              </button>
+              <span className="px-3 py-1 text-sm text-gray-700">
+                Página <span className="font-medium">{paginacao.paginaAtual}</span> de <span className="font-medium">{paginacao.totalPaginas}</span>
+              </span>
+              <button
+                onClick={() => carregarPerfis(paginacao.paginaAtual + 1, busca)}
+                disabled={paginacao.paginaAtual === paginacao.totalPaginas}
+                className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                Próximo
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Delete Modal */}
         <DeleteModal

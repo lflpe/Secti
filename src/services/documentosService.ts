@@ -120,6 +120,7 @@ export interface DocumentoPublicoFilters {
   pastaId?: number;
   categoria?: string;
   titulo?: string;
+  dataPublicacao?: string;
   ordenarPor?: 'titulo' | 'anopublicacao';
   ordenarDescendente?: boolean;
   pagina?: number;
@@ -303,6 +304,9 @@ export const documentosService = {
     }
     if (filtros?.titulo) {
       params.append('Titulo', filtros.titulo);
+    }
+    if (filtros?.dataPublicacao) {
+      params.append('DataPublicacao', filtros.dataPublicacao);
     }
     if (filtros?.ordenarPor) {
       params.append('OrdenarPor', filtros.ordenarPor);

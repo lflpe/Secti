@@ -104,6 +104,7 @@ export interface ProjetoFiltros {
   ordenarPor?: string;
   ordenarDescendente?: boolean;
   apenasAtivos?: boolean;
+  titulo?: string;
 }
 
 // Validações do frontend
@@ -184,6 +185,9 @@ export const projetosService = {
     }
     if (filtros?.itensPorPagina !== undefined) {
       params.append('ItensPorPagina', filtros.itensPorPagina.toString());
+    }
+    if (filtros?.titulo !== undefined && filtros.titulo !== '') {
+      params.append('Titulo', filtros.titulo);
     }
     if (filtros?.ordenarPor !== undefined) {
       params.append('OrdenarPor', filtros.ordenarPor);

@@ -9,8 +9,8 @@ export const ListaProjetos = () => {
   const [projetos, setProjetos] = useState<ProjetoAdmin[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filtroStatus, setFiltroStatus] = useState<string>('Todos');
   const [busca, setBusca] = useState<string>('');
+  const [filtroStatus, setFiltroStatus] = useState<string>('Todos');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage] = useState(10);
@@ -26,6 +26,10 @@ export const ListaProjetos = () => {
         itensPorPagina: itemsPerPage,
       };
 
+      if (tituloFiltro) {
+        filtros.titulo = tituloFiltro;
+      }
+
       if (apenasAtivos !== undefined) {
         filtros.apenasAtivos = apenasAtivos;
       }
@@ -33,7 +37,7 @@ export const ListaProjetos = () => {
       const response: ProjetoListResponse = await projetosService.listar(filtros);
 
       // Converter dados da API para o formato esperado pelo componente
-      let projetosFormatted: ProjetoAdmin[] = response.projetos.map(item => ({
+      const projetosFormatted: ProjetoAdmin[] = response.projetos.map(item => ({
         id: item.id,
         titulo: item.titulo,
         descricao: item.fotoCapaCaminho ? 'Com capa' : 'Sem capa',
@@ -44,18 +48,9 @@ export const ListaProjetos = () => {
         dataCriacao: item.dataCriacao,
       }));
 
-      // Aplicar filtros no cliente se necessário
-      if (tituloFiltro) {
-        projetosFormatted = projetosFormatted.filter(p =>
-          p.titulo.toLowerCase().includes(tituloFiltro.toLowerCase())
-        );
-      }
-
-      setTotalItems(projetosFormatted.length);
-      const start = (page - 1) * itemsPerPage;
-      const end = start + itemsPerPage;
-      setProjetos(projetosFormatted.slice(start, end));
-      setCurrentPage(page);
+      setProjetos(projetosFormatted);
+      setTotalItems(response.totalItens);
+      setCurrentPage(response.paginaAtual);
     } catch (err) {
       const errorMessage = handleApiError(err);
       setError(errorMessage);
@@ -65,14 +60,14 @@ export const ListaProjetos = () => {
   }, [itemsPerPage]);
 
   useEffect(() => {
-    loadProjetos();
+    loadProjetos(1);
   }, [loadProjetos]);
 
   // Função para excluir projeto (inativar)
   const handleDelete = async (id: number) => {
     try {
       await projetosService.inativar(id);
-      // Recarregar lista após inativar mantendo os filtros atuais
+      // Recarregar lista após inativar
       const apenasAtivos = filtroStatus === 'Ativo' ? true :
                            filtroStatus === 'Inativo' ? false : undefined;
       await loadProjetos(currentPage, busca, apenasAtivos);
@@ -86,7 +81,7 @@ export const ListaProjetos = () => {
   const handleActivate = async (id: number) => {
     try {
       await projetosService.ativar(id);
-      // Recarregar lista após ativar mantendo os filtros atuais
+      // Recarregar lista após ativar
       const apenasAtivos = filtroStatus === 'Ativo' ? true :
                            filtroStatus === 'Inativo' ? false : undefined;
       await loadProjetos(currentPage, busca, apenasAtivos);
@@ -99,7 +94,7 @@ export const ListaProjetos = () => {
   // Buscar projetos
   const handleSearch = () => {
     const apenasAtivos = filtroStatus === 'Ativo' ? true :
-                        filtroStatus === 'Inativo' ? false : undefined;
+                         filtroStatus === 'Inativo' ? false : undefined;
     loadProjetos(1, busca, apenasAtivos);
   };
 
@@ -107,7 +102,7 @@ export const ListaProjetos = () => {
   const handleClearSearch = () => {
     setBusca('');
     setFiltroStatus('Todos');
-    loadProjetos(1);
+    loadProjetos(1, '', undefined);
   };
 
   return (
@@ -150,11 +145,11 @@ export const ListaProjetos = () => {
 
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-end">
             {/* Busca */}
-            <div className="md:col-span-2">
+            <div className="flex-1">
               <label htmlFor="busca" className="block text-sm font-medium text-gray-700 mb-2">
-                Buscar
+                Buscar por Título
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -169,13 +164,13 @@ export const ListaProjetos = () => {
                   onChange={(e) => setBusca(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
-                  placeholder="Buscar por título..."
+                  placeholder="Digite o título..."
                 />
               </div>
             </div>
 
             {/* Filtro Status */}
-            <div>
+            <div className="sm:min-w-max">
               <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
                 Status
               </label>
@@ -183,7 +178,7 @@ export const ListaProjetos = () => {
                 id="status"
                 value={filtroStatus}
                 onChange={(e) => setFiltroStatus(e.target.value)}
-                className="block cursor-pointer w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+                className="block cursor-pointer px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
               >
                 <option value="Todos">Todos</option>
                 <option value="Ativo">Ativo</option>
@@ -192,18 +187,18 @@ export const ListaProjetos = () => {
             </div>
 
             {/* Botões de ação */}
-            <div className="md:col-span-3 flex gap-2 flex-col sm:flex-row">
+            <div className="flex items-center gap-2">
               <button
                 onClick={handleSearch}
                 disabled={loading}
-                className="flex-1 cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className="cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 {loading ? 'Buscando...' : 'Buscar'}
               </button>
               <button
                 onClick={handleClearSearch}
                 disabled={loading}
-                className="flex-1 sm:flex-auto px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Limpar
               </button>
@@ -238,11 +233,11 @@ export const ListaProjetos = () => {
               <button
                 onClick={() => {
                   const apenasAtivos = filtroStatus === 'Ativo' ? true :
-                                     filtroStatus === 'Inativo' ? false : undefined;
+                                       filtroStatus === 'Inativo' ? false : undefined;
                   loadProjetos(currentPage - 1, busca, apenasAtivos);
                 }}
                 disabled={currentPage === 1 || loading}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Anterior
               </button>
@@ -252,11 +247,11 @@ export const ListaProjetos = () => {
               <button
                 onClick={() => {
                   const apenasAtivos = filtroStatus === 'Ativo' ? true :
-                                     filtroStatus === 'Inativo' ? false : undefined;
+                                       filtroStatus === 'Inativo' ? false : undefined;
                   loadProjetos(currentPage + 1, busca, apenasAtivos);
                 }}
                 disabled={currentPage === Math.ceil(totalItems / itemsPerPage) || loading}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Próxima
               </button>
