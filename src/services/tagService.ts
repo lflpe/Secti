@@ -77,16 +77,16 @@ export const tagService = {
     const params = new URLSearchParams();
 
     if (filtros?.nomeFiltro) {
-      params.append('NomeFiltro', filtros.nomeFiltro);
+      params.append('nomeFiltro', filtros.nomeFiltro);
     }
     if (filtros?.apenasAtivas !== undefined) {
-      params.append('ApenasAtivas', filtros.apenasAtivas.toString());
+      params.append('apenasAtivas', filtros.apenasAtivas.toString());
     }
     if (filtros?.pagina !== undefined) {
-      params.append('Pagina', filtros.pagina.toString());
+      params.append('pagina', filtros.pagina.toString());
     }
     if (filtros?.itensPorPagina !== undefined) {
-      params.append('ItensPorPagina', filtros.itensPorPagina.toString());
+      params.append('itensPorPagina', filtros.itensPorPagina.toString());
     }
 
     const queryString = params.toString();

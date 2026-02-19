@@ -10,33 +10,36 @@ export const ListaNoticias = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filtroStatus, setFiltroStatus] = useState<string>('Todas');
+  const [filtroId, setFiltroId] = useState<string>('');
+  const [filtroDataPublicacao, setFiltroDataPublicacao] = useState<string>('');
+  const [filtroDataCriacao, setFiltroDataCriacao] = useState<string>('');
+  const [filtroDataAtualizacao, setFiltroDataAtualizacao] = useState<string>('');
+  const [filtroUsuarioCriacaoId, setFiltroUsuarioCriacaoId] = useState<string>('');
+  const [filtroUsuarioAtualizacaoId, setFiltroUsuarioAtualizacaoId] = useState<string>('');
   const [busca, setBusca] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage] = useState(10);
 
   // Carregar notícias da API com paginação servidor
-  const loadNoticias = useCallback(async (page = 1, tituloFiltro = '', apenasPublicadas?: boolean) => {
+  const loadNoticias = useCallback(async (page = 1, filtrosExtra?: NoticiaFiltros) => {
     try {
       setLoading(true);
       setError(null);
 
-      // Enviar filtros corretamente para a API
       const filtros: NoticiaFiltros = {
         pagina: page,
         itensPorPagina: itemsPerPage,
-        tituloFiltro: tituloFiltro || undefined,
-        apenasPublicadas: apenasPublicadas,
+        ...filtrosExtra,
       };
 
       const response: NoticiaListResponse = await noticiasService.listar(filtros);
 
-      // Converter dados da API para o formato esperado pelo componente
       const noticiasFormatted: NoticiaAdmin[] = response.itens.map(item => ({
         id: item.id,
         slug: item.slug,
         titulo: item.titulo,
-        categoria: 'Notícias',
+        categoria: 'Noticias',
         autor: item.autor,
         dataPublicacao: new Date(item.dataPublicacao).toLocaleDateString('pt-BR'),
         status: item.publicada ? 'Publicada' : 'Rascunho',
@@ -58,13 +61,27 @@ export const ListaNoticias = () => {
   }, [loadNoticias]);
 
   // Função para excluir notícia (inativar)
+  const buildFiltros = (): NoticiaFiltros => {
+    const apenasPublicadas = filtroStatus === 'Publicada' ? true :
+                           filtroStatus === 'Rascunho' ? false : undefined;
+    return {
+      id: filtroId ? Number(filtroId) : undefined,
+      tituloFiltro: busca || undefined,
+      dataPublicacao: filtroDataPublicacao || undefined,
+      dataCriacao: filtroDataCriacao || undefined,
+      dataAtualizacao: filtroDataAtualizacao || undefined,
+      apenasPublicadas,
+      usuarioCriacaoId: filtroUsuarioCriacaoId ? Number(filtroUsuarioCriacaoId) : undefined,
+      usuarioAtualizacaoId: filtroUsuarioAtualizacaoId ? Number(filtroUsuarioAtualizacaoId) : undefined,
+    };
+  };
+
   const handleDelete = async (id: number) => {
     try {
       await noticiasService.inativar(id);
       // Recarregar lista após inativar mantendo os filtros atuais
-      const apenasPublicadas = filtroStatus === 'Publicada' ? true :
-                             filtroStatus === 'Rascunho' ? false : undefined;
-      await loadNoticias(currentPage, busca, apenasPublicadas);
+      const filtros = buildFiltros();
+      await loadNoticias(currentPage, filtros);
     } catch (err) {
       const errorMessage = handleApiError(err);
       setError(errorMessage);
@@ -76,9 +93,8 @@ export const ListaNoticias = () => {
     try {
       await noticiasService.ativar(id);
       // Recarregar lista após ativar mantendo os filtros atuais
-      const apenasPublicadas = filtroStatus === 'Publicada' ? true :
-                             filtroStatus === 'Rascunho' ? false : undefined;
-      await loadNoticias(currentPage, busca, apenasPublicadas);
+      const filtros = buildFiltros();
+      await loadNoticias(currentPage, filtros);
     } catch (err) {
       const errorMessage = handleApiError(err);
       setError(errorMessage);
@@ -89,15 +105,20 @@ export const ListaNoticias = () => {
   const handleSearch = () => {
     // Quando busca muda, resetar para página 1
     setCurrentPage(1);
-    const apenasPublicadas = filtroStatus === 'Publicada' ? true :
-                           filtroStatus === 'Rascunho' ? false : undefined;
-    loadNoticias(1, busca, apenasPublicadas);
+    const filtros = buildFiltros();
+    loadNoticias(1, filtros);
   };
 
   // Limpar busca
   const handleClearSearch = () => {
     setBusca('');
     setFiltroStatus('Todas');
+    setFiltroId('');
+    setFiltroDataPublicacao('');
+    setFiltroDataCriacao('');
+    setFiltroDataAtualizacao('');
+    setFiltroUsuarioCriacaoId('');
+    setFiltroUsuarioAtualizacaoId('');
     loadNoticias(1);
   };
 
@@ -141,7 +162,23 @@ export const ListaNoticias = () => {
 
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* ID */}
+            <div>
+              <label htmlFor="id" className="block text-sm font-medium text-gray-700 mb-2">
+                ID
+              </label>
+              <input
+                type="number"
+                id="id"
+                value={filtroId}
+                onChange={(e) => setFiltroId(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+                placeholder="Ex: 123"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+              />
+            </div>
+
             {/* Busca */}
             <div className="md:col-span-2">
               <label htmlFor="busca" className="block text-sm font-medium text-gray-700 mb-2">
@@ -160,12 +197,12 @@ export const ListaNoticias = () => {
                   onChange={(e) => setBusca(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
-                  placeholder="Buscar por título..."
+                  placeholder="Buscar por titulo..."
                 />
               </div>
             </div>
 
-            {/* Filtro Status */}
+            {/* Status */}
             <div>
               <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
                 Status
@@ -182,8 +219,80 @@ export const ListaNoticias = () => {
               </select>
             </div>
 
-            {/* Botões de ação */}
-            <div className="md:col-span-3 flex gap-2 flex-col sm:flex-row">
+            {/* Data Publicacao */}
+            <div>
+              <label htmlFor="dataPublicacao" className="block text-sm font-medium text-gray-700 mb-2">
+                Data de Publicacao
+              </label>
+              <input
+                type="datetime-local"
+                id="dataPublicacao"
+                value={filtroDataPublicacao}
+                onChange={(e) => setFiltroDataPublicacao(e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+              />
+            </div>
+
+            {/* Data Criacao */}
+            <div>
+              <label htmlFor="dataCriacao" className="block text-sm font-medium text-gray-700 mb-2">
+                Data de Criacao
+              </label>
+              <input
+                type="datetime-local"
+                id="dataCriacao"
+                value={filtroDataCriacao}
+                onChange={(e) => setFiltroDataCriacao(e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+              />
+            </div>
+
+            {/* Data Atualizacao */}
+            <div>
+              <label htmlFor="dataAtualizacao" className="block text-sm font-medium text-gray-700 mb-2">
+                Data de Atualizacao
+              </label>
+              <input
+                type="datetime-local"
+                id="dataAtualizacao"
+                value={filtroDataAtualizacao}
+                onChange={(e) => setFiltroDataAtualizacao(e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+              />
+            </div>
+
+            {/* Usuario Criacao */}
+            <div>
+              <label htmlFor="usuarioCriacaoId" className="block text-sm font-medium text-gray-700 mb-2">
+                Usuario Criacao (ID)
+              </label>
+              <input
+                type="number"
+                id="usuarioCriacaoId"
+                value={filtroUsuarioCriacaoId}
+                onChange={(e) => setFiltroUsuarioCriacaoId(e.target.value)}
+                placeholder="Ex: 10"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+              />
+            </div>
+
+            {/* Usuario Atualizacao */}
+            <div>
+              <label htmlFor="usuarioAtualizacaoId" className="block text-sm font-medium text-gray-700 mb-2">
+                Usuario Atualizacao (ID)
+              </label>
+              <input
+                type="number"
+                id="usuarioAtualizacaoId"
+                value={filtroUsuarioAtualizacaoId}
+                onChange={(e) => setFiltroUsuarioAtualizacaoId(e.target.value)}
+                placeholder="Ex: 12"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+              />
+            </div>
+
+            {/* Botoes de acao */}
+            <div className="md:col-span-4 flex gap-2 flex-col sm:flex-row">
               <button
                 onClick={handleSearch}
                 disabled={loading}
@@ -201,7 +310,6 @@ export const ListaNoticias = () => {
             </div>
           </div>
         </div>
-
         {/* Tabela */}
         {loading ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
@@ -215,7 +323,7 @@ export const ListaNoticias = () => {
             noticias={noticias}
             onDelete={handleDelete}
             onActivate={handleActivate}
-            emptyMessage={busca || filtroStatus !== 'Todas' ? 'Não há nenhuma notícia com esse filtro.' : undefined}
+            emptyMessage={busca || filtroStatus !== 'Todas' || filtroId || filtroDataPublicacao || filtroDataCriacao || filtroDataAtualizacao || filtroUsuarioCriacaoId || filtroUsuarioAtualizacaoId ? 'Nao ha nenhuma noticia com esse filtro.' : undefined}
           />
         )}
 
@@ -228,9 +336,8 @@ export const ListaNoticias = () => {
             <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-end">
               <button
                 onClick={() => {
-                  const apenasPublicadas = filtroStatus === 'Publicada' ? true :
-                                         filtroStatus === 'Rascunho' ? false : undefined;
-                  loadNoticias(currentPage - 1, busca, apenasPublicadas);
+                  const filtros = buildFiltros();
+                  loadNoticias(currentPage - 1, filtros);
                 }}
                 disabled={currentPage === 1 || loading}
                 className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
@@ -242,9 +349,8 @@ export const ListaNoticias = () => {
               </span>
               <button
                 onClick={() => {
-                  const apenasPublicadas = filtroStatus === 'Publicada' ? true :
-                                         filtroStatus === 'Rascunho' ? false : undefined;
-                  loadNoticias(currentPage + 1, busca, apenasPublicadas);
+                  const filtros = buildFiltros();
+                  loadNoticias(currentPage + 1, filtros);
                 }}
                 disabled={currentPage === Math.ceil(totalItems / itemsPerPage) || loading}
                 className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"

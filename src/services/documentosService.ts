@@ -99,6 +99,16 @@ export interface EditarDocumentoRequest {
 }
 
 export interface DocumentoListFilters {
+  id?: number;
+  titulo?: string;
+  dataPublicacao?: string;
+  dataCriacao?: string;
+  dataAtualizacao?: string;
+  publico?: boolean;
+  ativo?: boolean;
+  categoria?: string;
+  usuarioCriacaoId?: number;
+  usuarioAtualizacaoId?: number;
   ano?: number;
   ordenarPor?: 'titulo' | 'dataPublicacao' | 'dataCriacao';
   ordenarDescendente?: boolean;
@@ -229,20 +239,50 @@ export const documentosService = {
   listar: async (filtros?: DocumentoListFilters): Promise<DocumentoListResponse> => {
     const params = new URLSearchParams();
 
+    if (filtros?.id !== undefined) {
+      params.append('id', filtros.id.toString());
+    }
+    if (filtros?.titulo) {
+      params.append('titulo', filtros.titulo);
+    }
+    if (filtros?.dataPublicacao) {
+      params.append('dataPublicacao', filtros.dataPublicacao);
+    }
+    if (filtros?.dataCriacao) {
+      params.append('dataCriacao', filtros.dataCriacao);
+    }
+    if (filtros?.dataAtualizacao) {
+      params.append('dataAtualizacao', filtros.dataAtualizacao);
+    }
+    if (filtros?.publico !== undefined) {
+      params.append('publico', filtros.publico.toString());
+    }
+    if (filtros?.ativo !== undefined) {
+      params.append('ativo', filtros.ativo.toString());
+    }
+    if (filtros?.categoria) {
+      params.append('categoria', filtros.categoria);
+    }
+    if (filtros?.usuarioCriacaoId !== undefined) {
+      params.append('usuarioCriacaoId', filtros.usuarioCriacaoId.toString());
+    }
+    if (filtros?.usuarioAtualizacaoId !== undefined) {
+      params.append('usuarioAtualizacaoId', filtros.usuarioAtualizacaoId.toString());
+    }
     if (filtros?.ano !== undefined) {
-      params.append('Ano', filtros.ano.toString());
+      params.append('ano', filtros.ano.toString());
     }
     if (filtros?.ordenarPor) {
-      params.append('OrdenarPor', filtros.ordenarPor);
+      params.append('ordenarPor', filtros.ordenarPor);
     }
     if (filtros?.ordenarDescendente !== undefined) {
-      params.append('OrdenarDescendente', filtros.ordenarDescendente.toString());
+      params.append('ordenarDescendente', filtros.ordenarDescendente.toString());
     }
     if (filtros?.pagina !== undefined) {
-      params.append('Pagina', filtros.pagina.toString());
+      params.append('pagina', filtros.pagina.toString());
     }
     if (filtros?.itensPorPagina !== undefined) {
-      params.append('ItensPorPagina', filtros.itensPorPagina.toString());
+      params.append('itensPorPagina', filtros.itensPorPagina.toString());
     }
 
     const queryString = params.toString();

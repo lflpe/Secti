@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
 import { ListarAvisosIntencaoContratar as ListarAvisosIntencaoContratarComponent, type AvisoIntencaoContratar } from '../../../components/admin/ListarAvisosIntencaoContratar';
 import { avisosIntencaoContratarService, type AvisoIntencaoContratarListFilters } from '../../../services/avisosIntencaoContratarService';
+import { tagService, type Tag } from '../../../services/tagService';
 import { handleApiError } from '../../../utils/errorHandler';
 
 export const ListarAvisosDeIntencao = () => {
@@ -11,10 +12,13 @@ export const ListarAvisosDeIntencao = () => {
   const [filtroCategoria, setFiltroCategoria] = useState<string>('');
   const [busca, setBusca] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingTags, setIsLoadingTags] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [erroTags, setErroTags] = useState<string | null>(null);
   const [totalItens, setTotalItens] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const getTipoFromNome = (nomeArquivo?: string, caminhoArquivo?: string): AvisoIntencaoContratar['tipo'] => {
     const origem = nomeArquivo || caminhoArquivo || '';
@@ -97,9 +101,32 @@ export const ListarAvisosDeIntencao = () => {
     }
   }, [itemsPerPage]);
 
+  const carregarTags = useCallback(async () => {
+    setIsLoadingTags(true);
+    setErroTags(null);
+    try {
+      const response = await tagService.listar({
+        apenasAtivas: true,
+        pagina: 1,
+        itensPorPagina: 1000,
+      });
+      const tagsOrdenadas = [...response.itens].sort((a, b) => a.nome.localeCompare(b.nome));
+      setTags(tagsOrdenadas);
+    } catch (error) {
+      const mensagemErro = handleApiError(error);
+      setErroTags(mensagemErro);
+    } finally {
+      setIsLoadingTags(false);
+    }
+  }, []);
+
   useEffect(() => {
     carregarAvisos();
   }, [carregarAvisos]);
+
+  useEffect(() => {
+    carregarTags();
+  }, [carregarTags]);
 
   // Buscar avisos via endpoint
   const handleSearch = () => {
@@ -192,15 +219,26 @@ export const ListarAvisosDeIntencao = () => {
               <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-2">
                 Categoria
               </label>
-              <input
-                type="text"
+              <select
                 id="categoria"
                 value={filtroCategoria}
                 onChange={(e) => setFiltroCategoria(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-                placeholder="Ex: Serviços, Pesquisa"
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
-              />
+              >
+                <option value="">Todas as categorias</option>
+                {tags.map((tag) => (
+                  <option key={tag.id} value={tag.nome}>
+                    {tag.nome}
+                  </option>
+                ))}
+              </select>
+              {isLoadingTags && (
+                <p className="mt-1 text-xs text-gray-500">Carregando categorias...</p>
+              )}
+              {erroTags && (
+                <p className="mt-1 text-xs text-red-600">{erroTags}</p>
+              )}
             </div>
 
             {/* Filtro por Tipo */}

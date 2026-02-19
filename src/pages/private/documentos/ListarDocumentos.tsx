@@ -3,17 +3,22 @@ import { Link } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
 import { ListarDocumentos as ListarDocumentosComponent, type Documento } from '../../../components/admin/ListarDocumentos';
 import { documentosService, type DocumentoListFilters, type DocumentoListResponse } from '../../../services/documentosService';
+import { tagService, type Tag } from '../../../services/tagService';
 import { handleApiError } from '../../../utils/errorHandler';
 
 export const ListarDocumentos = () => {
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [filtroAno, setFiltroAno] = useState<string>('');
+  const [filtroCategoria, setFiltroCategoria] = useState<string>('');
   const [busca, setBusca] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingTags, setIsLoadingTags] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [erroTags, setErroTags] = useState<string | null>(null);
   const [totalItens, setTotalItens] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const getTipoFromNome = (nomeArquivo?: string, caminhoArquivo?: string): Documento['tipo'] => {
     const origem = nomeArquivo || caminhoArquivo || '';
@@ -26,28 +31,33 @@ export const ListarDocumentos = () => {
     return 'outro';
   };
 
-  // Carregar documentos com paginação servidor
-  const carregarDocumentos = useCallback(async (page = 1, anoFiltro?: number) => {
+  // Carregar documentos com paginacao servidor
+  const carregarDocumentos = useCallback(async (page = 1, anoFiltro?: number, categoriaFiltro?: string) => {
     setIsLoading(true);
     setErro(null);
     try {
+      const tituloFiltro = busca.trim();
       const filtros: DocumentoListFilters = {
         ordenarPor: 'dataPublicacao',
         ordenarDescendente: true,
         pagina: page,
         itensPorPagina: itemsPerPage,
+        ativo: true,
       };
 
       if (anoFiltro) {
         filtros.ano = anoFiltro;
       }
+      if (categoriaFiltro) {
+        filtros.categoria = categoriaFiltro;
+      }
+      if (tituloFiltro) {
+        filtros.titulo = tituloFiltro;
+      }
 
       const response: DocumentoListResponse = await documentosService.listar(filtros);
 
-      // Filtrar apenas documentos ativos (não excluídos/inativados)
-      const documentosAtivos = response.documentos.filter((doc) => doc.ativo);
-
-      const documentosFormatados: Documento[] = documentosAtivos.map((doc) => ({
+      const documentosFormatados: Documento[] = response.documentos.map((doc) => ({
         id: doc.id,
         nome: doc.titulo,
         tipo: getTipoFromNome(doc.nomeArquivo, doc.caminhoArquivo),
@@ -65,23 +75,47 @@ export const ListarDocumentos = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [itemsPerPage]);
+  }, [busca, itemsPerPage]);
+
+  const carregarTags = useCallback(async () => {
+    setIsLoadingTags(true);
+    setErroTags(null);
+    try {
+      const response = await tagService.listar({
+        apenasAtivas: true,
+        pagina: 1,
+        itensPorPagina: 1000,
+      });
+      const tagsOrdenadas = [...response.itens].sort((a, b) => a.nome.localeCompare(b.nome));
+      setTags(tagsOrdenadas);
+    } catch (error) {
+      const mensagemErro = handleApiError(error);
+      setErroTags(mensagemErro);
+    } finally {
+      setIsLoadingTags(false);
+    }
+  }, []);
 
   useEffect(() => {
     carregarDocumentos();
   }, [carregarDocumentos]);
 
+  useEffect(() => {
+    carregarTags();
+  }, [carregarTags]);
+
   // Buscar documentos via endpoint
   const handleSearch = () => {
     const ano = filtroAno ? Number(filtroAno) : undefined;
-    carregarDocumentos(1, ano);
+    carregarDocumentos(1, ano, filtroCategoria || undefined);
   };
 
   // Limpar filtros
   const handleClearSearch = () => {
     setBusca('');
     setFiltroAno('');
-    carregarDocumentos(1, undefined);
+    setFiltroCategoria('');
+    carregarDocumentos(1, undefined, undefined);
   };
 
   const handleDelete = async (id: number) => {
@@ -89,7 +123,7 @@ export const ListarDocumentos = () => {
       await documentosService.inativar(id);
       // Recarregar lista mantendo filtros
       const ano = filtroAno ? Number(filtroAno) : undefined;
-      await carregarDocumentos(currentPage, ano);
+      await carregarDocumentos(currentPage, ano, filtroCategoria || undefined);
     } catch (error) {
       const mensagemErro = handleApiError(error);
       setErro(mensagemErro);
@@ -134,7 +168,7 @@ export const ListarDocumentos = () => {
 
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Busca */}
             <div>
               <label htmlFor="busca" className="block text-sm font-medium text-gray-700 mb-2">
@@ -173,6 +207,32 @@ export const ListarDocumentos = () => {
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
               />
             </div>
+            {/* Filtro por Categoria */}
+            <div>
+              <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-2">
+                Categoria
+              </label>
+              <select
+                id="categoria"
+                value={filtroCategoria}
+                onChange={(e) => setFiltroCategoria(e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
+              >
+                <option value="">Todas as categorias</option>
+                {tags.map((tag) => (
+                  <option key={tag.id} value={tag.nome}>
+                    {tag.nome}
+                  </option>
+                ))}
+              </select>
+              {isLoadingTags && (
+                <p className="mt-1 text-xs text-gray-500">Carregando categorias...</p>
+              )}
+              {erroTags && (
+                <p className="mt-1 text-xs text-red-600">{erroTags}</p>
+              )}
+            </div>
+
 
             {/* Botões de ação */}
             <div className="flex items-end gap-2">
@@ -218,7 +278,7 @@ export const ListarDocumentos = () => {
                   <button
                     onClick={() => {
                       const ano = filtroAno ? Number(filtroAno) : undefined;
-                      carregarDocumentos(currentPage - 1, ano);
+                      carregarDocumentos(currentPage - 1, ano, filtroCategoria || undefined);
                     }}
                     disabled={currentPage === 1 || isLoading}
                     className="px-3 py-1 border cursor-pointer border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
@@ -231,7 +291,7 @@ export const ListarDocumentos = () => {
                   <button
                     onClick={() => {
                       const ano = filtroAno ? Number(filtroAno) : undefined;
-                      carregarDocumentos(currentPage + 1, ano);
+                      carregarDocumentos(currentPage + 1, ano, filtroCategoria || undefined);
                     }}
                     disabled={currentPage === Math.ceil(totalItens / itemsPerPage) || isLoading}
                     className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"

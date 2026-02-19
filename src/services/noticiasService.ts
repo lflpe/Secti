@@ -112,8 +112,14 @@ export interface EditarNoticiaResponse {
 
 // Type para filtros de listagem
 export interface NoticiaFiltros {
+  id?: number;
   tituloFiltro?: string;
+  dataPublicacao?: string;
+  dataCriacao?: string;
+  dataAtualizacao?: string;
   apenasPublicadas?: boolean;
+  usuarioCriacaoId?: number;
+  usuarioAtualizacaoId?: number;
   pagina?: number;
   itensPorPagina?: number;
 }
@@ -213,17 +219,35 @@ export const noticiasService = {
   listar: async (filtros?: NoticiaFiltros): Promise<NoticiaListResponse> => {
     const params = new URLSearchParams();
 
+    if (filtros?.id !== undefined) {
+      params.append('id', filtros.id.toString());
+    }
     if (filtros?.tituloFiltro) {
-      params.append('TituloFiltro', filtros.tituloFiltro);
+      params.append('tituloFiltro', filtros.tituloFiltro);
+    }
+    if (filtros?.dataPublicacao) {
+      params.append('dataPublicacao', filtros.dataPublicacao);
+    }
+    if (filtros?.dataCriacao) {
+      params.append('dataCriacao', filtros.dataCriacao);
+    }
+    if (filtros?.dataAtualizacao) {
+      params.append('dataAtualizacao', filtros.dataAtualizacao);
     }
     if (filtros?.apenasPublicadas !== undefined) {
-      params.append('ApenasPublicadas', filtros.apenasPublicadas.toString());
+      params.append('apenasPublicadas', filtros.apenasPublicadas.toString());
+    }
+    if (filtros?.usuarioCriacaoId !== undefined) {
+      params.append('usuarioCriacaoId', filtros.usuarioCriacaoId.toString());
+    }
+    if (filtros?.usuarioAtualizacaoId !== undefined) {
+      params.append('usuarioAtualizacaoId', filtros.usuarioAtualizacaoId.toString());
     }
     if (filtros?.pagina !== undefined) {
-      params.append('Pagina', filtros.pagina.toString());
+      params.append('pagina', filtros.pagina.toString());
     }
     if (filtros?.itensPorPagina !== undefined) {
-      params.append('ItensPorPagina', filtros.itensPorPagina.toString());
+      params.append('itensPorPagina', filtros.itensPorPagina.toString());
     }
 
     const queryString = params.toString();
