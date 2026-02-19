@@ -183,7 +183,7 @@ export const ListarUsuarios = ({
         {/* Mobile Cards */}
         <div className="md:hidden divide-y divide-gray-200">
           {usuarios.map((usuario) => (
-            <div key={usuario.id} className="p-4">
+            <div key={usuario.id} className="p-4 hover:bg-gray-50 transition-colors">
               <div className="flex items-start justify-between mb-2">
                 <h3 className="text-sm font-medium text-gray-900 flex-1 pr-2">
                   {usuario.nome}

@@ -8,7 +8,6 @@ import { handleApiError } from '../../../utils/errorHandler';
 export const ListarUsuarios = () => {
   const [usuarios, setUsuarios] = useState<UsuarioListItem[]>([]);
   const [busca, setBusca] = useState<string>('');
-  const [filtroAtivos, setFiltroAtivos] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [totalItens, setTotalItens] = useState(0);
@@ -17,7 +16,7 @@ export const ListarUsuarios = () => {
 
   const carregarUsuarios = useCallback(async (
     page = 1,
-    apenasAtivos = false,
+    apenasAtivos = true,
     buscarPor = ''
   ) => {
     setIsLoading(true);
@@ -51,20 +50,19 @@ export const ListarUsuarios = () => {
   }, [carregarUsuarios]);
 
   const handleSearch = () => {
-    carregarUsuarios(1, filtroAtivos, busca);
+    carregarUsuarios(1, true, busca);
   };
 
   const handleClearSearch = () => {
     setBusca('');
-    setFiltroAtivos(false);
-    carregarUsuarios(1, false, '');
+    carregarUsuarios(1, true, '');
   };
 
   const handleSuspend = async (id: number) => {
     try {
       await usuarioService.suspender(id);
       // Recarregar lista
-      await carregarUsuarios(currentPage, filtroAtivos, busca);
+      await carregarUsuarios(currentPage, true, busca);
     } catch (error) {
       const mensagemErro = handleApiError(error);
       setErro(mensagemErro);
@@ -75,14 +73,12 @@ export const ListarUsuarios = () => {
     try {
       await usuarioService.habilitar(id);
       // Recarregar lista
-      await carregarUsuarios(currentPage, filtroAtivos, busca);
+      await carregarUsuarios(currentPage, true, busca);
     } catch (error) {
       const mensagemErro = handleApiError(error);
       setErro(mensagemErro);
     }
   };
-
-  const totalPaginas = Math.ceil(totalItens / itemsPerPage);
 
   return (
     <PrivateLayout>
@@ -122,11 +118,11 @@ export const ListarUsuarios = () => {
 
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-end">
             {/* Busca */}
-            <div>
+            <div className="flex-1">
               <label htmlFor="busca" className="block text-sm font-medium text-gray-700 mb-2">
-                Buscar por Nome ou Email
+                Buscar por Nome
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -140,43 +136,25 @@ export const ListarUsuarios = () => {
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-                  placeholder="Digite o nome ou email..."
+                  placeholder="Digite o nome..."
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
                 />
               </div>
             </div>
 
-            {/* Filtro de Status */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Status
-              </label>
-              <select
-                value={filtroAtivos ? 'ativos' : 'todos'}
-                onChange={(e) => setFiltroAtivos(e.target.value === 'ativos')}
-                className="block w-full cursor-pointer px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
-              >
-                <option value="todos">Todos</option>
-                <option value="ativos">Apenas Ativos</option>
-              </select>
-            </div>
-
-            {/* Espaçador */}
-            <div />
-
             {/* Botões de ação */}
-            <div className="flex items-end gap-2">
+            <div className="flex items-center gap-2">
               <button
                 onClick={handleSearch}
                 disabled={isLoading}
-                className="flex-1 cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 {isLoading ? 'Buscando...' : 'Buscar'}
               </button>
               <button
                 onClick={handleClearSearch}
                 disabled={isLoading}
-                className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Limpar
               </button>
@@ -200,53 +178,29 @@ export const ListarUsuarios = () => {
             />
 
             {/* Paginação */}
-            {totalPaginas > 1 && (
-              <div className="bg-white px-4 py-3 flex items-center justify-between border border-gray-200 rounded-lg">
-                <div className="flex-1 flex justify-between sm:hidden">
+            {totalItens > itemsPerPage && (
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
+                <div className="text-sm text-gray-700">
+                  Mostrando <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> a <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItens)}</span> de <span className="font-medium">{totalItens}</span> resultados
+                </div>
+                <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-end">
                   <button
-                    onClick={() => carregarUsuarios(Math.max(currentPage - 1, 1), filtroAtivos, busca)}
-                    disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => carregarUsuarios(Math.max(currentPage - 1, 1), true, busca)}
+                    disabled={currentPage === 1 || isLoading}
+                    className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                   >
                     Anterior
                   </button>
+                  <span className="px-3 py-1 text-sm text-gray-700">
+                    Página <span className="font-medium">{currentPage}</span> de <span className="font-medium">{Math.ceil(totalItens / itemsPerPage)}</span>
+                  </span>
                   <button
-                    onClick={() => carregarUsuarios(Math.min(currentPage + 1, totalPaginas), filtroAtivos, busca)}
-                    disabled={currentPage === totalPaginas}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => carregarUsuarios(Math.min(currentPage + 1, Math.ceil(totalItens / itemsPerPage)), true, busca)}
+                    disabled={currentPage === Math.ceil(totalItens / itemsPerPage) || isLoading}
+                    className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                   >
                     Próxima
                   </button>
-                </div>
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Página <span className="font-medium">{currentPage}</span> de{' '}
-                      <span className="font-medium">{totalPaginas}</span>
-                    </p>
-                  </div>
-                  <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                      <button
-                        onClick={() => carregarUsuarios(Math.max(currentPage - 1, 1), filtroAtivos, busca)}
-                        disabled={currentPage === 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                      >
-                        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => carregarUsuarios(Math.min(currentPage + 1, totalPaginas), filtroAtivos, busca)}
-                        disabled={currentPage === totalPaginas}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                      >
-                        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                    </nav>
-                  </div>
                 </div>
               </div>
             )}

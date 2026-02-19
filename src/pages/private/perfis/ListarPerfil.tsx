@@ -88,19 +88,19 @@ export const ListarPerfil = () => {
 
   return (
     <PrivateLayout>
-      <div>
+      <div className="space-y-6">
         {/* Header */}
-        <div className="mb-6">
+        <div>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Perfis</h1>
-              <p className="text-gray-600 mt-2 mb-2">
+              <p className="text-gray-600 mt-2">
                 {isLoading ? 'Carregando...' : `${paginacao.totalItens} ${paginacao.totalItens === 1 ? 'perfil encontrado' : 'perfis encontrados'}`}
               </p>
             </div>
             <Link
                 to="/admin/perfis/criar"
-                className="inline-flex items-center justify-center mb-5 md:mb-0 px-4 py-2 bg-[#0C2856] text-white font-medium rounded-lg hover:bg-[#195CE3] transition-colors whitespace-nowrap"
+                className="inline-flex items-center justify-center px-4 py-2 bg-[#0C2856] text-white font-medium rounded-lg hover:bg-[#195CE3] transition-colors whitespace-nowrap"
             >
               <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -108,40 +108,41 @@ export const ListarPerfil = () => {
               Novo perfil
             </Link>
           </div>
+        </div>
 
-          {/* Mensagens */}
-          {erro && (
-            <div className="mb-4 bg-red-50 border-l-4 border-red-400 p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-red-700">{erro}</p>
-                </div>
+        {/* Mensagens */}
+        {erro && (
+          <div className="bg-red-50 border-l-4 border-red-400 p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-700">{erro}</p>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {sucesso && (
-            <div className="mb-4 bg-green-50 border-l-4 border-green-400 p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-green-700">{sucesso}</p>
-                </div>
+        {sucesso && (
+          <div className="bg-green-50 border-l-4 border-green-400 p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-green-700">{sucesso}</p>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          {/* Busca */}
+        {/* Busca */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div>
             <label htmlFor="busca" className="block text-sm font-medium text-gray-700 mb-2">
               Buscar por Nome do Perfil
@@ -161,7 +162,6 @@ export const ListarPerfil = () => {
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
               />
             </div>
-          </div>
           </div>
         </div>
 
@@ -335,39 +335,25 @@ export const ListarPerfil = () => {
 
               {/* Paginação - só exibe se houver mais de uma página */}
               {paginacao.totalPaginas > 1 && (
-                <div className="border-t border-gray-200 bg-gray-50 px-6 py-4 flex items-center justify-between">
-                  <div className="text-sm text-gray-600">
-                    Mostrando <span className="font-medium">{(paginacao.paginaAtual - 1) * paginacao.itensPorPagina + 1}</span> até{' '}
-                    <span className="font-medium">{Math.min(paginacao.paginaAtual * paginacao.itensPorPagina, paginacao.totalItens)}</span> de{' '}
-                    <span className="font-medium">{paginacao.totalItens}</span> perfis
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
+                  <div className="text-sm text-gray-700">
+                    Mostrando <span className="font-medium">{(paginacao.paginaAtual - 1) * paginacao.itensPorPagina + 1}</span> a <span className="font-medium">{Math.min(paginacao.paginaAtual * paginacao.itensPorPagina, paginacao.totalItens)}</span> de <span className="font-medium">{paginacao.totalItens}</span> resultados
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-end">
                     <button
                       onClick={() => carregarPerfis(paginacao.paginaAtual - 1)}
                       disabled={paginacao.paginaAtual === 1}
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                      className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                     >
                       Anterior
                     </button>
-                    <div className="flex items-center gap-2">
-                      {Array.from({ length: paginacao.totalPaginas }, (_, i) => i + 1).map(page => (
-                        <button
-                          key={page}
-                          onClick={() => carregarPerfis(page)}
-                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                            page === paginacao.paginaAtual
-                              ? 'bg-[#195CE3] text-white'
-                              : 'border border-gray-300 text-gray-700 hover:bg-gray-100'
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      ))}
-                    </div>
+                    <span className="px-3 py-1 text-sm text-gray-700">
+                      Página <span className="font-medium">{paginacao.paginaAtual}</span> de <span className="font-medium">{paginacao.totalPaginas}</span>
+                    </span>
                     <button
                       onClick={() => carregarPerfis(paginacao.paginaAtual + 1)}
                       disabled={paginacao.paginaAtual === paginacao.totalPaginas}
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                      className="px-3 py-1 cursor-pointer border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                     >
                       Próximo
                     </button>

@@ -163,9 +163,10 @@ export const usuarioService = {
     if (filtros?.nomeOuEmailFiltro) {
       params.append('NomeOuEmailFiltro', filtros.nomeOuEmailFiltro);
     }
-    if (filtros?.apenasAtivos !== undefined) {
-      params.append('ApenasAtivos', filtros.apenasAtivos.toString());
-    }
+    // Define o padrão como true (apenas ativos) se não for explicitamente definido como false
+    const apenasAtivos = filtros?.apenasAtivos !== false;
+    params.append('ApenasAtivos', apenasAtivos.toString());
+
     if (filtros?.pagina !== undefined) {
       params.append('Pagina', filtros.pagina.toString());
     }
