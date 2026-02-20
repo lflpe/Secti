@@ -6,7 +6,7 @@ interface RelatorioItem {
   id: number;
   titulo: string;
   caminhoArquivo: string;
-  anoPublicacao: number;
+  dataPublicacao: string;
 }
 
 interface SecaoRelatoriosProps {
@@ -99,7 +99,7 @@ export const SecaoRelatorios = ({ limit = 6 }: SecaoRelatoriosProps) => {
                   </svg>
                 </div>
                 <span className="text-sm font-semibold text-white bg-[#0C2856] px-3 py-1 rounded-full">
-                  {relatorio.anoPublicacao}
+                  {relatorio.dataPublicacao.substring(0, 4)}
                 </span>
               </div>
 

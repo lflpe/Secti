@@ -3,10 +3,18 @@ import { HeroSection } from '../../../components/HeroSection.tsx';
 import { DocumentosParceriasPublicosList } from '../../../components/DocumentosParceriasPublicosList';
 import type { DocumentoParceriaPublicoItem } from '../../../components/DocumentosParceriasPublicosList';
 import { useState, useEffect, useCallback } from 'react';
+import { useSEO } from '../../../utils/useSEO.ts';
 import { legislacaoService } from '../../../services/legislacaoService';
 import { handleApiError } from '../../../utils/errorHandler';
 
 export const Legislacao = () => {
+  // SEO
+  useSEO({
+    title: 'Legislação',
+    description: 'Acesso à legislação aplicável à Secretaria de Ciência, Tecnologia e Inovação de Pernambuco.',
+    canonical: 'https://secti.pe.gov.br/secti/legislacao',
+    keywords: 'Legislação, Leis, SECTI, Pernambuco',
+  });
   const [documentos, setDocumentos] = useState<DocumentoParceriaPublicoItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

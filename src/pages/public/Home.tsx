@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PublicLayout } from '../../layouts/PublicLayout';
+import { useSEO } from '../../utils/useSEO';
 import { SecaoSlide } from '../../components/SecaoSlide';
 import type { SlideItem } from '../../components/SecaoSlide';
 import { SecaoNoticias } from '../../components/SecaoNoticias';
@@ -101,6 +102,14 @@ export const Home = () => {
   const [noticiaDestaque, setNoticiaDestaque] = useState<NoticiaItem | null>(null);
   const [noticias, setNoticias] = useState<NoticiaItem[]>([]);
   const [isLoadingNoticias, setIsLoadingNoticias] = useState(true);
+
+  // SEO
+  useSEO({
+    title: 'Home',
+    description: 'SECTI - Secretaria de Ciência, Tecnologia e Inovação de Pernambuco. Conheça nossas ações, editais, noticias e transparência.',
+    canonical: 'https://secti.pe.gov.br/',
+    keywords: 'SECTI, Pernambuco, Ciência, Tecnologia, Inovação, Governo',
+  });
 
   useEffect(() => {
     const carregarNoticias = async () => {

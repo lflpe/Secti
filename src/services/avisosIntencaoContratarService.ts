@@ -142,11 +142,15 @@ const validarCategoria = (categoria: string): string[] => {
   return erros;
 };
 
-const validarAnoPublicacao = (ano: number): string[] => {
+const validarAnoPublicacao = (dataPublicacao: string): string[] => {
   const erros: string[] = [];
-  if (!ano) {
-    erros.push('O ano de publicação é obrigatório.');
-  } else if (ano < 1900 || ano > 3000) {
+  if (!dataPublicacao || dataPublicacao.trim().length === 0) {
+    erros.push('A data de publicação é obrigatória.');
+    return erros;
+  }
+
+  const ano = parseInt(dataPublicacao.substring(0, 4), 10);
+  if (isNaN(ano) || ano < 1900 || ano > 3000) {
     erros.push('O ano de publicação deve estar entre 1900 e 3000.');
   }
   return erros;
@@ -184,7 +188,7 @@ const buildFormData = (data: CadastrarAvisoIntencaoContratarRequest | EditarAvis
 
   formData.append('Titulo', data.titulo.trim());
   formData.append('Categoria', data.categoria.trim());
-  formData.append('AnoPublicacao', data.anoPublicacao.toString());
+  formData.append('AnoPublicacao', data.dataPublicacao.toString());
 
   if (data.caminho) {
     formData.append('Caminho', data.caminho.trim());
@@ -206,7 +210,7 @@ export const avisosIntencaoContratarService = {
     const erros: string[] = [
       ...validarTitulo(data.titulo),
       ...validarCategoria(data.categoria),
-      ...validarAnoPublicacao(data.anoPublicacao),
+      ...validarAnoPublicacao(data.dataPublicacao),
       ...validarArquivo(data.arquivo, true),
     ];
 
@@ -323,7 +327,7 @@ export const avisosIntencaoContratarService = {
     const erros: string[] = [
       ...validarTitulo(data.titulo),
       ...validarCategoria(data.categoria),
-      ...validarAnoPublicacao(data.anoPublicacao),
+      ...validarAnoPublicacao(data.dataPublicacao),
       ...validarArquivo(data.arquivo, false), // Arquivo opcional na edição
     ];
 

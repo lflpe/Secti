@@ -3,11 +3,19 @@ import { HeroSection } from '../../../components/HeroSection.tsx';
 import { DocumentosServidorPublicosList } from '../../../components/DocumentosServidorPublicosList';
 import type { DocumentoServidorPublicoItem } from '../../../components/DocumentosServidorPublicosList';
 import { useState, useEffect, useCallback } from 'react';
+import { useSEO } from '../../../utils/useSEO.ts';
 import { documentosServidorService } from '../../../services/documentosServidorService';
 import { handleApiError } from '../../../utils/errorHandler';
 
 
 export const Servidor = () => {
+  // SEO
+  useSEO({
+    title: 'Servidor',
+    description: 'Informações e documentos voltados aos servidores públicos da Secretaria de Ciência, Tecnologia e Inovação de Pernambuco.',
+    canonical: 'https://secti.pe.gov.br/secti/servidor',
+    keywords: 'Servidor Público, SECTI, Documentos, Pernambuco',
+  });
   const [documentos, setDocumentos] = useState<DocumentoServidorPublicoItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

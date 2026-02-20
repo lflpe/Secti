@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLinkedin, faXTwitter, faFacebook, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { faArrowLeft, faCalendar, faUser, faShare } from '@fortawesome/free-solid-svg-icons';
+import { useSEO } from '../../utils/useSEO.ts';
 import { noticiasService, type NoticiaDetalhada } from '../../services/noticiasService';
 import { handleApiError } from '../../utils/errorHandler';
 import { LoadingScreen } from '../../components/LoadingScreen';
@@ -15,6 +16,14 @@ export const VisualizarNoticia = () => {
   const [noticia, setNoticia] = useState<NoticiaDetalhada | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // SEO dinâmico baseado na notícia carregada
+  useSEO({
+    title: noticia?.titulo || 'Notícia',
+    description: noticia?.resumo || 'Leia a notícia completa no site da SECTI Pernambuco.',
+    canonical: `https://secti.pe.gov.br/noticias/${slug}`,
+    keywords: `${noticia?.titulo || 'Notícia'}, SECTI, Notícias, Comunicados`,
+  });
 
   useEffect(() => {
     const carregarNoticia = async () => {

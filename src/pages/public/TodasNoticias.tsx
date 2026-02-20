@@ -3,6 +3,7 @@ import { HeroSection } from '../../components/HeroSection';
 import { NoticiasList } from '../../components/NoticiasList';
 import type { NoticiaItem } from '../../components/NoticiasList';
 import { useState, useEffect, useCallback } from 'react';
+import { useSEO } from '../../utils/useSEO.ts';
 import { noticiasService } from '../../services/noticiasService';
 import { handleApiError } from '../../utils/errorHandler';
 import { LoadingScreen } from '../../components/LoadingScreen';
@@ -18,6 +19,14 @@ export const TodasNoticias = () => {
   const [totalPaginas, setTotalPaginas] = useState(1);
   const [filtroTitulo, setFiltroTitulo] = useState('');
   const itensPorPagina = 10;
+
+  // SEO
+  useSEO({
+    title: 'Notícias',
+    description: 'Acompanhe as últimas notícias da Secretaria de Ciência, Tecnologia e Inovação de Pernambuco.',
+    canonical: 'https://secti.pe.gov.br/noticias',
+    keywords: 'Notícias, SECTI, Atualidades, Comunicados',
+  });
 
   const carregarNoticias = useCallback(async (pagina: number, titulo: string = '') => {
     try {

@@ -5,6 +5,7 @@ import { HeroSection } from '../../components/HeroSection';
 import { ProjetosList } from '../../components/ProjetosList';
 import type { ProjetoItem } from '../../components/ProjetosList';
 import { AccordionPerguntas, type PerguntaFrequentePublica } from '../../components/AccordionPerguntas';
+import { useSEO } from '../../utils/useSEO.ts';
 import { projetosService } from '../../services/projetosService';
 import { handleApiError } from '../../utils/errorHandler';
 import { LoadingScreen } from '../../components/LoadingScreen';
@@ -16,6 +17,14 @@ export const Projetos = () => {
   const [perguntasFrequentes, setPerguntasFrequentes] = useState<PerguntaFrequentePublica[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // SEO
+  useSEO({
+    title: 'Projetos',
+    description: 'Conheça os projetos desenvolvidos pela Secretaria de Ciência, Tecnologia e Inovação de Pernambuco.',
+    canonical: 'https://secti.pe.gov.br/projetos',
+    keywords: 'Projetos, SECTI, Inovação, Ciência, Tecnologia',
+  });
 
   const projetoDetalhe = slug ? projetos[0] : null;
 

@@ -1,5 +1,9 @@
-import type { ApiErrorResponse } from '../types/auth';
 import { AxiosError } from 'axios';
+
+interface ApiErrorResponse {
+  message?: string;
+  errors?: { [key: string]: string[] };
+}
 
 interface ProblemDetails {
   type?: string;

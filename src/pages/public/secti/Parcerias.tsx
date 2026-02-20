@@ -3,10 +3,18 @@ import { HeroSection } from '../../../components/HeroSection.tsx';
 import { DocumentosParceriasPublicosList } from '../../../components/DocumentosParceriasPublicosList';
 import type { DocumentoParceriaPublicoItem } from '../../../components/DocumentosParceriasPublicosList';
 import { useState, useEffect, useCallback } from 'react';
+import { useSEO } from '../../../utils/useSEO.ts';
 import { parceriasService } from '../../../services/parceriasService';
 import { handleApiError } from '../../../utils/errorHandler';
 
 export const Parcerias = () => {
+  // SEO
+  useSEO({
+    title: 'Parcerias',
+    description: 'Conheça as parcerias estratégicas da Secretaria de Ciência, Tecnologia e Inovação de Pernambuco com instituições públicas e privadas.',
+    canonical: 'https://secti.pe.gov.br/secti/parcerias',
+    keywords: 'Parcerias, SECTI, Colaboração, Pernambuco',
+  });
   const [documentos, setDocumentos] = useState<DocumentoParceriaPublicoItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

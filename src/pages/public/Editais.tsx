@@ -3,10 +3,18 @@ import { HeroSection } from '../../components/HeroSection';
 import { DocumentosParceriasPublicosList } from '../../components/DocumentosParceriasPublicosList';
 import type { DocumentoParceriaPublicoItem } from '../../components/DocumentosParceriasPublicosList';
 import { useState, useEffect, useCallback } from 'react';
+import { useSEO } from '../../utils/useSEO.ts';
 import { editaisService } from '../../services/editaisService';
 import { handleApiError } from '../../utils/errorHandler';
 
 export const Editais = () => {
+  // SEO
+  useSEO({
+    title: 'Editais',
+    description: 'Consulte os editais públicos da Secretaria de Ciência, Tecnologia e Inovação de Pernambuco.',
+    canonical: 'https://secti.pe.gov.br/editais',
+    keywords: 'Editais, SECTI, Chamadas Públicas, Pernambuco',
+  });
   const [documentos, setDocumentos] = useState<DocumentoParceriaPublicoItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

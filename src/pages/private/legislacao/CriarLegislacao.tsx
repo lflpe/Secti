@@ -13,7 +13,7 @@ export const CriarLegislacao = () => {
   const [formData, setFormData] = useState({
     titulo: '',
     categoria: '',
-    anoPublicacao: new Date().getFullYear(),
+    dataPublicacao: new Date().toISOString().split('T')[0],
     caminho: '',
     arquivo: null as File | null,
   });
@@ -106,8 +106,8 @@ export const CriarLegislacao = () => {
       return;
     }
 
-    if (!formData.anoPublicacao) {
-      setErro('Por favor, informe o ano de publicação');
+    if (!formData.dataPublicacao) {
+      setErro('Por favor, informe a data de publicação');
       return;
     }
 
@@ -122,7 +122,7 @@ export const CriarLegislacao = () => {
       await legislacaoService.cadastrar({
         titulo: formData.titulo,
         categoria: formData.categoria,
-        anoPublicacao: formData.anoPublicacao,
+        dataPublicacao: formData.dataPublicacao,
         caminho: formData.caminho || undefined,
         arquivo: formData.arquivo,
       });
@@ -246,21 +246,19 @@ export const CriarLegislacao = () => {
             />
           </div>
 
-          {/* Ano de Publicação */}
+          {/* Data de Publicação */}
           <div>
-            <label htmlFor="anoPublicacao" className="block text-sm font-medium text-gray-700 mb-2">
-              Ano de Publicação <span className="text-red-500">*</span>
+            <label htmlFor="dataPublicacao" className="block text-sm font-medium text-gray-700 mb-2">
+              Data de Publicação <span className="text-red-500">*</span>
             </label>
             <input
-              type="number"
-              id="anoPublicacao"
-              value={formData.anoPublicacao}
-              onChange={(e) => setFormData(prev => ({ ...prev, anoPublicacao: parseInt(e.target.value) || new Date().getFullYear() }))}
+              type="date"
+              id="dataPublicacao"
+              value={formData.dataPublicacao}
+              onChange={(e) => setFormData(prev => ({ ...prev, dataPublicacao: e.target.value }))}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2856] focus:border-transparent"
-              min={1900}
-              max={3000}
             />
-            <p className="text-xs text-gray-500 mt-1">Entre 1900 e 3000</p>
+            <p className="text-xs text-gray-500 mt-1">Selecione a data de publicação da legislação</p>
           </div>
 
           {/* Caminho (Opcional) */}

@@ -1,6 +1,7 @@
 import { PublicLayout } from '../../../layouts/PublicLayout.tsx';
 import { HeroSection } from '../../../components/HeroSection.tsx';
 import { useState, useEffect } from 'react';
+import { useSEO } from '../../../utils/useSEO.ts';
 import { transparenciaService } from '../../../services/transparenciaService';
 import { handleApiError } from '../../../utils/errorHandler';
 import { LoadingScreen } from '../../../components/LoadingScreen';
@@ -14,6 +15,14 @@ export const Transparencia = () => {
   const [submenus, setSubmenus] = useState<TransparenciaSubmenu[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // SEO
+  useSEO({
+    title: 'Transparência',
+    description: 'Acesso à informação e transparência da Secretaria de Ciência, Tecnologia e Inovação de Pernambuco.',
+    canonical: 'https://secti.pe.gov.br/secti/transparencia',
+    keywords: 'Transparência, Informação, SECTI, Pernambuco',
+  });
 
   useEffect(() => {
     const carregarSubmenus = async () => {
