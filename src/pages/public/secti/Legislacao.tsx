@@ -2,7 +2,7 @@ import { PublicLayout } from '../../../layouts/PublicLayout.tsx';
 import { HeroSection } from '../../../components/HeroSection.tsx';
 import { DocumentosParceriasPublicosList } from '../../../components/DocumentosParceriasPublicosList';
 import type { DocumentoParceriaPublicoItem } from '../../../components/DocumentosParceriasPublicosList';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { legislacaoService } from '../../../services/legislacaoService';
 import { handleApiError } from '../../../utils/errorHandler';
 
@@ -10,46 +10,68 @@ export const Legislacao = () => {
   const [documentos, setDocumentos] = useState<DocumentoParceriaPublicoItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [categorias, setCategorias] = useState<string[]>(['Todas']);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [filtroTitulo, setFiltroTitulo] = useState('');
+  const [filtroData, setFiltroData] = useState('');
+
+  const carregarLegislacao = useCallback(async (pagina: number, titulo: string = '', dataPublicacao: string = '') => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Buscar legislação pública do endpoint
+      const response = await legislacaoService.listarPublico({
+        titulo: titulo || undefined,
+        dataPublicacao: dataPublicacao || undefined,
+        ordenarPor: 'anopublicacao',
+        ordenarDescendente: true,
+        pagina: pagina,
+        itensPorPagina: 10,
+      });
+
+      // Converter resposta para formato DocumentoParceriaPublicoItem
+      const documentosFormatados: DocumentoParceriaPublicoItem[] = response.legislacoes.map(doc => ({
+        id: doc.id,
+        nome: doc.titulo,
+        tipo: 'pdf' as const,
+        tamanho: 'Não disponível',
+        categoria: 'Legislação',
+        url: doc.caminhoArquivo,
+        dataPublicacao: doc.dataPublicacao,
+      }));
+
+      setDocumentos(documentosFormatados);
+      setTotalPaginas(response.totalPaginas);
+    } catch (err) {
+      const mensagemErro = handleApiError(err);
+      setError(mensagemErro);
+      console.error('Erro ao carregar legislação:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const carregarLegislacao = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+    carregarLegislacao(paginaAtual, filtroTitulo, filtroData);
+  }, [paginaAtual, filtroTitulo, filtroData, carregarLegislacao]);
 
-        // Buscar legislação pública do endpoint
-        const response = await legislacaoService.listarPublico({
-          ordenarPor: 'anopublicacao',
-          ordenarDescendente: true,
-          pagina: 1,
-          itensPorPagina: 100,
-        });
+  const handleMudarPagina = (novaPagina: number) => {
+    setPaginaAtual(novaPagina);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-        // Converter resposta para formato DocumentoParceriaPublicoItem
-        const documentosFormatados: DocumentoParceriaPublicoItem[] = response.legislacoes.map(doc => ({
-          id: doc.id,
-          nome: doc.titulo,
-          tipo: 'pdf' as const,
-          tamanho: 'Não disponível',
-          categoria: 'Legislação',
-          url: doc.caminhoArquivo,
-          dataPublicacao: `01/01/${doc.anoPublicacao}`,
-        }));
+  const handleBuscar = (titulo: string, dataPublicacao?: string) => {
+    setFiltroTitulo(titulo);
+    setFiltroData(dataPublicacao || '');
+    setPaginaAtual(1);
+  };
 
-        setDocumentos(documentosFormatados);
-        setCategorias(['Todas', 'Legislação']);
-      } catch (err) {
-        const mensagemErro = handleApiError(err);
-        setError(mensagemErro);
-        console.error('Erro ao carregar legislação:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    carregarLegislacao();
-  }, []);
+  const handleLimpar = () => {
+    setFiltroTitulo('');
+    setFiltroData('');
+    setPaginaAtual(1);
+  };
 
   return (
     <PublicLayout>
@@ -70,29 +92,23 @@ export const Legislacao = () => {
             </p>
           </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
-              <p className="text-red-700 font-medium">Erro ao carregar legislação: {error}</p>
-            </div>
-          )}
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+          <p className="text-red-700 font-medium">Erro ao carregar legislação: {error}</p>
+        </div>
+      )}
 
-          {/* No Documents Message */}
-          {!isLoading && documentos.length === 0 && !error && (
-            <div className="text-center py-12">
-              <p className="text-gray-600 text-lg">Nenhuma legislação disponível no momento.</p>
-            </div>
-          )}
-
-          {/* Documents List */}
-          {documentos.length > 0 && (
-            <DocumentosParceriasPublicosList
-              documents={documentos}
-              categories={categorias}
-              showCategoryFilter={false}
-              isLoading={isLoading}
-            />
-          )}
+      {/* Documents List */}
+      <DocumentosParceriasPublicosList
+        documents={documentos}
+        isLoading={isLoading}
+        totalPaginas={totalPaginas}
+        paginaAtual={paginaAtual}
+        onMudarPagina={handleMudarPagina}
+        onFiltroChange={handleBuscar}
+        onLimpar={handleLimpar}
+      />
         </div>
       </section>
     </PublicLayout>

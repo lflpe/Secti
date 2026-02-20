@@ -92,6 +92,8 @@ export interface LegislacaoPublicoListResponse {
 }
 
 export interface LegislacaoPublicoFilters {
+  titulo?: string;
+  dataPublicacao?: string;
   caminho?: string;
   categoria?: string;
   ordenarPor?: string;
@@ -277,6 +279,12 @@ export const legislacaoService = {
   listarPublico: async (filtros?: LegislacaoPublicoFilters): Promise<LegislacaoPublicoListResponse> => {
     const params = new URLSearchParams();
 
+    if (filtros?.titulo) {
+      params.append('Titulo', filtros.titulo);
+    }
+    if (filtros?.dataPublicacao) {
+      params.append('DataPublicacao', filtros.dataPublicacao);
+    }
     if (filtros?.caminho) {
       params.append('Caminho', filtros.caminho);
     }
