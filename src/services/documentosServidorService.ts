@@ -67,6 +67,7 @@ export interface DocumentoServidorListResponse {
 }
 
 export interface DocumentoServidorListFilters {
+  titulo?: string;
   caminho?: string;
   categoria?: string;
   ano?: number;
@@ -93,6 +94,8 @@ export interface DocumentoServidorPublicoListResponse {
 }
 
 export interface DocumentoServidorPublicoFilters {
+  titulo?: string;
+  dataPublicacao?: string;
   caminho?: string;
   categoria?: string;
   ordenarPor?: string;
@@ -264,6 +267,9 @@ export const documentosServidorService = {
   listar: async (filtros?: DocumentoServidorListFilters): Promise<DocumentoServidorListResponse> => {
     const params = new URLSearchParams();
 
+    if (filtros?.titulo) {
+      params.append('Titulo', filtros.titulo);
+    }
     if (filtros?.caminho) {
       params.append('Caminho', filtros.caminho);
     }
@@ -306,6 +312,12 @@ export const documentosServidorService = {
   listarPublico: async (filtros?: DocumentoServidorPublicoFilters): Promise<DocumentoServidorPublicoListResponse> => {
     const params = new URLSearchParams();
 
+    if (filtros?.titulo) {
+      params.append('Titulo', filtros.titulo);
+    }
+    if (filtros?.dataPublicacao) {
+      params.append('DataPublicacao', filtros.dataPublicacao);
+    }
     if (filtros?.caminho) {
       params.append('Caminho', filtros.caminho);
     }

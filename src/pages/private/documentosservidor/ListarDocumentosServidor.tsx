@@ -32,7 +32,7 @@ export const ListarDocumentosServidor = () => {
   };
 
   // Carregar documentos com paginação servidor
-  const carregarDocumentos = useCallback(async (page = 1, anoFiltro?: number, categoriaFiltro?: string) => {
+  const carregarDocumentos = useCallback(async (page = 1, anoFiltro?: number, categoriaFiltro?: string, tituloFiltro?: string) => {
     setIsLoading(true);
     setErro(null);
     try {
@@ -44,6 +44,9 @@ export const ListarDocumentosServidor = () => {
         itensPorPagina: itemsPerPage,
       };
 
+      if (tituloFiltro) {
+        filtros.titulo = tituloFiltro;
+      }
       if (anoFiltro) {
         filtros.ano = anoFiltro;
       }
@@ -104,7 +107,7 @@ export const ListarDocumentosServidor = () => {
   // Buscar documentos via endpoint
   const handleSearch = () => {
     const ano = filtroAno ? Number(filtroAno) : undefined;
-    carregarDocumentos(1, ano, filtroCategoria || undefined);
+    carregarDocumentos(1, ano, filtroCategoria || undefined, busca || undefined);
   };
 
   // Limpar filtros
@@ -112,7 +115,7 @@ export const ListarDocumentosServidor = () => {
     setBusca('');
     setFiltroAno('');
     setFiltroCategoria('');
-    carregarDocumentos(1, undefined, undefined);
+    carregarDocumentos(1, undefined, undefined, undefined);
   };
 
   const handleDelete = async (id: number) => {
@@ -120,7 +123,7 @@ export const ListarDocumentosServidor = () => {
       await documentosServidorService.inativar(id);
       // Recarregar lista mantendo filtros
       const ano = filtroAno ? Number(filtroAno) : undefined;
-      await carregarDocumentos(currentPage, ano, filtroCategoria || undefined);
+      await carregarDocumentos(currentPage, ano, filtroCategoria || undefined, busca || undefined);
     } catch (error) {
       const mensagemErro = handleApiError(error);
       setErro(mensagemErro);
@@ -235,14 +238,14 @@ export const ListarDocumentosServidor = () => {
             <div className="md:col-span-3 flex gap-2">
               <button
                 onClick={handleSearch}
-                disabled={isLoading}
+                disabled={isLoading || (!busca.trim() && !filtroCategoria && !filtroAno)}
                 className="flex-1 cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 {isLoading ? 'Buscando...' : 'Buscar'}
               </button>
               <button
                 onClick={handleClearSearch}
-                disabled={isLoading}
+                disabled={isLoading || (!busca.trim() && !filtroCategoria && !filtroAno)}
                 className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Limpar

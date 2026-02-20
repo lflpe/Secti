@@ -10,27 +10,25 @@ import { handleApiError } from '../../../utils/errorHandler';
 export const Servidor = () => {
   const [documentos, setDocumentos] = useState<DocumentoServidorPublicoItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [categorias, setCategorias] = useState<string[]>(['Todas']);
-  const [pagina, setPagina] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [filtroTitulo, setFiltroTitulo] = useState('');
+  const [filtroData, setFiltroData] = useState<string>('');
 
-  const carregarDocumentos = useCallback(async (paginaAtual: number) => {
+  const carregarDocumentos = useCallback(async (pagina: number, titulo?: string, dataPublicacao?: string) => {
     try {
-      if (paginaAtual === 1) {
-        setIsLoading(true);
-      } else {
-        setIsLoadingMore(true);
-      }
+      setIsLoading(true);
       setError(null);
 
       // Buscar documentos do servidor públicos do endpoint
       const response = await documentosServidorService.listarPublico({
+        titulo: titulo,
+        dataPublicacao: dataPublicacao,
         ordenarPor: 'anopublicacao',
         ordenarDescendente: true,
-        pagina: paginaAtual,
-        itensPorPagina: 20,
+        pagina: pagina,
+        itensPorPagina: 10,
       });
 
       // Converter resposta para formato DocumentoServidorPublicoItem
@@ -44,29 +42,36 @@ export const Servidor = () => {
         dataPublicacao: doc.dataPublicacao,
       }));
 
-      setDocumentos(prev => paginaAtual === 1 ? documentosFormatados : [...prev, ...documentosFormatados]);
-      setHasMore(paginaAtual < response.totalPaginas);
-
-      // Extrair categorias únicas (por enquanto, apenas uma categoria padrão)
-      setCategorias(['Todas', 'Documentos']);
+      setDocumentos(documentosFormatados);
+      setTotalPaginas(response.totalPaginas);
     } catch (err) {
       const mensagemErro = handleApiError(err);
       setError(mensagemErro);
       console.error('Erro ao carregar documentos do servidor:', err);
     } finally {
       setIsLoading(false);
-      setIsLoadingMore(false);
     }
   }, []);
 
   useEffect(() => {
-    carregarDocumentos(1);
-  }, [carregarDocumentos]);
+    carregarDocumentos(paginaAtual, filtroTitulo || undefined, filtroData || undefined);
+  }, [paginaAtual, filtroTitulo, filtroData, carregarDocumentos]);
 
-  const handleCarregarMais = () => {
-    const proximaPagina = pagina + 1;
-    setPagina(proximaPagina);
-    carregarDocumentos(proximaPagina);
+  const handleMudarPagina = (novaPagina: number) => {
+    setPaginaAtual(novaPagina);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleFiltroChange = (titulo: string, dataPublicacao?: string) => {
+    setFiltroTitulo(titulo);
+    setFiltroData(dataPublicacao || '');
+    setPaginaAtual(1);
+  };
+
+  const handleLimpar = () => {
+    setFiltroTitulo('');
+    setFiltroData('');
+    setPaginaAtual(1);
   };
 
   return (
@@ -95,24 +100,16 @@ export const Servidor = () => {
               </div>
             )}
 
-            {/* No Documents Message */}
-            {!isLoading && documentos.length === 0 && !error && (
-              <div className="text-center py-12">
-                <p className="text-gray-600 text-lg">Nenhum documento disponível no momento.</p>
-              </div>
-            )}
-
             {/* Documents List */}
-            {documentos.length > 0 && (
-              <DocumentosServidorPublicosList
-                documents={documentos}
-                categories={categorias}
-                showCategoryFilter={true}
-                isLoading={isLoading}
-                onLoadMore={hasMore ? handleCarregarMais : undefined}
-                isLoadingMore={isLoadingMore}
-              />
-            )}
+            <DocumentosServidorPublicosList
+              documents={documentos}
+              isLoading={isLoading}
+              totalPaginas={totalPaginas}
+              paginaAtual={paginaAtual}
+              onMudarPagina={handleMudarPagina}
+              onFiltroChange={handleFiltroChange}
+              onLimpar={handleLimpar}
+            />
           </div>
         </div>
       </section>

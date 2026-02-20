@@ -9,10 +9,14 @@ import { handleApiError } from '../../../utils/errorHandler';
 
 export const Documentos = () => {
   const [documentos, setDocumentos] = useState<DocumentoPublicoItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [filtroTitulo, setFiltroTitulo] = useState('');
+  const [filtroData, setFiltroData] = useState('');
 
-  const carregarDocumentos = useCallback(async (titulo: string = '', dataPublicacao: string = '') => {
+  const carregarDocumentos = useCallback(async (pagina: number, titulo: string = '', dataPublicacao: string = '') => {
     try {
       setIsLoading(true);
       setError(null);
@@ -22,8 +26,8 @@ export const Documentos = () => {
         dataPublicacao: dataPublicacao || undefined,
         ordenarPor: 'anopublicacao',
         ordenarDescendente: true,
-        pagina: 1,
-        itensPorPagina: 1000,
+        pagina: pagina,
+        itensPorPagina: 10,
       });
 
       const documentosFormatados: DocumentoPublicoItem[] = response.documentos.map(doc => ({
@@ -37,6 +41,7 @@ export const Documentos = () => {
       }));
 
       setDocumentos(documentosFormatados);
+      setTotalPaginas(response.totalPaginas);
     } catch (err) {
       const mensagemErro = handleApiError(err);
       setError(mensagemErro);
@@ -47,15 +52,24 @@ export const Documentos = () => {
   }, []);
 
   useEffect(() => {
-    carregarDocumentos();
-  }, [carregarDocumentos]);
+    carregarDocumentos(paginaAtual, filtroTitulo, filtroData);
+  }, [paginaAtual, filtroTitulo, filtroData, carregarDocumentos]);
+
+  const handleMudarPagina = (novaPagina: number) => {
+    setPaginaAtual(novaPagina);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleBuscar = (titulo: string, dataPublicacao?: string) => {
-    carregarDocumentos(titulo, dataPublicacao || '');
+    setFiltroTitulo(titulo);
+    setFiltroData(dataPublicacao || '');
+    setPaginaAtual(1);
   };
 
   const handleLimpar = () => {
-    carregarDocumentos('', '');
+    setFiltroTitulo('');
+    setFiltroData('');
+    setPaginaAtual(1);
   };
 
   return (
@@ -81,7 +95,9 @@ export const Documentos = () => {
             <DocumentosPublicosList
               documents={documentos}
               isLoading={isLoading}
-              itemsPerPage={20}
+              totalPaginas={totalPaginas}
+              paginaAtual={paginaAtual}
+              onMudarPagina={handleMudarPagina}
               onFiltroChange={handleBuscar}
               onLimpar={handleLimpar}
             />

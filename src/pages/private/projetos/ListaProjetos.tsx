@@ -190,14 +190,14 @@ export const ListaProjetos = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleSearch}
-                disabled={loading}
+                disabled={loading || (!busca.trim() && filtroStatus === 'Todos')}
                 className="cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 {loading ? 'Buscando...' : 'Buscar'}
               </button>
               <button
                 onClick={handleClearSearch}
-                disabled={loading}
+                disabled={loading || (!busca.trim() && filtroStatus === 'Todos')}
                 className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Limpar

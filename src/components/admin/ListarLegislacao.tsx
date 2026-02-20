@@ -7,7 +7,7 @@ export interface Legislacao {
   nome: string;
   tipo: 'pdf' | 'xls' | 'xlsx' | 'csv' | 'outro';
   categoria: string;
-  anoPublicacao: number;
+  anoPublicacao: string;
   caminhoArquivo?: string;
   nomeArquivo?: string;
 }

@@ -211,14 +211,14 @@ export const ListarEdital = () => {
             <div className="md:col-span-2 flex gap-2">
               <button
                 onClick={handleSearch}
-                disabled={isLoading}
+                disabled={isLoading || (!busca.trim() && !filtroCategoria)}
                 className="flex-1 cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 {isLoading ? 'Buscando...' : 'Buscar'}
               </button>
               <button
                 onClick={handleClearSearch}
-                disabled={isLoading}
+                disabled={isLoading || (!busca.trim() && !filtroCategoria)}
                 className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Limpar

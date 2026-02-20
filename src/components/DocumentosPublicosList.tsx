@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { downloadDocumento } from '../services/documentosService';
 import { formatarDataBrasileira } from '../utils/dateUtils';
 
@@ -15,7 +15,9 @@ export interface DocumentoPublicoItem {
 interface DocumentosPublicosListProps {
   documents: DocumentoPublicoItem[];
   isLoading?: boolean;
-  itemsPerPage?: number;
+  totalPaginas?: number;
+  paginaAtual?: number;
+  onMudarPagina?: (pagina: number) => void;
   onFiltroChange?: (titulo: string, dataPublicacao?: string) => void;
   onLimpar?: () => void;
 }
@@ -23,38 +25,22 @@ interface DocumentosPublicosListProps {
 export const DocumentosPublicosList = ({
   documents,
   isLoading = false,
-  itemsPerPage = 20,
+  totalPaginas = 1,
+  paginaAtual = 1,
+  onMudarPagina,
   onFiltroChange,
   onLimpar,
 }: DocumentosPublicosListProps) => {
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroData, setFiltroData] = useState('');
-  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [filtrosAplicados, setFiltrosAplicados] = useState(false);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
 
-  const documentosPorPagina = itemsPerPage;
-
-  // Calcular total de páginas
-  const totalPaginas = Math.ceil(documents.length / documentosPorPagina);
-
-  // Documentos da página atual
-  const documentosPaginados = useMemo(() => {
-    const inicio = (paginaAtual - 1) * documentosPorPagina;
-    const fim = inicio + documentosPorPagina;
-    return documents.slice(inicio, fim);
-  }, [documents, paginaAtual, documentosPorPagina]);
-
-  // Função para mudar de página
-  const irParaPagina = (pagina: number) => {
-    if (pagina >= 1 && pagina <= totalPaginas) {
-      setPaginaAtual(pagina);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
 
   // Função para buscar
   const handleBuscar = () => {
-    setPaginaAtual(1);
+    setFiltrosAplicados(true);
+    onMudarPagina?.(1);
     onFiltroChange?.(filtroNome, filtroData);
   };
 
@@ -62,7 +48,8 @@ export const DocumentosPublicosList = ({
   const handleLimpar = () => {
     setFiltroNome('');
     setFiltroData('');
-    setPaginaAtual(1);
+    setFiltrosAplicados(false);
+    onMudarPagina?.(1);
     onLimpar?.();
   };
 
@@ -157,14 +144,14 @@ export const DocumentosPublicosList = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handleBuscar}
-              disabled={isLoading}
+              disabled={isLoading || (!filtroNome && !filtroData)}
               className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               {isLoading ? 'Buscando...' : 'Buscar'}
             </button>
             <button
               onClick={handleLimpar}
-              disabled={isLoading}
+              disabled={isLoading || !filtrosAplicados}
               className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               Limpar
@@ -185,7 +172,7 @@ export const DocumentosPublicosList = ({
           </div>
         ) : (
           <>
-            {documentosPaginados.map(doc => (
+            {documents.map(doc => (
               <div key={doc.id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                   {/* Ícone do tipo de arquivo */}
@@ -236,8 +223,8 @@ export const DocumentosPublicosList = ({
             {totalPaginas > 1 && (
               <div className="flex justify-center items-center gap-2 mt-8 pt-8 flex-wrap">
                 <button
-                  onClick={() => irParaPagina(paginaAtual - 1)}
-                  disabled={paginaAtual === 1}
+                  onClick={() => onMudarPagina?.(paginaAtual - 1)}
+                  disabled={paginaAtual === 1 || isLoading}
                   className={`px-4 py-2 rounded-lg font-medium transition duration-200 ${
                     paginaAtual === 1
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
@@ -251,7 +238,8 @@ export const DocumentosPublicosList = ({
                   {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(numero => (
                     <button
                       key={numero}
-                      onClick={() => irParaPagina(numero)}
+                      onClick={() => onMudarPagina?.(numero)}
+                      disabled={isLoading}
                       className={`px-3 py-2 rounded-lg font-medium transition duration-200 ${
                         numero === paginaAtual
                           ? 'bg-[#0C2856] text-white'
@@ -264,8 +252,8 @@ export const DocumentosPublicosList = ({
                 </div>
 
                 <button
-                  onClick={() => irParaPagina(paginaAtual + 1)}
-                  disabled={paginaAtual === totalPaginas}
+                  onClick={() => onMudarPagina?.(paginaAtual + 1)}
+                  disabled={paginaAtual === totalPaginas || isLoading}
                   className={`px-4 py-2 cursor-pointer rounded-lg font-medium transition duration-200 ${
                     paginaAtual === totalPaginas
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
