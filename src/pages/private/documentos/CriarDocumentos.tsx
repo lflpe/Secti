@@ -2,7 +2,7 @@ import { useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
 import { documentosService } from '../../../services/documentosService';
-import { SelectCategoria } from '../../../components/common/SelectCategoria';
+import { TagSelector } from '../../../components/admin/TagSelector';
 
 export const CriarDocumentos = () => {
   const navigate = useNavigate();
@@ -10,12 +10,18 @@ export const CriarDocumentos = () => {
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    titulo: string;
+    descricao: string;
+    dataPublicacao: string;
+    tagIds: number[];
+    arquivo: File | null;
+  }>({
     titulo: '',
     descricao: '',
     dataPublicacao: '',
-    pastaId: '',
-    arquivo: null as File | null,
+    tagIds: [],
+    arquivo: null,
   });
 
   const [previewArquivo, setPreviewArquivo] = useState<{
@@ -120,7 +126,7 @@ export const CriarDocumentos = () => {
         titulo: formData.titulo.trim(),
         descricao: formData.descricao.trim() || undefined,
         dataPublicacao: formatDateForApi(formData.dataPublicacao),
-        pastaId: formData.pastaId ? Number(formData.pastaId) : undefined,
+        tagIds: formData.tagIds,
         arquivo: formData.arquivo,
       });
 
@@ -259,16 +265,10 @@ export const CriarDocumentos = () => {
             </div>
 
             <div>
-              <label htmlFor="pastaId" className="block text-sm font-medium text-gray-700 mb-2">
-                Categoria
-              </label>
-              <SelectCategoria
-                id="pastaId"
-                value={formData.pastaId}
-                onChange={(value) => setFormData((prev) => ({ ...prev, pastaId: value }))}
-                valueType="id"
-                className="w-full"
-                required
+              <TagSelector
+                label="Tags"
+                value={formData.tagIds.length > 0 ? formData.tagIds[0] : null}
+                onChange={(tagId) => setFormData(prev => ({ ...prev, tagIds: tagId ? [tagId] : [] }))}
               />
             </div>
           </div>

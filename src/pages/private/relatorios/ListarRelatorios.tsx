@@ -65,6 +65,7 @@ export const ListarRelatorios = () => {
         dataPublicacao: relatorio.dataPublicacao,
         caminhoArquivo: relatorio.caminhoArquivo,
         nomeArquivo: relatorio.nomeArquivo,
+        tags: relatorio.tags,
       }));
 
       // Filtro por título no cliente (API não tem filtro por título)

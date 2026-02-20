@@ -64,6 +64,7 @@ export const ListarDocumentos = () => {
         dataPublicacao: doc.dataPublicacao,
         caminhoArquivo: doc.caminhoArquivo,
         nomeArquivo: doc.nomeArquivo,
+        tags: doc.tags,
       }));
 
       setDocumentos(documentosFormatados);
@@ -194,7 +195,7 @@ export const ListarDocumentos = () => {
             {/* Filtro por Ano */}
             <div>
               <label htmlFor="ano" className="block text-sm font-medium text-gray-700 mb-2">
-                Ano de Publicação
+                Data de Publicação
               </label>
               <input
                 type="number"

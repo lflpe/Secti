@@ -25,10 +25,10 @@ export const downloadDocumentoServidor = async (caminhoArquivo: string, nomeArqu
 
 export interface CadastrarDocumentoServidorRequest {
   titulo: string;
-  categoria: string;
   dataPublicacao: string; // Data completa do backend
   caminho?: string;
   arquivo: File;
+  tagIds?: number[];
 }
 
 export interface DocumentoServidorResponse {
@@ -54,6 +54,10 @@ export interface DocumentoServidorListItem {
   ativo: boolean;
   caminho?: string;
   usuarioCriacaoNome?: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 export interface DocumentoServidorListResponse {
@@ -216,7 +220,6 @@ const buildFormData = (data: CadastrarDocumentoServidorRequest | EditarDocumento
   const formData = new FormData();
 
   formData.append('Titulo', data.titulo.trim());
-  formData.append('Categoria', data.categoria.trim());
   formData.append('DataPublicacao', data.dataPublicacao);
 
   if (data.caminho) {
@@ -225,6 +228,10 @@ const buildFormData = (data: CadastrarDocumentoServidorRequest | EditarDocumento
 
   if (data.arquivo) {
     formData.append('arquivo', data.arquivo);
+  }
+
+  if ('tagIds' in data && data.tagIds && data.tagIds.length > 0) {
+    data.tagIds.forEach(id => formData.append('tagIds', id.toString()));
   }
 
   return formData;
@@ -238,7 +245,6 @@ export const documentosServidorService = {
     // Validações
     const erros: string[] = [
       ...validarTitulo(data.titulo),
-      ...validarCategoria(data.categoria),
       ...validarDataPublicacao(data.dataPublicacao),
       ...validarArquivo(data.arquivo, true),
     ];

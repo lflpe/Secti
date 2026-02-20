@@ -12,18 +12,42 @@ export const formatarDataBrasileira = (dateString: string | Date): string => {
     let date: Date;
 
     if (typeof dateString === 'string') {
-      // Se a string está no formato ISO (YYYY-MM-DD ou YYYY-MM-DDTHH:mm:ss),
-      // extrai apenas a parte da data para evitar problemas de timezone
-      if (dateString.includes('T') || dateString.match(/^\d{4}-\d{2}-\d{2}/)) {
-        const partes = dateString.split('T')[0].split('-');
-        if (partes.length === 3) {
-          const [ano, mes, dia] = partes.map(Number);
+      // Normalizar a string de data para evitar problemas com diferentes precisões de milissegundos
+      let normalizedDateString = dateString.trim();
+
+      // Se contém 'T', é formato ISO com hora
+      if (normalizedDateString.includes('T')) {
+        // Extrair a parte da data (YYYY-MM-DD) e hora
+        const tIndex = normalizedDateString.indexOf('T');
+        const datePart = normalizedDateString.substring(0, tIndex); // YYYY-MM-DD
+        const timePart = normalizedDateString.substring(tIndex + 1); // HH:mm:ss.xxxxxxZ ou HH:mm:ssZ
+
+        // Remover 'Z' do final
+        const timeWithoutZ = timePart.replace(/Z$/, '');
+        const timeParts = timeWithoutZ.split('.');
+
+        if (timeParts.length === 2) {
+          // Tem milissegundos - pegar apenas os primeiros 3 dígitos
+          const hms = timeParts[0]; // HH:mm:ss
+          const milliseconds = timeParts[1].substring(0, 3); // Primeiros 3 dígitos
+          normalizedDateString = `${datePart}T${hms}.${milliseconds}Z`;
+        } else {
+          // Não tem milissegundos - construir sem eles
+          normalizedDateString = `${datePart}T${timeWithoutZ}Z`;
+        }
+      }
+
+      date = new Date(normalizedDateString);
+
+      if (isNaN(date.getTime())) {
+        // Se falhar, tentar extrair apenas a data (YYYY-MM-DD)
+        const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (dateMatch) {
+          const [, ano, mes, dia] = dateMatch.map(Number);
           date = new Date(ano, mes - 1, dia);
         } else {
-          date = new Date(dateString);
+          return 'Data inválida';
         }
-      } else {
-        date = new Date(dateString);
       }
     } else {
       date = dateString;
@@ -54,18 +78,42 @@ export const formatarDataPorExtenso = (dateString: string | Date): string => {
     let date: Date;
 
     if (typeof dateString === 'string') {
-      // Se a string está no formato ISO (YYYY-MM-DD ou YYYY-MM-DDTHH:mm:ss),
-      // extrai apenas a parte da data para evitar problemas de timezone
-      if (dateString.includes('T') || dateString.match(/^\d{4}-\d{2}-\d{2}/)) {
-        const partes = dateString.split('T')[0].split('-');
-        if (partes.length === 3) {
-          const [ano, mes, dia] = partes.map(Number);
+      // Normalizar a string de data para evitar problemas com diferentes precisões de milissegundos
+      let normalizedDateString = dateString.trim();
+
+      // Se contém 'T', é formato ISO com hora
+      if (normalizedDateString.includes('T')) {
+        // Extrair a parte da data (YYYY-MM-DD) e hora
+        const tIndex = normalizedDateString.indexOf('T');
+        const datePart = normalizedDateString.substring(0, tIndex); // YYYY-MM-DD
+        const timePart = normalizedDateString.substring(tIndex + 1); // HH:mm:ss.xxxxxxZ ou HH:mm:ssZ
+
+        // Remover 'Z' do final
+        const timeWithoutZ = timePart.replace(/Z$/, '');
+        const timeParts = timeWithoutZ.split('.');
+
+        if (timeParts.length === 2) {
+          // Tem milissegundos - pegar apenas os primeiros 3 dígitos
+          const hms = timeParts[0]; // HH:mm:ss
+          const milliseconds = timeParts[1].substring(0, 3); // Primeiros 3 dígitos
+          normalizedDateString = `${datePart}T${hms}.${milliseconds}Z`;
+        } else {
+          // Não tem milissegundos - construir sem eles
+          normalizedDateString = `${datePart}T${timeWithoutZ}Z`;
+        }
+      }
+
+      date = new Date(normalizedDateString);
+
+      if (isNaN(date.getTime())) {
+        // Se falhar, tentar extrair apenas a data (YYYY-MM-DD)
+        const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (dateMatch) {
+          const [, ano, mes, dia] = dateMatch.map(Number);
           date = new Date(ano, mes - 1, dia);
         } else {
-          date = new Date(dateString);
+          return 'Data inválida';
         }
-      } else {
-        date = new Date(dateString);
       }
     } else {
       date = dateString;
@@ -101,18 +149,42 @@ export const extrairAno = (dateString: string | Date): number => {
     let date: Date;
 
     if (typeof dateString === 'string') {
-      // Se a string está no formato ISO (YYYY-MM-DD ou YYYY-MM-DDTHH:mm:ss),
-      // extrai apenas a parte da data para evitar problemas de timezone
-      if (dateString.includes('T') || dateString.match(/^\d{4}-\d{2}-\d{2}/)) {
-        const partes = dateString.split('T')[0].split('-');
-        if (partes.length === 3) {
-          const [ano, mes, dia] = partes.map(Number);
-          date = new Date(ano, mes - 1, dia);
+      // Normalizar a string de data para evitar problemas com diferentes precisões de milissegundos
+      let normalizedDateString = dateString.trim();
+
+      // Se contém 'T', é formato ISO com hora
+      if (normalizedDateString.includes('T')) {
+        // Extrair a parte da data (YYYY-MM-DD) e hora
+        const tIndex = normalizedDateString.indexOf('T');
+        const datePart = normalizedDateString.substring(0, tIndex); // YYYY-MM-DD
+        const timePart = normalizedDateString.substring(tIndex + 1); // HH:mm:ss.xxxxxxZ ou HH:mm:ssZ
+
+        // Remover 'Z' do final
+        const timeWithoutZ = timePart.replace(/Z$/, '');
+        const timeParts = timeWithoutZ.split('.');
+
+        if (timeParts.length === 2) {
+          // Tem milissegundos - pegar apenas os primeiros 3 dígitos
+          const hms = timeParts[0]; // HH:mm:ss
+          const milliseconds = timeParts[1].substring(0, 3); // Primeiros 3 dígitos
+          normalizedDateString = `${datePart}T${hms}.${milliseconds}Z`;
         } else {
-          date = new Date(dateString);
+          // Não tem milissegundos - construir sem eles
+          normalizedDateString = `${datePart}T${timeWithoutZ}Z`;
         }
-      } else {
-        date = new Date(dateString);
+      }
+
+      date = new Date(normalizedDateString);
+
+      if (isNaN(date.getTime())) {
+        // Se falhar, tentar extrair apenas a data (YYYY-MM-DD)
+        const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (dateMatch) {
+          const [, ano] = dateMatch.map(Number);
+          return ano;
+        } else {
+          return new Date().getFullYear();
+        }
       }
     } else {
       date = dateString;

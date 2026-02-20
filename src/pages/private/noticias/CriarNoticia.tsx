@@ -8,7 +8,6 @@ import { handleApiError } from '../../../utils/errorHandler';
 interface NoticiaFormData {
   titulo: string;
   slug: string;
-  categoria: string;
   autor: string;
   resumo: string;
   conteudo: string;
@@ -16,6 +15,7 @@ interface NoticiaFormData {
   imagemArquivo: File | null;
   status: 'Publicada' | 'Rascunho' | 'Arquivada';
   destaque: boolean;
+  tagId: number | null;
 }
 
 export const CriarNoticia = () => {
@@ -44,6 +44,7 @@ export const CriarNoticia = () => {
         resumo: formData.resumo || undefined,
         autor: formData.autor || undefined,
         destaque: formData.destaque || false,
+        tagIds: formData.tagId ? [formData.tagId] : undefined,
       };
 
       // Se houver arquivo, enviar o arquivo

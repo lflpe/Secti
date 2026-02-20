@@ -5,10 +5,13 @@ export interface CadastrarNoticiaRequest {
   titulo: string;
   conteudo: string;
   resumo?: string;
+  slug?: string;
   imagemCapaUrl?: string;
   imagemCapa?: File;
+  imagemCapaBase64?: string;
   autor?: string;
   destaque?: boolean;
+  tagIds?: number[];
 }
 
 // Types para resposta de notícia cadastrada
@@ -41,6 +44,10 @@ export interface NoticiaDetalhada {
   dataPublicacao: string;
   dataCriacao: string;
   dataAtualizacao: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 // Type para notícia na listagem
@@ -56,6 +63,10 @@ export interface NoticiaListagem {
   dataPublicacao: string;
   dataCriacao: string;
   dataAtualizacao: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 // Type para notícia na listagem pública (inclui slug e autor)
@@ -71,6 +82,10 @@ export interface NoticiaListagemPublica {
   dataPublicacao: string;
   dataCriacao: string;
   dataAtualizacao: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 // Type para resposta de listagem paginada
@@ -94,10 +109,12 @@ export interface EditarNoticiaRequest {
   titulo: string;
   conteudo: string;
   resumo?: string;
+  slug?: string;
   imagemCapaUrl?: string;
   imagemCapa?: File;
   autor?: string;
   destaque?: boolean;
+  tagIds?: number[];
 }
 
 // Type para resposta de edição
@@ -180,8 +197,12 @@ export const noticiasService = {
       formData.append('Titulo', data.titulo);
       formData.append('Conteudo', data.conteudo);
       if (data.resumo) formData.append('Resumo', data.resumo);
+      if (data.slug) formData.append('Slug', data.slug);
       if (data.autor) formData.append('Autor', data.autor);
       if (data.destaque !== undefined) formData.append('Destaque', data.destaque.toString());
+      if (data.tagIds && data.tagIds.length > 0) {
+        data.tagIds.forEach(tagId => formData.append('TagIds', tagId.toString()));
+      }
       formData.append('ImagemCapa', data.imagemCapa);
 
       console.log('[NoticiasService] Enviando com FormData');
@@ -204,9 +225,11 @@ export const noticiasService = {
       titulo: data.titulo,
       conteudo: data.conteudo,
       resumo: data.resumo,
+      slug: data.slug,
       imagemCapaUrl: data.imagemCapaUrl,
       autor: data.autor,
       destaque: data.destaque,
+      tagIds: data.tagIds,
     };
 
     const response = await apiClient.post<NoticiaResponse>('/Noticia/cadastrar', payload);
@@ -325,8 +348,12 @@ export const noticiasService = {
       formData.append('Titulo', data.titulo);
       formData.append('Conteudo', data.conteudo);
       if (data.resumo) formData.append('Resumo', data.resumo);
+      if (data.slug) formData.append('Slug', data.slug);
       if (data.autor) formData.append('Autor', data.autor);
       if (data.destaque !== undefined) formData.append('Destaque', data.destaque.toString());
+      if (data.tagIds && data.tagIds.length > 0) {
+        data.tagIds.forEach(tagId => formData.append('TagIds', tagId.toString()));
+      }
       formData.append('ImagemCapa', data.imagemCapa);
 
       console.log('[NoticiasService] Editar - Enviando com FormData');
@@ -349,9 +376,11 @@ export const noticiasService = {
       titulo: data.titulo,
       conteudo: data.conteudo,
       resumo: data.resumo,
+      slug: data.slug,
       imagemCapaUrl: data.imagemCapaUrl,
       autor: data.autor,
       destaque: data.destaque,
+      tagIds: data.tagIds,
     };
 
     const response = await apiClient.put<EditarNoticiaResponse>(`/Noticia/editar/${id}`, payload);

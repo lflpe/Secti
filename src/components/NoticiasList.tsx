@@ -5,12 +5,15 @@ export interface NoticiaItem {
   id: number;
   slug: string;
   titulo: string;
-  categoria: string;
   autor: string;
   dataPublicacao: string; // formato: 'YYYY-MM-DD'
   resumo: string;
   imagem: string;
   link: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 interface NoticiasListProps {
@@ -61,25 +64,6 @@ export const NoticiasList = ({
     return formatarDataBrasileira(dataString);
   };
 
-  // Função para obter cor da categoria
-  const getCorCategoria = (categoria: string) => {
-    const cores: Record<string, string> = {
-      'Inovacao': 'bg-blue-500 text-white',
-      'Educacao': 'bg-green-500 text-white',
-      'Pesquisa': 'bg-purple-500 text-white',
-      'Eventos': 'bg-orange-500 text-white',
-      'Parcerias': 'bg-indigo-500 text-white',
-      'Negocios': 'bg-red-500 text-white',
-    };
-
-    // Normalizar categoria removendo acentos para busca
-    const categoriaNormalizada = categoria
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/ç/g, 'c');
-
-    return cores[categoriaNormalizada] || 'bg-gray-500 text-white';
-  };
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -169,9 +153,13 @@ export const NoticiasList = ({
                   {/* Conteúdo */}
                   <div className="md:w-2/3 p-6">
                     <div className="flex flex-wrap items-center gap-2 mb-3">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getCorCategoria(noticia.categoria)}`}>
-                        {noticia.categoria}
-                      </span>
+                      {noticia.tags && noticia.tags.length > 0 && (
+                        noticia.tags.map((tag) => (
+                          <span key={tag.id} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-[#195CE3]">
+                            {tag.nome}
+                          </span>
+                        ))
+                      )}
                       <span className="text-sm text-gray-600">
                         {formatarData(noticia.dataPublicacao)}
                       </span>

@@ -6,10 +6,13 @@ export interface NoticiaAdmin {
   id: number;
   slug: string;
   titulo: string;
-  categoria: string;
   autor: string;
   dataPublicacao: string;
   status: 'Publicada' | 'Rascunho' | 'Arquivada';
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 interface TabelaNoticiasProps {
@@ -59,10 +62,10 @@ export const TabelaNoticias = ({ noticias, onDelete, onActivate, emptyMessage }:
                 Título
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Categoria
+                Autor
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Autor
+                Tags
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Data
@@ -84,10 +87,20 @@ export const TabelaNoticias = ({ noticias, onDelete, onActivate, emptyMessage }:
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">{noticia.categoria}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-500">{noticia.autor}</div>
+                </td>
+                <td className="px-6 py-4">
+                  {noticia.tags && noticia.tags.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {noticia.tags.map((tag) => (
+                        <span key={tag.id} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {tag.nome}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-gray-400">-</span>
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-500">{noticia.dataPublicacao}</div>
@@ -162,14 +175,20 @@ export const TabelaNoticias = ({ noticias, onDelete, onActivate, emptyMessage }:
             </div>
             <div className="space-y-1 mb-3">
               <p className="text-xs text-gray-500">
-                <span className="font-medium">Categoria:</span> {noticia.categoria}
-              </p>
-              <p className="text-xs text-gray-500">
                 <span className="font-medium">Autor:</span> {noticia.autor}
               </p>
               <p className="text-xs text-gray-500">
                 <span className="font-medium">Data:</span> {noticia.dataPublicacao}
               </p>
+              {noticia.tags && noticia.tags.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {noticia.tags.map((tag) => (
+                    <span key={tag.id} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {tag.nome}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <Link

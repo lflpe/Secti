@@ -7,10 +7,13 @@ export interface Edital {
   id: number;
   nome: string;
   tipo: 'pdf' | 'xls' | 'xlsx' | 'csv' | 'outro';
-  categoria: string;
   dataPublicacao: string;
   caminhoArquivo?: string;
   nomeArquivo?: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 interface ListarEditaisProps {
@@ -138,13 +141,13 @@ export const ListarEditais = ({
                   Nome
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Categoria
+                  Tags
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Tipo
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ano Publicação
+                  Data de Publicação
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
@@ -163,9 +166,11 @@ export const ListarEditais = ({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {edital.categoria}
-                    </span>
+                    <div className="text-sm text-gray-500">
+                      {edital.tags && edital.tags.length > 0
+                        ? edital.tags.map((tag) => tag.nome).join(', ')
+                        : 'Sem tags'}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500 uppercase">{edital.tipo}</div>
@@ -221,12 +226,15 @@ export const ListarEditais = ({
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-gray-900 line-clamp-2">{edital.nome}</p>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {edital.categoria}
-                      </span>
-                      <span className="uppercase">{edital.tipo}</span>
+                      <span className="uppercase font-medium">{edital.tipo}</span>
                       <span>•</span>
-                      <span>{formatarDataBrasileira(edital.dataPublicacao)}</span>
+                      <span>Publicado em: {formatarDataBrasileira(edital.dataPublicacao)}</span>
+                      {edital.tags && edital.tags.length > 0 && (
+                        <>
+                          <span>•</span>
+                          <span>Tags: {edital.tags.map((tag) => tag.nome).join(', ')}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

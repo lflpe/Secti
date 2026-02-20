@@ -155,6 +155,15 @@ export const VisualizarNoticia = () => {
               <FontAwesomeIcon icon={faCalendar} />
               <span>{formatarDataBrasileira(noticia.dataPublicacao)}</span>
             </div>
+            {noticia.tags && noticia.tags.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap">
+                {noticia.tags.map((tag) => (
+                  <span key={tag.id} className="px-3 py-1 bg-blue-200 text-[#0C2856] rounded-full text-sm font-medium">
+                    {tag.nome}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -65,6 +65,7 @@ export const ListarAvisosDeIntencao = () => {
         anoPublicacao: aviso.dataPublicacao,
         caminhoArquivo: aviso.caminhoArquivo,
         nomeArquivo: aviso.nomeArquivo,
+        tags: aviso.tags,
       }));
 
       // Filtro por título no cliente (API não tem filtro por título)

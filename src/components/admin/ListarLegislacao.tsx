@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { DeleteModal } from './DeleteModal';
 import { downloadLegislacao } from '../../services/legislacaoService';
+import { formatarDataBrasileira } from '../../utils/dateUtils';
 
 export interface Legislacao {
   id: number;
@@ -10,6 +11,10 @@ export interface Legislacao {
   anoPublicacao: string;
   caminhoArquivo?: string;
   nomeArquivo?: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 interface ListarLegislacaoProps {
@@ -154,10 +159,10 @@ export const ListarLegislacao = ({
                   Legislação
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Categoria
+                  Tags
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ano
+                  Data de Publicação
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Tipo
@@ -179,12 +184,14 @@ export const ListarLegislacao = ({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {legislacao.categoria}
-                    </span>
+                    <div className="text-sm text-gray-500">
+                      {legislacao.tags && legislacao.tags.length > 0
+                        ? legislacao.tags.map((tag) => tag.nome).join(', ')
+                        : 'Sem tags'}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {legislacao.anoPublicacao}
+                    {formatarDataBrasileira(legislacao.anoPublicacao)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-xs font-medium text-gray-500 uppercase">{legislacao.tipo}</span>
@@ -237,12 +244,15 @@ export const ListarLegislacao = ({
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-gray-900 line-clamp-2">{legislacao.nome}</p>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {legislacao.categoria}
-                      </span>
                       <span className="uppercase font-medium">{legislacao.tipo}</span>
                       <span>•</span>
-                      <span>Ano: {legislacao.anoPublicacao}</span>
+                      <span>Publicado em: {formatarDataBrasileira(legislacao.anoPublicacao)}</span>
+                      {legislacao.tags && legislacao.tags.length > 0 && (
+                        <>
+                          <span>•</span>
+                          <span>Tags: {legislacao.tags.map((tag) => tag.nome).join(', ')}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

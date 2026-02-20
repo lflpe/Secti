@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
 import { documentosServidorService } from '../../../services/documentosServidorService';
 import { handleApiError } from '../../../utils/errorHandler';
-import { SelectCategoria } from '../../../components/common/SelectCategoria';
+import { TagSelector } from '../../../components/admin/TagSelector';
 
 export const CriarDocumentosServidor = () => {
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ export const CriarDocumentosServidor = () => {
 
   const [formData, setFormData] = useState({
     titulo: '',
-    categoria: '',
+    tagIds: [] as number[],
     dataPublicacao: new Date().toISOString().split('T')[0], // YYYY-MM-DD
     caminho: '',
     arquivo: null as File | null,
@@ -104,8 +104,8 @@ export const CriarDocumentosServidor = () => {
       return;
     }
 
-    if (!formData.categoria || formData.categoria.trim().length === 0) {
-      setErro('A categoria é obrigatória');
+    if (formData.tagIds.length === 0) {
+      setErro('A tag/categoria é obrigatória');
       return;
     }
 
@@ -132,10 +132,10 @@ export const CriarDocumentosServidor = () => {
     try {
       await documentosServidorService.cadastrar({
         titulo: formData.titulo.trim(),
-        categoria: formData.categoria.trim(),
         dataPublicacao: formatDateForApi(formData.dataPublicacao),
         caminho: formData.caminho?.trim() || undefined,
         arquivo: formData.arquivo,
+        tagIds: formData.tagIds,
       });
 
       setSucesso('Documento do servidor criado com sucesso!');
@@ -243,17 +243,13 @@ export const CriarDocumentosServidor = () => {
             <p className="text-xs text-gray-500 mt-1">Mínimo 3 caracteres, máximo 200 caracteres</p>
           </div>
 
-          {/* Categoria */}
+          {/* Tags */}
           <div>
-            <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-2">
-              Categoria <span className="text-red-500">*</span>
-            </label>
-            <SelectCategoria
-              id="categoria"
-              value={formData.categoria}
-              onChange={(value) => setFormData(prev => ({ ...prev, categoria: value }))}
+            <TagSelector
+              label="Tags"
+              value={formData.tagIds.length > 0 ? formData.tagIds[0] : null}
+              onChange={(tagId) => setFormData(prev => ({ ...prev, tagIds: tagId ? [tagId] : [] }))}
               required
-              className="w-full"
             />
           </div>
 

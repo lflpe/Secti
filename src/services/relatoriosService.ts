@@ -25,10 +25,10 @@ export const downloadRelatorio = async (caminhoArquivo: string, nomeArquivo?: st
 
 export interface CadastrarRelatorioRequest {
   titulo: string;
-  categoria: string;
   dataPublicacao: string; // Data completa
   caminho?: string;
   arquivo: File;
+  tagIds?: number[];
 }
 
 export interface RelatorioResponse {
@@ -54,6 +54,10 @@ export interface RelatorioListItem {
   ativo: boolean;
   caminho?: string;
   usuarioCriacaoNome?: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 export interface RelatorioListResponse {
@@ -188,7 +192,6 @@ const buildFormData = (data: CadastrarRelatorioRequest | EditarRelatorioRequest)
   const formData = new FormData();
 
   formData.append('Titulo', data.titulo.trim());
-  formData.append('Categoria', data.categoria.trim());
   formData.append('DataPublicacao', data.dataPublicacao.trim());
 
   if (data.caminho) {
@@ -197,6 +200,10 @@ const buildFormData = (data: CadastrarRelatorioRequest | EditarRelatorioRequest)
 
   if (data.arquivo) {
     formData.append('arquivo', data.arquivo);
+  }
+
+  if ('tagIds' in data && data.tagIds && data.tagIds.length > 0) {
+    data.tagIds.forEach(id => formData.append('tagIds', id.toString()));
   }
 
   return formData;
@@ -210,7 +217,6 @@ export const relatoriosService = {
     // Validações
     const erros: string[] = [
       ...validarTitulo(data.titulo),
-      ...validarCategoria(data.categoria),
       ...validarDataPublicacao(data.dataPublicacao),
       ...validarArquivo(data.arquivo, true),
     ];

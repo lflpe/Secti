@@ -11,6 +11,10 @@ export interface DocumentoServidor {
   dataPublicacao: string;
   caminhoArquivo?: string;
   nomeArquivo?: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 interface ListarDocumentosServidorProps {
@@ -138,13 +142,13 @@ export const ListarDocumentosServidor = ({
                   Nome
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Categoria
+                  Tags
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Tipo
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ano Publicação
+                  Data de Publicação
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
@@ -163,9 +167,9 @@ export const ListarDocumentosServidor = ({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {documento.categoria}
-                    </span>
+                    <div className="text-sm text-gray-500">
+                      {documento.tags && documento.tags.length > 0 ? documento.tags.map((tag) => tag.nome).join(', ') : 'Sem tags'}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500 uppercase">{documento.tipo}</div>
@@ -221,12 +225,15 @@ export const ListarDocumentosServidor = ({
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-gray-900 line-clamp-2">{documento.nome}</p>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {documento.categoria}
-                      </span>
-                      <span className="uppercase">{documento.tipo}</span>
+                      <span className="uppercase font-medium">{documento.tipo}</span>
                       <span>•</span>
-                      <span>{formatarDataBrasileira(documento.dataPublicacao)}</span>
+                      <span>Publicado em: {formatarDataBrasileira(documento.dataPublicacao)}</span>
+                      {documento.tags && documento.tags.length > 0 && (
+                        <>
+                          <span>•</span>
+                          <span>Tags: {documento.tags.map((tag) => tag.nome).join(', ')}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

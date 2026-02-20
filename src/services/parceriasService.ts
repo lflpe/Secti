@@ -25,10 +25,10 @@ export const downloadParceria = async (caminhoArquivo: string, nomeArquivo?: str
 
 export interface CadastrarParceriaRequest {
   titulo: string;
-  categoria: string;
   dataPublicacao: string; // Data completa
   caminho?: string;
   arquivo: File;
+  tagIds?: number[];
 }
 
 export interface ParceriaResponse {
@@ -54,6 +54,10 @@ export interface ParceriaListItem {
   ativo: boolean;
   caminho?: string;
   usuarioCriacaoNome?: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 export interface ParceriaListResponse {
@@ -203,7 +207,6 @@ const validarParceria = (data: CadastrarParceriaRequest | EditarParceriaRequest)
   const erros: string[] = [];
 
   erros.push(...validarTitulo(data.titulo));
-  erros.push(...validarCategoria(data.categoria));
   erros.push(...validarDataPublicacao(data.dataPublicacao));
   erros.push(...validarCaminho(data.caminho));
 
@@ -220,7 +223,6 @@ const validarParceria = (data: CadastrarParceriaRequest | EditarParceriaRequest)
 const buildFormData = (data: CadastrarParceriaRequest | EditarParceriaRequest): FormData => {
   const formData = new FormData();
   formData.append('Titulo', data.titulo);
-  formData.append('Categoria', data.categoria);
   formData.append('DataPublicacao', data.dataPublicacao);
 
   if (data.caminho) {
@@ -229,6 +231,10 @@ const buildFormData = (data: CadastrarParceriaRequest | EditarParceriaRequest): 
 
   if ('arquivo' in data && data.arquivo) {
     formData.append('arquivo', data.arquivo);
+  }
+
+  if ('tagIds' in data && data.tagIds && data.tagIds.length > 0) {
+    data.tagIds.forEach(id => formData.append('tagIds', id.toString()));
   }
 
   return formData;

@@ -9,7 +9,7 @@ interface NoticiaFormData {
   id?: number;
   titulo: string;
   slug: string;
-  categoria: string;
+  tagId: number | null;
   autor: string;
   resumo: string;
   conteudo: string;
@@ -43,7 +43,7 @@ export const EditarNoticia = () => {
           id: noticia.id,
           titulo: noticia.titulo,
           slug: noticia.slug,
-          categoria: 'Notícias',
+          tagId: noticia.tags && noticia.tags.length > 0 ? noticia.tags[0].id : null,
           autor: noticia.autor,
           resumo: noticia.resumo,
           conteudo: noticia.conteudo,
@@ -86,6 +86,7 @@ export const EditarNoticia = () => {
         resumo: formData.resumo || undefined,
         autor: formData.autor || undefined,
         destaque: formData.destaque || false,
+        tagIds: formData.tagId ? [formData.tagId] : undefined,
       };
 
       // Se houver arquivo, enviar o arquivo

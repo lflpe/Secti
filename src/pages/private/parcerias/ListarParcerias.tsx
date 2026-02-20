@@ -57,6 +57,7 @@ export const ListarParcerias = () => {
         dataPublicacao: parceria.dataPublicacao,
         caminhoArquivo: parceria.caminhoArquivo,
         nomeArquivo: parceria.nomeArquivo,
+        tags: parceria.tags,
       }));
 
       setParcerias(parceriasFormatadas);

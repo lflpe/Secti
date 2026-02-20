@@ -27,6 +27,7 @@ export interface CadastrarDocumentoRequest {
   dataPublicacao: string; // Data completa
   pastaId?: number;
   arquivo: File;
+  tagIds?: number[];
 }
 
 export interface DocumentoResponse {
@@ -53,6 +54,10 @@ export interface DocumentoListItem {
   caminho?: string;
   usuarioCriacaoNome?: string;
   anoPublicacao?: number;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 export interface DocumentoListResponse {
@@ -217,6 +222,9 @@ const buildFormData = (data: CadastrarDocumentoRequest | EditarDocumentoRequest)
   }
   if ('arquivo' in data && data.arquivo) {
     formData.append('arquivo', data.arquivo);
+  }
+  if ('tagIds' in data && data.tagIds && data.tagIds.length > 0) {
+    data.tagIds.forEach(id => formData.append('tagIds', id.toString()));
   }
   return formData;
 };

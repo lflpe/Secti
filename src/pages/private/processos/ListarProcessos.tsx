@@ -3,22 +3,17 @@ import { Link } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
 import { ListarProcessos as ListarProcessosComponent, type Processo } from '../../../components/admin/ListarProcessos';
 import { processosService, type ProcessoListFilters } from '../../../services/processosService';
-import { tagService, type Tag } from '../../../services/tagService';
 import { handleApiError } from '../../../utils/errorHandler';
 
 export const ListarProcessos = () => {
   const [processos, setProcessos] = useState<Processo[]>([]);
   const [filtroTipo, setFiltroTipo] = useState<string>('Todos');
-  const [filtroCategoria, setFiltroCategoria] = useState<string>('');
   const [busca, setBusca] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingTags, setIsLoadingTags] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [erroTags, setErroTags] = useState<string | null>(null);
   const [totalItens, setTotalItens] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
-  const [tags, setTags] = useState<Tag[]>([]);
 
   const getTipoFromNome = (nomeArquivo?: string, caminhoArquivo?: string): Processo['tipo'] => {
     const origem = nomeArquivo || caminhoArquivo || '';
@@ -33,7 +28,6 @@ export const ListarProcessos = () => {
 
   const carregarProcessos = useCallback(async (
     page = 1,
-    categoria?: string,
     tituloFiltro = '',
     tipoFiltro = 'Todos'
   ) => {
@@ -51,20 +45,16 @@ export const ListarProcessos = () => {
         itensPorPagina: precisaFiltroLocal ? 10000 : itemsPerPage,
       };
 
-      if (categoria) {
-        filtros.categoria = categoria;
-      }
-
       const response = await processosService.listar(filtros);
 
       let processosFormatados: Processo[] = response.processos.map((processo) => ({
         id: processo.id,
         nome: processo.titulo,
         tipo: getTipoFromNome(processo.nomeArquivo, processo.caminhoArquivo),
-        categoria: processo.categoria,
         dataPublicacao: processo.dataPublicacao,
         caminhoArquivo: processo.caminhoArquivo,
         nomeArquivo: processo.nomeArquivo,
+        tags: processo.tags,
       }));
 
       // Filtro por título no cliente (API não tem filtro por título)
@@ -101,51 +91,27 @@ export const ListarProcessos = () => {
     }
   }, [itemsPerPage]);
 
-  const carregarTags = useCallback(async () => {
-    setIsLoadingTags(true);
-    setErroTags(null);
-    try {
-      const response = await tagService.listar({
-        apenasAtivas: true,
-        pagina: 1,
-        itensPorPagina: 1000,
-      });
-      const tagsOrdenadas = [...response.itens].sort((a, b) => a.nome.localeCompare(b.nome));
-      setTags(tagsOrdenadas);
-    } catch (error) {
-      const mensagemErro = handleApiError(error);
-      setErroTags(mensagemErro);
-    } finally {
-      setIsLoadingTags(false);
-    }
-  }, []);
-
   useEffect(() => {
     carregarProcessos();
   }, [carregarProcessos]);
 
-  useEffect(() => {
-    carregarTags();
-  }, [carregarTags]);
-
   // Buscar processos via endpoint
   const handleSearch = () => {
-    carregarProcessos(1, filtroCategoria || undefined, busca, filtroTipo);
+    carregarProcessos(1, busca, filtroTipo);
   };
 
   // Limpar filtros
   const handleClearSearch = () => {
     setBusca('');
     setFiltroTipo('Todos');
-    setFiltroCategoria('');
-    carregarProcessos(1, undefined, '', 'Todos');
+    carregarProcessos(1, '', 'Todos');
   };
 
   const handleDelete = async (id: number) => {
     try {
       await processosService.inativar(id);
       // Recarregar lista mantendo filtros
-      await carregarProcessos(currentPage, filtroCategoria || undefined, busca, filtroTipo);
+      await carregarProcessos(currentPage, busca, filtroTipo);
     } catch (error) {
       const mensagemErro = handleApiError(error);
       setErro(mensagemErro);
@@ -214,33 +180,6 @@ export const ListarProcessos = () => {
               </div>
             </div>
 
-            {/* Filtro por Categoria */}
-            <div>
-              <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-2">
-                Categoria
-              </label>
-              <select
-                id="categoria"
-                value={filtroCategoria}
-                onChange={(e) => setFiltroCategoria(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#195CE3] focus:border-transparent"
-              >
-                <option value="">Todas as categorias</option>
-                {tags.map((tag) => (
-                  <option key={tag.id} value={tag.nome}>
-                    {tag.nome}
-                  </option>
-                ))}
-              </select>
-              {isLoadingTags && (
-                <p className="mt-1 text-xs text-gray-500">Carregando categorias...</p>
-              )}
-              {erroTags && (
-                <p className="mt-1 text-xs text-red-600">{erroTags}</p>
-              )}
-            </div>
-
             {/* Filtro por Tipo */}
             <div>
               <label htmlFor="tipo" className="block text-sm font-medium text-gray-700 mb-2">
@@ -264,14 +203,14 @@ export const ListarProcessos = () => {
             <div className="md:col-span-4 flex gap-2 flex-col sm:flex-row">
               <button
                 onClick={handleSearch}
-                disabled={isLoading || (!busca.trim() && !filtroCategoria && filtroTipo === 'Todos')}
+                disabled={isLoading || (!busca.trim() && filtroTipo === 'Todos')}
                 className="flex-1 cursor-pointer bg-[#0C2856] text-white px-4 py-2 rounded-md hover:bg-[#195CE3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 {isLoading ? 'Buscando...' : 'Buscar'}
               </button>
               <button
                 onClick={handleClearSearch}
-                disabled={isLoading || (!busca.trim() && !filtroCategoria && filtroTipo === 'Todos')}
+                disabled={isLoading || (!busca.trim() && filtroTipo === 'Todos')}
                 className="flex-1 sm:flex-auto px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Limpar

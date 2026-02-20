@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
+import { TagSelector } from '../../../components/admin/TagSelector';
 import { processosService } from '../../../services/processosService';
-import {SelectCategoria} from "../../../components/common/SelectCategoria.tsx";
 
 export const CriarProcessos = () => {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ export const CriarProcessos = () => {
 
   const [formData, setFormData] = useState({
     titulo: '',
-    categoria: '',
+    tagId: null as number | null,
     dataPublicacao: new Date().toISOString().split('T')[0],
     caminho: '',
     arquivo: null as File | null,
@@ -101,11 +101,6 @@ export const CriarProcessos = () => {
       return;
     }
 
-    if (!formData.categoria || formData.categoria.trim().length === 0) {
-      setErro('Por favor, informe a categoria');
-      return;
-    }
-
     if (!formData.dataPublicacao) {
       setErro('Por favor, informe a data de publicação');
       return;
@@ -121,10 +116,10 @@ export const CriarProcessos = () => {
     try {
       await processosService.cadastrar({
         titulo: formData.titulo,
-        categoria: formData.categoria,
         dataPublicacao: formData.dataPublicacao,
         caminho: formData.caminho || undefined,
         arquivo: formData.arquivo,
+        tagIds: formData.tagId ? [formData.tagId] : undefined,
       });
 
       setSucesso('Processo criado com sucesso!');
@@ -227,19 +222,14 @@ export const CriarProcessos = () => {
             <p className="text-xs text-gray-500 mt-1">Mínimo 3 caracteres, máximo 200 caracteres</p>
           </div>
 
-          {/* Categoria */}
+          {/* Tag */}
           <div>
-            <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-2">
-              Categoria <span className="text-red-500">*</span>
-            </label>
-            <SelectCategoria
-                id="categoria"
-                value={formData.categoria}
-                onChange={(valor) => setFormData(prev => ({ ...prev, categoria: valor }))}
-                required
-                className="w-full"
+            <TagSelector
+              value={formData.tagId}
+              onChange={(tagId) => setFormData(prev => ({ ...prev, tagId }))}
+              label="Tag"
+              required
             />
-            <p className="text-xs text-gray-500 mt-1">Máximo 100 caracteres</p>
           </div>
 
           {/* Data de Publicação */}

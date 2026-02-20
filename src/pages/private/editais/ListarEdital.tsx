@@ -53,10 +53,10 @@ export const ListarEdital = () => {
         id: edital.id,
         nome: edital.titulo,
         tipo: getTipoFromNome(edital.nomeArquivo, edital.caminhoArquivo),
-        categoria: edital.categoria,
         dataPublicacao: edital.dataPublicacao,
         caminhoArquivo: edital.caminhoArquivo,
         nomeArquivo: edital.nomeArquivo,
+        tags: edital.tags,
       }));
 
       setEditais(editaisFormatados);

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
 import { relatoriosService } from '../../../services/relatoriosService';
-import { SelectCategoria } from '../../../components/common/SelectCategoria';
+import { TagSelector } from '../../../components/admin/TagSelector';
 
 export const CriarRelatorios = () => {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ export const CriarRelatorios = () => {
 
   const [formData, setFormData] = useState({
     titulo: '',
-    categoria: '',
+    tagIds: [] as number[],
     dataPublicacao: new Date().toISOString().split('T')[0],
     caminho: '',
     arquivo: null as File | null,
@@ -101,8 +101,8 @@ export const CriarRelatorios = () => {
       return;
     }
 
-    if (!formData.categoria || formData.categoria.trim().length === 0) {
-      setErro('Por favor, informe a categoria');
+    if (formData.tagIds.length === 0) {
+      setErro('Por favor, informe a tag');
       return;
     }
 
@@ -121,7 +121,7 @@ export const CriarRelatorios = () => {
     try {
       await relatoriosService.cadastrar({
         titulo: formData.titulo,
-        categoria: formData.categoria,
+        tagIds: formData.tagIds,
         dataPublicacao: formData.dataPublicacao,
         caminho: formData.caminho || undefined,
         arquivo: formData.arquivo,
@@ -233,17 +233,13 @@ export const CriarRelatorios = () => {
             <p className="text-xs text-gray-500 mt-1">Mínimo 3 caracteres, máximo 200 caracteres</p>
           </div>
 
-          {/* Categoria */}
+          {/* Tags */}
           <div>
-            <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-2">
-              Categoria <span className="text-red-500">*</span>
-            </label>
-            <SelectCategoria
-              id="categoria"
-              value={formData.categoria}
-              onChange={(valor) => setFormData(prev => ({ ...prev, categoria: valor }))}
+            <TagSelector
+              label="Tags"
+              value={formData.tagIds.length > 0 ? formData.tagIds[0] : null}
+              onChange={(tagId) => setFormData(prev => ({ ...prev, tagIds: tagId ? [tagId] : [] }))}
               required
-              className="w-full"
             />
           </div>
 

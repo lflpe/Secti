@@ -133,6 +133,7 @@ export const Home = () => {
             resumo: primeiraNoticia.resumo,
             imagem: primeiraNoticia.imagemCapaUrl || SectiPredio,
             link: `/noticias/${primeiraNoticia.slug}`,
+            tags: primeiraNoticia.tags,
           });
 
           // Converter restante em NoticiaItem para a lista
@@ -144,6 +145,7 @@ export const Home = () => {
             data: formatarDataBrasileira(noticia.dataPublicacao),
             imagem: noticia.imagemCapaUrl || SectiPredio,
             link: `/noticias/${noticia.slug}`,
+            tags: noticia.tags,
           }));
 
           setNoticias(noticiasList);

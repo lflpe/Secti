@@ -25,28 +25,30 @@ export const downloadEdital = async (caminhoArquivo: string, nomeArquivo?: strin
 
 export interface CadastrarEditalRequest {
   titulo: string;
-  categoria: string;
   dataPublicacao: string; // Data completa
   caminho?: string;
   arquivo: File;
+  tagIds?: number[];
 }
 
 export interface EditalResponse {
   id: number;
   titulo: string;
-  categoria: string;
   caminhoArquivo: string;
   nomeArquivo: string;
   dataPublicacao: string; // Data completa do backend
   dataCriacao: string;
   caminho?: string;
   usuarioCriacaoNome?: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 export interface EditalListItem {
   id: number;
   titulo: string;
-  categoria: string;
   caminhoArquivo: string;
   nomeArquivo: string;
   dataPublicacao: string; // Data completa do backend
@@ -54,6 +56,10 @@ export interface EditalListItem {
   ativo: boolean;
   caminho?: string;
   usuarioCriacaoNome?: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 export interface EditalListResponse {
@@ -63,7 +69,6 @@ export interface EditalListResponse {
   itensPorPagina: number;
   totalPaginas: number;
   caminhoFiltro?: string;
-  categoriaFiltro?: string;
 }
 
 export interface EditalListFilters {
@@ -105,12 +110,15 @@ export interface EditalPublicoFilters {
 export interface EditalDetalhe {
   id: number;
   titulo: string;
-  categoria: string;
   caminhoArquivo: string;
   dataPublicacao: string; // Data completa do backend
   ativo: boolean;
   dataCriacao: string;
   caminho?: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 export interface EditarEditalRequest {
@@ -119,6 +127,7 @@ export interface EditarEditalRequest {
   dataPublicacao: string; // Data completa
   caminho?: string;
   arquivo?: File;
+  tagIds?: number[];
 }
 
 // ==================== VALIDAÇÕES ====================
@@ -131,16 +140,6 @@ const validarTitulo = (titulo: string): string[] => {
     erros.push('O título deve ter no mínimo 3 caracteres.');
   } else if (titulo.trim().length > 200) {
     erros.push('O título deve ter no máximo 200 caracteres.');
-  }
-  return erros;
-};
-
-const validarCategoria = (categoria: string): string[] => {
-  const erros: string[] = [];
-  if (!categoria || categoria.trim().length === 0) {
-    erros.push('A categoria é obrigatória.');
-  } else if (categoria.trim().length > 100) {
-    erros.push('A categoria deve ter no máximo 100 caracteres.');
   }
   return erros;
 };
@@ -189,7 +188,6 @@ const buildFormData = (data: CadastrarEditalRequest | EditarEditalRequest): Form
   const formData = new FormData();
 
   formData.append('Titulo', data.titulo.trim());
-  formData.append('Categoria', data.categoria.trim());
   formData.append('DataPublicacao', data.dataPublicacao.trim());
 
   if (data.caminho) {
@@ -198,6 +196,12 @@ const buildFormData = (data: CadastrarEditalRequest | EditarEditalRequest): Form
 
   if (data.arquivo) {
     formData.append('arquivo', data.arquivo);
+  }
+
+  if (data.tagIds && data.tagIds.length > 0) {
+    data.tagIds.forEach((tagId) => {
+      formData.append('TagIds', tagId.toString());
+    });
   }
 
   return formData;
@@ -211,7 +215,6 @@ export const editaisService = {
     // Validações
     const erros: string[] = [
       ...validarTitulo(data.titulo),
-      ...validarCategoria(data.categoria),
       ...validarDataPublicacao(data.dataPublicacao),
       ...validarArquivo(data.arquivo, true),
     ];
@@ -334,7 +337,6 @@ export const editaisService = {
     // Validações
     const erros: string[] = [
       ...validarTitulo(data.titulo),
-      ...validarCategoria(data.categoria),
       ...validarDataPublicacao(data.dataPublicacao),
       ...validarArquivo(data.arquivo, false), // Arquivo opcional na edição
     ];

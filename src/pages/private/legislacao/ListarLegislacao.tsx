@@ -61,10 +61,11 @@ export const ListarLegislacao = () => {
         id: legislacao.id,
         nome: legislacao.titulo,
         tipo: getTipoFromNome(legislacao.nomeArquivo, legislacao.caminhoArquivo),
-        categoria: legislacao.categoria,
+        categoria: '',
         anoPublicacao: legislacao.dataPublicacao,
         caminhoArquivo: legislacao.caminhoArquivo,
         nomeArquivo: legislacao.nomeArquivo,
+        tags: legislacao.tags,
       }));
 
       // Filtro por título no cliente (API não tem filtro por título)

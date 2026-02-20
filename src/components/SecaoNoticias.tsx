@@ -11,6 +11,10 @@ export type NoticiaItem = {
   resumo?: string;
   imagem: string;
   link: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 };
 
 type SecaoNoticiasProps = {
@@ -48,10 +52,14 @@ export const SecaoNoticias: React.FC<SecaoNoticiasProps> = ({ noticiaDestaque, n
 
                 {/* Conteúdo à direita */}
                 <div className="p-6 flex flex-col justify-center md:h-full">
-                  {noticiaDestaque.categoria && (
-                      <span className="inline-block text-xs font-semibold text-[#195CE3] uppercase mb-2">
-                    {noticiaDestaque.categoria}
-                  </span>
+                  {noticiaDestaque.tags && noticiaDestaque.tags.length > 0 && (
+                    <div className="mb-2 flex flex-wrap gap-2">
+                      {noticiaDestaque.tags.map((tag) => (
+                        <span key={tag.id} className="inline-block text-xs font-semibold text-[#195CE3] uppercase bg-blue-50 px-2 py-1 rounded mb-2">
+                          {tag.nome}
+                        </span>
+                      ))}
+                    </div>
                   )}
                   <h3 className="text-2xl font-bold text-[#0C2856] mb-3 hover:text-[#195CE3] transition duration-200">
                     {noticiaDestaque.titulo}
@@ -89,10 +97,14 @@ export const SecaoNoticias: React.FC<SecaoNoticiasProps> = ({ noticiaDestaque, n
                       />
                     </div>
                     <div className="p-4">
-                      {noticia.categoria && (
-                          <span className="inline-block text-xs font-semibold text-[#195CE3] uppercase mb-2">
-                      {noticia.categoria}
-                    </span>
+                      {noticia.tags && noticia.tags.length > 0 && (
+                        <div className="mb-2 flex flex-wrap gap-1">
+                          {noticia.tags.map((tag) => (
+                            <span key={tag.id} className="inline-block text-xs font-semibold text-[#195CE3] uppercase bg-blue-50 px-2 py-1 rounded mb-2">
+                              {tag.nome}
+                            </span>
+                          ))}
+                        </div>
                       )}
                       <h4 className="text-lg font-bold text-gray-900 hover:text-[#195CE3] transition duration-200 mb-2">
                         {noticia.titulo}

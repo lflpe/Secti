@@ -25,28 +25,30 @@ export const downloadLegislacao = async (caminhoArquivo: string, nomeArquivo?: s
 
 export interface CadastrarLegislacaoRequest {
   titulo: string;
-  categoria: string;
   dataPublicacao: string; // Data completa
   caminho?: string;
   arquivo: File;
+  tagIds?: number[];
 }
 
 export interface LegislacaoResponse {
   id: number;
   titulo: string;
-  categoria: string;
   caminhoArquivo: string;
   nomeArquivo: string;
   dataPublicacao: string; // Data completa do backend
   dataCriacao: string;
   caminho?: string;
   usuarioCriacaoNome?: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 export interface LegislacaoListItem {
   id: number;
   titulo: string;
-  categoria: string;
   caminhoArquivo: string;
   nomeArquivo: string;
   dataPublicacao: string; // Data completa do backend
@@ -54,6 +56,10 @@ export interface LegislacaoListItem {
   ativo: boolean;
   caminho?: string;
   usuarioCriacaoNome?: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 export interface LegislacaoListResponse {
@@ -189,7 +195,6 @@ const buildFormData = (data: CadastrarLegislacaoRequest | EditarLegislacaoReques
   const formData = new FormData();
 
   formData.append('Titulo', data.titulo.trim());
-  formData.append('Categoria', data.categoria.trim());
   formData.append('DataPublicacao', data.dataPublicacao.trim());
 
   if (data.caminho) {
@@ -198,6 +203,10 @@ const buildFormData = (data: CadastrarLegislacaoRequest | EditarLegislacaoReques
 
   if (data.arquivo) {
     formData.append('arquivo', data.arquivo);
+  }
+
+  if ('tagIds' in data && data.tagIds && data.tagIds.length > 0) {
+    data.tagIds.forEach(id => formData.append('tagIds', id.toString()));
   }
 
   return formData;
@@ -211,7 +220,6 @@ export const legislacaoService = {
     // Validações
     const erros: string[] = [
       ...validarTitulo(data.titulo),
-      ...validarCategoria(data.categoria),
       ...validarDataPublicacao(data.dataPublicacao),
       ...validarArquivo(data.arquivo, true),
     ];

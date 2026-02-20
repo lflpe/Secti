@@ -25,10 +25,10 @@ export const downloadProcesso = async (caminhoArquivo: string, nomeArquivo?: str
 
 export interface CadastrarProcessoRequest {
   titulo: string;
-  categoria: string;
   dataPublicacao: string; // Data completa
   caminho?: string;
   arquivo: File;
+  tagIds?: number[];
 }
 
 export interface ProcessoResponse {
@@ -54,6 +54,10 @@ export interface ProcessoListItem {
   ativo: boolean;
   caminho?: string;
   usuarioCriacaoNome?: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 export interface ProcessoListResponse {
@@ -64,6 +68,7 @@ export interface ProcessoListResponse {
   totalPaginas: number;
   caminhoFiltro?: string;
   categoriaFiltro?: string;
+  tags?: number[];
 }
 
 export interface ProcessoListFilters {
@@ -187,7 +192,6 @@ const buildFormData = (data: CadastrarProcessoRequest | EditarProcessoRequest): 
   const formData = new FormData();
 
   formData.append('Titulo', data.titulo.trim());
-  formData.append('Categoria', data.categoria.trim());
   formData.append('DataPublicacao', data.dataPublicacao.trim());
 
   if (data.caminho) {
@@ -196,6 +200,10 @@ const buildFormData = (data: CadastrarProcessoRequest | EditarProcessoRequest): 
 
   if (data.arquivo) {
     formData.append('arquivo', data.arquivo);
+  }
+
+  if ('tagIds' in data && data.tagIds && data.tagIds.length > 0) {
+    data.tagIds.forEach(id => formData.append('tagIds', id.toString()));
   }
 
   return formData;
@@ -209,7 +217,6 @@ export const processosService = {
     // Validações
     const erros: string[] = [
       ...validarTitulo(data.titulo),
-      ...validarCategoria(data.categoria),
       ...validarDataPublicacao(data.dataPublicacao),
       ...validarArquivo(data.arquivo, true),
     ];

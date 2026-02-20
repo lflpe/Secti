@@ -39,10 +39,10 @@ export const ListaNoticias = () => {
         id: item.id,
         slug: item.slug,
         titulo: item.titulo,
-        categoria: 'Noticias',
         autor: item.autor,
         dataPublicacao: new Date(item.dataPublicacao).toLocaleDateString('pt-BR'),
         status: item.publicada ? 'Publicada' : 'Rascunho',
+        tags: item.tags,
       }));
 
       setNoticias(noticiasFormatted);

@@ -10,6 +10,10 @@ export interface Documento {
   dataPublicacao: string;
   caminhoArquivo?: string;
   nomeArquivo?: string;
+  tags?: Array<{
+    id: number;
+    nome: string;
+  }>;
 }
 
 interface ListarDocumentosProps {
@@ -142,7 +146,10 @@ export const ListarDocumentos = ({
                   Tipo
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Data Publicação
+                  Tags
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Data de Publicação
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
@@ -162,6 +169,11 @@ export const ListarDocumentos = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500 uppercase">{documento.tipo}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-500">
+                      {documento.tags && documento.tags.length > 0 ? documento.tags.map((tag) => tag.nome).join(', ') : 'Sem tags'}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500">{formatarDataBrasileira(documento.dataPublicacao)}</div>
@@ -217,6 +229,12 @@ export const ListarDocumentos = ({
                       <span className="uppercase font-medium">{documento.tipo}</span>
                       <span>•</span>
                       <span>Publicado em: {formatarDataBrasileira(documento.dataPublicacao)}</span>
+                      {documento.tags && documento.tags.length > 0 && (
+                        <>
+                          <span>•</span>
+                          <span>Tags: {documento.tags.map((tag) => tag.nome).join(', ')}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

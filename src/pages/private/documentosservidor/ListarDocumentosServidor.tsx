@@ -64,6 +64,7 @@ export const ListarDocumentosServidor = () => {
         dataPublicacao: doc.dataPublicacao,
         caminhoArquivo: doc.caminhoArquivo,
         nomeArquivo: doc.nomeArquivo,
+        tags: doc.tags,
       }));
 
       setDocumentos(documentosFormatados);

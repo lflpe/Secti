@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PrivateLayout } from '../../../layouts/PrivateLayout';
+import { TagSelector } from '../../../components/admin/TagSelector';
 import { editaisService } from '../../../services/editaisService';
 import { handleApiError } from '../../../utils/errorHandler';
-import { SelectCategoria } from '../../../components/common/SelectCategoria';
 
 export const CriarEdital = () => {
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ export const CriarEdital = () => {
 
   const [formData, setFormData] = useState({
     titulo: '',
-    categoria: '',
+    tagId: null as number | null,
     dataPublicacao: new Date().toISOString().split('T')[0],
     caminho: '',
     arquivo: null as File | null,
@@ -98,10 +98,6 @@ export const CriarEdital = () => {
       return;
     }
 
-    if (!formData.categoria || formData.categoria.trim().length === 0) {
-      setErro('A categoria é obrigatória');
-      return;
-    }
 
     if (!formData.dataPublicacao) {
       setErro('Por favor, informe a data de publicação');
@@ -118,10 +114,10 @@ export const CriarEdital = () => {
     try {
       await editaisService.cadastrar({
         titulo: formData.titulo.trim(),
-        categoria: formData.categoria.trim(),
         dataPublicacao: formData.dataPublicacao,
         caminho: formData.caminho?.trim() || undefined,
         arquivo: formData.arquivo,
+        tagIds: formData.tagId ? [formData.tagId] : undefined,
       });
 
       setSucesso('Edital criado com sucesso!');
@@ -229,17 +225,13 @@ export const CriarEdital = () => {
             <p className="text-xs text-gray-500 mt-1">Mínimo 3 caracteres, máximo 200 caracteres</p>
           </div>
 
-          {/* Categoria */}
+          {/* Tag */}
           <div>
-            <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-2">
-              Categoria <span className="text-red-500">*</span>
-            </label>
-            <SelectCategoria
-              id="categoria"
-              value={formData.categoria}
-              onChange={(valor) => setFormData(prev => ({ ...prev, categoria: valor }))}
+            <TagSelector
+              value={formData.tagId}
+              onChange={(tagId) => setFormData(prev => ({ ...prev, tagId }))}
+              label="Tag"
               required
-              className="w-full"
             />
           </div>
 
