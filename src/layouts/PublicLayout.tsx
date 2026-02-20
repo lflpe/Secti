@@ -465,40 +465,71 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
         <footer>
           <div className="bg-[#195CE3] text-white">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4 py-6">
-                <div className="flex items-center justify-center sm:justify-start">
-                  <img src={MarcaCTINegativa} alt="Marca CTI" className="h-16" />
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 py-12">
+                {/* Logo Section */}
+                <div className="flex flex-col items-center justify-center md:items-start md:justify-start">
+                  <img src={MarcaCTINegativa} alt="Marca CTI" className="h-16 mb-4" />
                 </div>
-                <div className="sm:col-span-1 flex items-center justify-center">
-                  <div>
-                    <div className="font-semibold">Coluna 2</div>
-                    <div className="text-sm">Informações</div>
-                  </div>
+
+                {/* About Section */}
+                <div className="text-center md:text-left">
+                  <h3 className="font-semibold text-lg mb-4">Sobre a SECTI</h3>
+                  <nav className="space-y-2 flex flex-col items-center md:items-start">
+                    <Link to="/secti/historia" onClick={() => setMobileOpen(false)} className="text-blue-100 hover:text-white transition-colors text-sm block">
+                      História da Secretaria
+                    </Link>
+                    <Link to="/secti/a-secretaria" onClick={() => setMobileOpen(false)} className="text-blue-100 hover:text-white transition-colors text-sm block">
+                      A Secretaria
+                    </Link>
+                    <Link to="/secti/organograma" onClick={() => setMobileOpen(false)} className="text-blue-100 hover:text-white transition-colors text-sm block">
+                      Organograma
+                    </Link>
+                    <Link to="/secti/certificacoes" onClick={() => setMobileOpen(false)} className="text-blue-100 hover:text-white transition-colors text-sm block">
+                      Certificações
+                    </Link>
+                  </nav>
                 </div>
-                <div className="sm:col-span-1 flex items-center justify-center">
-                  <div>
-                    <div className="font-semibold">Coluna 3</div>
-                    <div className="text-sm">Links úteis</div>
-                  </div>
+
+                {/* Services Section */}
+                <div className="text-center md:text-left">
+                  <h3 className="font-semibold text-lg mb-4">Serviços</h3>
+                  <nav className="space-y-2 flex flex-col items-center md:items-start">
+                    <Link to="/editais" onClick={() => setMobileOpen(false)} className="text-blue-100 hover:text-white transition-colors text-sm block">
+                      Editais
+                    </Link>
+                    <Link to="/projetos" onClick={() => setMobileOpen(false)} className="text-blue-100 hover:text-white transition-colors text-sm block">
+                      Projetos
+                    </Link>
+                    <Link to="/secti/legislacao" onClick={() => setMobileOpen(false)} className="text-blue-100 hover:text-white transition-colors text-sm block">
+                      Legislação
+                    </Link>
+                    <Link to="/ouvidoria/apresentacao" onClick={() => setMobileOpen(false)} className="text-blue-100 hover:text-white transition-colors text-sm block">
+                      Ouvidoria
+                    </Link>
+                  </nav>
                 </div>
-                <div className="sm:col-span-1 flex mt-2 items-center justify-center md:justify-end">
-                  <div className="flex items-center space-x-4">
-                    <a href="https://www.instagram.com/secti.pernambuco/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-white hover:text-gray-200 transition duration-200 hover:scale-110">
+
+                {/* Contact & Social Section */}
+                <div className="text-center md:text-left flex flex-col items-center md:items-start">
+                  <h3 className="font-semibold text-lg mb-4">Conecte-se</h3>
+                  <div className="flex items-center space-x-4 mb-4">
+                    <a href="https://www.instagram.com/secti.pernambuco/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-white hover:text-blue-200 transition duration-200 hover:scale-110">
                       <FontAwesomeIcon icon={faInstagram} className="text-2xl" />
                     </a>
 
-                    <a href="https://www.linkedin.com/company/sectipe/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-white hover:text-gray-200 transition duration-200 hover:scale-110">
+                    <a href="https://www.linkedin.com/company/sectipe/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-white hover:text-blue-200 transition duration-200 hover:scale-110">
                       <FontAwesomeIcon icon={faLinkedin} className="text-2xl" />
                     </a>
 
-                    <a href="https://x.com/SectiPE" target="_blank" rel="noopener noreferrer" aria-label="X" className="text-white hover:text-gray-200 transition duration-200 hover:scale-110">
+                    <a href="https://x.com/SectiPE" target="_blank" rel="noopener noreferrer" aria-label="X" className="text-white hover:text-blue-200 transition duration-200 hover:scale-110">
                       <FontAwesomeIcon icon={faXTwitter} className="text-2xl" />
                     </a>
 
-                    <a href="https://www.youtube.com/@sectipernambuco" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="text-white hover:text-gray-200 transition duration-200 hover:scale-110">
+                    <a href="https://www.youtube.com/@sectipernambuco" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="text-white hover:text-blue-200 transition duration-200 hover:scale-110">
                       <FontAwesomeIcon icon={faYoutube} className="text-2xl" />
                     </a>
                   </div>
+                  <p className="text-sm text-blue-100">Acompanhe nossas redes sociais para ficar atualizado.</p>
                 </div>
 
               </div>
