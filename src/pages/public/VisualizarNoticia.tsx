@@ -179,7 +179,7 @@ export const VisualizarNoticia = () => {
 
             {/* Conteúdo */}
             <div
-              className="prose prose-lg md:prose-xl max-w-none
+              className="break-all prose prose-lg md:prose-xl max-w-none
                 prose-headings:text-[#0C2856] prose-headings:font-bold prose-headings:mt-10 prose-headings:mb-6
                 prose-h2:text-3xl prose-h3:text-2xl prose-h4:text-xl
                 prose-p:text-gray-800 prose-p:leading-relaxed prose-p:mb-6 prose-p:text-justify

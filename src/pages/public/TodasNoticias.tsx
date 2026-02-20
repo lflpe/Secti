@@ -2,7 +2,7 @@ import { PublicLayout } from '../../layouts/PublicLayout';
 import { HeroSection } from '../../components/HeroSection';
 import { NoticiasList } from '../../components/NoticiasList';
 import type { NoticiaItem } from '../../components/NoticiasList';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { noticiasService } from '../../services/noticiasService';
 import { handleApiError } from '../../utils/errorHandler';
 import { LoadingScreen } from '../../components/LoadingScreen';
@@ -14,49 +14,72 @@ export const TodasNoticias = () => {
   const [noticias, setNoticias] = useState<NoticiaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const itensPorPagina = 12;
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [filtroTitulo, setFiltroTitulo] = useState('');
+  const itensPorPagina = 10;
+
+  const carregarNoticias = useCallback(async (pagina: number, titulo: string = '') => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Buscar notícias publicadas do endpoint público
+      const response = await noticiasService.listarPublico({
+        tituloFiltro: titulo || undefined,
+        pagina: pagina,
+        itensPorPagina: itensPorPagina,
+      });
+
+      // Converter resposta para formato NoticiaItem
+      const noticiasFormatadas: NoticiaItem[] = response.itens.map(noticia => ({
+        id: noticia.id,
+        slug: noticia.slug,
+        titulo: noticia.titulo,
+        categoria: 'Notícia',
+        autor: noticia.autor,
+        dataPublicacao: formatarDataBrasileira(noticia.dataPublicacao),
+        resumo: noticia.resumo,
+        imagem: noticia.imagemCapaUrl || SectiPredio,
+        link: `/noticias/${noticia.slug}`,
+      }));
+
+      setNoticias(noticiasFormatadas);
+
+      // Calcular total de páginas
+      const totalPages = Math.ceil(response.total / itensPorPagina);
+      setTotalPaginas(totalPages);
+    } catch (err) {
+      const mensagemErro = handleApiError(err);
+      setError(mensagemErro);
+      console.error('Erro ao carregar notícias:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const carregarNoticias = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+    carregarNoticias(paginaAtual, filtroTitulo);
+  }, [paginaAtual, filtroTitulo, carregarNoticias]);
 
-        // Buscar notícias publicadas do endpoint público
-        const response = await noticiasService.listarPublico({
-          pagina: 1,
-          itensPorPagina: itensPorPagina,
-        });
+  const handleBuscar = (titulo: string) => {
+    setFiltroTitulo(titulo);
+    setPaginaAtual(1);
+  };
 
-        // Converter resposta para formato NoticiaItem
-        const noticiasFormatadas: NoticiaItem[] = response.itens.map(noticia => ({
-          id: noticia.id,
-          slug: noticia.slug,
-          titulo: noticia.titulo,
-          categoria: 'Notícia',
-          autor: noticia.autor,
-          dataPublicacao: formatarDataBrasileira(noticia.dataPublicacao),
-          resumo: noticia.resumo,
-          imagem: noticia.imagemCapaUrl || SectiPredio,
-          link: `/noticias/${noticia.slug}`,
-        }));
+  const handleLimpar = () => {
+    setFiltroTitulo('');
+    setPaginaAtual(1);
+  };
 
-        setNoticias(noticiasFormatadas);
-      } catch (err) {
-        const mensagemErro = handleApiError(err);
-        setError(mensagemErro);
-        console.error('Erro ao carregar notícias:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    carregarNoticias();
-  }, []);
+  const handleMudarPagina = (novaPagina: number) => {
+    setPaginaAtual(novaPagina);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <>
-      {isLoading && <LoadingScreen />}
+      {isLoading && paginaAtual === 1 && <LoadingScreen />}
       <PublicLayout>
         <HeroSection
           title="Notícias"
@@ -65,7 +88,7 @@ export const TodasNoticias = () => {
 
         {/* Content Section */}
         <section className="py-12 bg-white">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
             {/* Introdução */}
             <div className="text-center mb-8">
               <h2 className="text-3xl md:text-4xl font-bold text-[#0C2856] mb-4">Todas as Notícias</h2>
@@ -75,6 +98,7 @@ export const TodasNoticias = () => {
               </p>
             </div>
 
+
             {/* Error Message */}
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
@@ -82,15 +106,18 @@ export const TodasNoticias = () => {
               </div>
             )}
 
-            {/* No News Message */}
-            {!isLoading && noticias.length === 0 && !error && (
-              <div className="text-center py-12">
-                <p className="text-gray-600 text-lg">Nenhuma notícia disponível no momento.</p>
-              </div>
-            )}
-
             {/* News List */}
-            {noticias.length > 0 && <NoticiasList noticias={noticias} />}
+            {noticias.length > 0 && (
+              <NoticiasList
+                noticias={noticias}
+                isLoading={isLoading}
+                totalPaginas={totalPaginas}
+                paginaAtual={paginaAtual}
+                onMudarPagina={handleMudarPagina}
+                onFiltroChange={handleBuscar}
+                onLimpar={handleLimpar}
+              />
+            )}
           </div>
         </section>
       </PublicLayout>
