@@ -2,7 +2,7 @@ import { PublicLayout } from '../../layouts/PublicLayout';
 import { HeroSection } from '../../components/HeroSection';
 import { DocumentosParceriasPublicosList } from '../../components/DocumentosParceriasPublicosList';
 import type { DocumentoParceriaPublicoItem } from '../../components/DocumentosParceriasPublicosList';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { editaisService } from '../../services/editaisService';
 import { handleApiError } from '../../utils/errorHandler';
 
@@ -10,23 +10,28 @@ export const Editais = () => {
   const [documentos, setDocumentos] = useState<DocumentoParceriaPublicoItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [categorias, setCategorias] = useState<string[]>(['Todas']);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [filtroTitulo, setFiltroTitulo] = useState('');
+  const [filtroData, setFiltroData] = useState('');
 
-  useEffect(() => {
-    const carregarEditais = async () => {
+  const carregarEditais = useCallback(
+    async (pagina: number, titulo: string = '', dataPublicacao: string = '') => {
       try {
         setIsLoading(true);
         setError(null);
 
         // Buscar editais públicos do endpoint
         const response = await editaisService.listarPublico({
+          titulo: titulo || undefined,
+          dataPublicacao: dataPublicacao || undefined,
           ordenarPor: 'anopublicacao',
           ordenarDescendente: true,
-          pagina: 1,
-          itensPorPagina: 100,
+          pagina: pagina,
+          itensPorPagina: 10,
         });
 
-        // Converter resposta para formato DocumentoPublicoItem
+        // Converter resposta para formato DocumentoParceriaPublicoItem
         const editaisFormatados: DocumentoParceriaPublicoItem[] = response.editais.map(edital => ({
           id: edital.id,
           nome: edital.titulo,
@@ -38,7 +43,7 @@ export const Editais = () => {
         }));
 
         setDocumentos(editaisFormatados);
-        setCategorias(['Todas', 'Edital']);
+        setTotalPaginas(response.totalPaginas);
       } catch (err) {
         const mensagemErro = handleApiError(err);
         setError(mensagemErro);
@@ -46,10 +51,30 @@ export const Editais = () => {
       } finally {
         setIsLoading(false);
       }
-    };
+    },
+    []
+  );
 
-    carregarEditais();
-  }, []);
+  useEffect(() => {
+    carregarEditais(paginaAtual, filtroTitulo, filtroData);
+  }, [paginaAtual, filtroTitulo, filtroData, carregarEditais]);
+
+  const handleMudarPagina = (novaPagina: number) => {
+    setPaginaAtual(novaPagina);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBuscar = (titulo: string, dataPublicacao?: string) => {
+    setFiltroTitulo(titulo);
+    setFiltroData(dataPublicacao || '');
+    setPaginaAtual(1);
+  };
+
+  const handleLimpar = () => {
+    setFiltroTitulo('');
+    setFiltroData('');
+    setPaginaAtual(1);
+  };
 
   return (
     <PublicLayout>
@@ -77,22 +102,16 @@ export const Editais = () => {
             </div>
           )}
 
-          {/* No Documents Message */}
-          {!isLoading && documentos.length === 0 && !error && (
-            <div className="text-center py-12">
-              <p className="text-gray-600 text-lg">Nenhum edital disponível no momento.</p>
-            </div>
-          )}
-
           {/* Documents List */}
-          {documentos.length > 0 && (
-            <DocumentosParceriasPublicosList
-              documents={documentos}
-              categories={categorias}
-              showCategoryFilter={false}
-              isLoading={isLoading}
-            />
-          )}
+          <DocumentosParceriasPublicosList
+            documents={documentos}
+            isLoading={isLoading}
+            totalPaginas={totalPaginas}
+            paginaAtual={paginaAtual}
+            onMudarPagina={handleMudarPagina}
+            onFiltroChange={handleBuscar}
+            onLimpar={handleLimpar}
+          />
         </div>
       </section>
     </PublicLayout>

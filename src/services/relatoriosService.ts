@@ -91,6 +91,8 @@ export interface RelatorioPublicoListResponse {
 }
 
 export interface RelatorioPublicoFilters {
+  titulo?: string;
+  dataPublicacao?: string;
   caminho?: string;
   categoria?: string;
   ordenarPor?: string;
@@ -276,6 +278,12 @@ export const relatoriosService = {
   listarPublico: async (filtros?: RelatorioPublicoFilters): Promise<RelatorioPublicoListResponse> => {
     const params = new URLSearchParams();
 
+    if (filtros?.titulo) {
+      params.append('Titulo', filtros.titulo);
+    }
+    if (filtros?.dataPublicacao) {
+      params.append('DataPublicacao', filtros.dataPublicacao);
+    }
     if (filtros?.caminho) {
       params.append('Caminho', filtros.caminho);
     }
