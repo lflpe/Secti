@@ -110,6 +110,8 @@ export interface ParceriaListFilters {
 }
 
 export interface ParceriaPublicoFilters {
+  titulo?: string;
+  dataPublicacao?: string;
   caminho?: string;
   categoria?: string;
   ordenarPor?: string;
@@ -303,6 +305,12 @@ export const parceriasService = {
   listarPublico: async (filtros?: ParceriaPublicoFilters): Promise<ParceriaPublicoListResponse> => {
     const params = new URLSearchParams();
 
+    if (filtros?.titulo) {
+      params.append('Titulo', filtros.titulo);
+    }
+    if (filtros?.dataPublicacao) {
+      params.append('DataPublicacao', filtros.dataPublicacao);
+    }
     if (filtros?.caminho) {
       params.append('Caminho', filtros.caminho);
     }

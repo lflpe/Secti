@@ -1,5 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState } from 'react';
 import { downloadParceria } from '../services/parceriasService';
+import { formatarDataBrasileira } from '../utils/dateUtils';
 
 export interface DocumentoParceriaPublicoItem {
   id: number;
@@ -13,65 +14,42 @@ export interface DocumentoParceriaPublicoItem {
 
 interface DocumentosParceriasPublicosListProps {
   documents: DocumentoParceriaPublicoItem[];
-  categories: string[];
-  showCategoryFilter?: boolean;
   isLoading?: boolean;
+  totalPaginas?: number;
+  paginaAtual?: number;
+  onMudarPagina?: (pagina: number) => void;
+  onFiltroChange?: (titulo: string, dataPublicacao?: string) => void;
+  onLimpar?: () => void;
 }
 
 export const DocumentosParceriasPublicosList = ({
   documents,
-  categories,
-  showCategoryFilter = true,
   isLoading = false,
+  totalPaginas = 1,
+  paginaAtual = 1,
+  onMudarPagina,
+  onFiltroChange,
+  onLimpar,
 }: DocumentosParceriasPublicosListProps) => {
   const [filtroNome, setFiltroNome] = useState('');
-  const [filtroCategoria, setFiltroCategoria] = useState('');
-  const [filtroAno, setFiltroAno] = useState('');
-  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [filtroData, setFiltroData] = useState('');
+  const [filtrosAplicados, setFiltrosAplicados] = useState(false);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
-  const documentosPorPagina = 10;
 
-  // Extrair anos únicos
-  const anos = useMemo(() => {
-    const anosSet = documents.map(doc => {
-      const data = doc.dataPublicacao.split('/');
-      return data[2];
-    });
-    return ['Todos', ...Array.from(new Set(anosSet)).sort((a, b) => b.localeCompare(a))];
-  }, [documents]);
+  // Função para buscar com filtros
+  const handleBuscar = () => {
+    setFiltrosAplicados(true);
+    onMudarPagina?.(1);
+    onFiltroChange?.(filtroNome, filtroData);
+  };
 
-  // Filtrar documentos
-  const documentosFiltrados = useMemo(() => {
-    return documents.filter(doc => {
-      const matchNome = doc.nome.toLowerCase().includes(filtroNome.toLowerCase());
-      const matchCategoria = filtroCategoria === '' || filtroCategoria === 'Todas' || doc.categoria === filtroCategoria;
-      const anoDoc = doc.dataPublicacao.split('/')[2];
-      const matchAno = filtroAno === '' || filtroAno === 'Todos' || anoDoc === filtroAno;
-      return matchNome && matchCategoria && matchAno;
-    });
-  }, [filtroNome, filtroCategoria, filtroAno, documents]);
-
-  // Resetar para página 1 quando filtros mudarem
-  useEffect(() => {
-    setPaginaAtual(1);
-  }, [filtroNome, filtroCategoria, filtroAno]);
-
-  // Calcular total de páginas
-  const totalPaginas = Math.ceil(documentosFiltrados.length / documentosPorPagina);
-
-  // Documentos da página atual
-  const documentosPaginados = useMemo(() => {
-    const inicio = (paginaAtual - 1) * documentosPorPagina;
-    const fim = inicio + documentosPorPagina;
-    return documentosFiltrados.slice(inicio, fim);
-  }, [documentosFiltrados, paginaAtual]);
-
-  // Função para mudar de página
-  const irParaPagina = (pagina: number) => {
-    if (pagina >= 1 && pagina <= totalPaginas) {
-      setPaginaAtual(pagina);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+  // Função para limpar filtros
+  const handleLimparFiltros = () => {
+    setFiltroNome('');
+    setFiltroData('');
+    setFiltrosAplicados(false);
+    onMudarPagina?.(1);
+    onLimpar?.();
   };
 
   // Função para baixar parceria
@@ -124,89 +102,77 @@ export const DocumentosParceriasPublicosList = ({
   return (
     <div className="max-w-6xl mx-auto">
       {/* Filtros */}
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h3 className="text-2xl font-bold text-[#0C2856] mb-6">Filtrar Documentos</h3>
-        <div className={`grid ${showCategoryFilter ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4`}>
-          {/* Filtro por Nome */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Buscar Parcerias</h3>
+        <div className="flex flex-col sm:flex-row gap-4 items-end">
+          <div className="flex-1">
+            <label htmlFor="busca" className="block text-sm font-medium text-gray-700 mb-2">
+              Título da Parceria
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                id="busca"
+                value={filtroNome}
+                onChange={(e) => setFiltroNome(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleBuscar(); }}
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Digite o título da parceria..."
+              />
+            </div>
+          </div>
+
           <div>
-            <label htmlFor="filtroNome" className="block text-sm font-medium text-gray-700 mb-2">
-              Buscar por nome
+            <label htmlFor="dataPublicacao" className="block text-sm font-medium text-gray-700 mb-2">
+              Data de Publicação
             </label>
             <input
-              type="text"
-              id="filtroNome"
-              value={filtroNome}
-              onChange={(e) => setFiltroNome(e.target.value)}
-              placeholder="Digite o nome do documento..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2856] focus:border-transparent outline-none"
+              type="date"
+              id="dataPublicacao"
+              value={filtroData}
+              onChange={(e) => setFiltroData(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
-          {/* Filtro por Categoria */}
-          {showCategoryFilter && (
-            <div>
-              <label htmlFor="filtroCategoria" className="block text-sm font-medium text-gray-700 mb-2">
-                Categoria
-              </label>
-              <select
-                id="filtroCategoria"
-                value={filtroCategoria}
-                onChange={(e) => setFiltroCategoria(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2856] focus:border-transparent outline-none cursor-pointer"
-              >
-                {categories.map(cat => (
-                  <option key={cat} value={cat === 'Todas' ? '' : cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Filtro por Ano */}
-          <div>
-            <label htmlFor="filtroAno" className="block text-sm font-medium text-gray-700 mb-2">
-              Ano
-            </label>
-            <select
-              id="filtroAno"
-              value={filtroAno}
-              onChange={(e) => setFiltroAno(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0C2856] focus:border-transparent outline-none cursor-pointer"
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleBuscar}
+              disabled={isLoading || (!filtroNome && !filtroData)}
+              className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
-              {anos.map(ano => (
-                <option key={ano} value={ano === 'Todos' ? '' : ano}>
-                  {ano}
-                </option>
-              ))}
-            </select>
+              {isLoading ? 'Buscando...' : 'Buscar'}
+            </button>
+            <button
+              onClick={handleLimparFiltros}
+              disabled={isLoading || !filtrosAplicados}
+              className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              Limpar
+            </button>
           </div>
         </div>
 
-        {/* Contador de resultados */}
-        <div className="mt-4 text-sm text-gray-600">
-          {documentosFiltrados.length} {documentosFiltrados.length === 1 ? 'documento encontrado' : 'documentos encontrados'}
-          {totalPaginas > 1 && (
-            <span className="ml-2">
-              - Página {paginaAtual} de {totalPaginas}
-            </span>
-          )}
-        </div>
       </div>
 
       {/* Lista de Documentos */}
       <div className="space-y-4">
-        {documentosFiltrados.length === 0 ? (
+        {documents.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <p className="text-xl text-gray-600">Nenhum documento encontrado</p>
+            <p className="text-xl text-gray-600">Nenhuma parceria encontrada</p>
             <p className="text-gray-500 mt-2">Tente ajustar os filtros de busca</p>
           </div>
         ) : (
           <>
-            {documentosPaginados.map(doc => (
+            {documents.map(doc => (
               <div key={doc.id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                   {/* Ícone do tipo de arquivo */}
@@ -228,9 +194,9 @@ export const DocumentosParceriasPublicosList = ({
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        <strong>Publicado em:</strong> {doc.dataPublicacao}
+                        <strong>Publicado em:</strong> {formatarDataBrasileira(doc.dataPublicacao)}
                       </span>
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#195CE3] text-white">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#0C2856] text-white">
                         {doc.categoria}
                       </span>
                     </div>
@@ -257,8 +223,8 @@ export const DocumentosParceriasPublicosList = ({
             {totalPaginas > 1 && (
               <div className="flex justify-center items-center gap-2 mt-8 pt-8 flex-wrap">
                 <button
-                  onClick={() => irParaPagina(paginaAtual - 1)}
-                  disabled={paginaAtual === 1}
+                  onClick={() => onMudarPagina?.(paginaAtual - 1)}
+                  disabled={paginaAtual === 1 || isLoading}
                   className={`px-4 py-2 rounded-lg font-medium transition duration-200 ${
                     paginaAtual === 1
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
@@ -272,7 +238,8 @@ export const DocumentosParceriasPublicosList = ({
                   {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(numero => (
                     <button
                       key={numero}
-                      onClick={() => irParaPagina(numero)}
+                      onClick={() => onMudarPagina?.(numero)}
+                      disabled={isLoading}
                       className={`px-3 py-2 rounded-lg font-medium transition duration-200 ${
                         numero === paginaAtual
                           ? 'bg-[#0C2856] text-white'
@@ -285,9 +252,9 @@ export const DocumentosParceriasPublicosList = ({
                 </div>
 
                 <button
-                  onClick={() => irParaPagina(paginaAtual + 1)}
-                  disabled={paginaAtual === totalPaginas}
-                  className={`px-4 py-2 rounded-lg font-medium transition duration-200 ${
+                  onClick={() => onMudarPagina?.(paginaAtual + 1)}
+                  disabled={paginaAtual === totalPaginas || isLoading}
+                  className={`px-4 py-2 cursor-pointer rounded-lg font-medium transition duration-200 ${
                     paginaAtual === totalPaginas
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       : 'bg-white cursor-pointer text-[#0C2856] border border-[#0C2856] hover:bg-[#0C2856] hover:text-white'
@@ -303,4 +270,3 @@ export const DocumentosParceriasPublicosList = ({
     </div>
   );
 };
-
